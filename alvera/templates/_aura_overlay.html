@@ -1,0 +1,942 @@
+{#
+  _aura_overlay.html
+  ──────────────────
+  Aura Analizi Overlay — 6 Faz
+    Faz 1 : Aura Skoru
+    Faz 2 : Benzerlik + Sinerjiler
+    Faz 3 : Ortak Faaliyetler
+    Faz 4 : Bağlantı Analizi
+    Faz 5 : Zıtlıklar + Paylaş
+    Faz 6 : Aura'yı DM ile Gönder
+
+  Gereken Jinja değişkenleri:
+    target       : User modeli
+    current_user : flask_login
+
+  openAura() ve closeAura() fonksiyonları global scope'ta tanımlanır.
+#}
+
+<!-- ═══════════════════════════════════════════════════════
+     AURA OVERLAY
+════════════════════════════════════════════════════════ -->
+<style>
+/* ════ AURA OVERLAY GLOBAL STİLLER ════ */
+#aura-overlay {
+    position: fixed; inset: 0; z-index: 9500;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(0,0,0,0);
+    backdrop-filter: blur(0px) saturate(100%);
+    opacity: 0;
+    pointer-events: none;
+    transition: background 0.4s ease, backdrop-filter 0.4s ease, opacity 0.4s ease;
+}
+#aura-overlay.active {
+    background: rgba(6,6,6,0.78);
+    backdrop-filter: blur(20px) saturate(140%);
+    opacity: 1;
+    pointer-events: all;
+}
+
+.aura-modal {
+    background: #FFFFFF;
+    border: 1px solid #E8E8E8;
+    border-radius: 20px;
+    width: 100%;
+    max-width: 580px;
+    margin: 16px;
+    box-shadow: 0 36px 90px rgba(0,0,0,0.24), 0 4px 16px rgba(0,0,0,0.08);
+    overflow: hidden;
+    transform: translateY(28px) scale(0.96);
+    transition: transform 0.42s cubic-bezier(0.34,1.52,0.64,1);
+    position: relative;
+}
+#aura-overlay.active .aura-modal {
+    transform: translateY(0) scale(1);
+}
+
+/* ── Kapat butonu ── */
+.aura-close {
+    position: absolute; top: 14px; right: 14px; z-index: 20;
+    width: 28px; height: 28px;
+    background: rgba(255,255,255,0.9);
+    border: 1px solid #E8E8E8;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; color: #9A9A9A;
+    cursor: pointer;
+    transition: all 0.14s ease;
+}
+.aura-close:hover { background: #fff; color: #0A0A0A; border-color: #C8C8C8; }
+
+/* ── Faz görünürlüğü ── */
+.aura-phase { display: none; flex-direction: column; align-items: stretch; }
+.aura-phase.visible { display: flex; }
+
+/* ════ FAZ 1 — SKOR ════ */
+.a-p1-body {
+    padding: 48px 40px 40px;
+    display: flex; flex-direction: column; align-items: center;
+    text-align: center; background: #FAFAFA;
+}
+/* Loading spinner */
+.a-spinner {
+    width: 36px; height: 36px; margin: 0 auto 18px;
+    border: 2.5px solid #EBEBEB;
+    border-top-color: #0A0A0A;
+    border-radius: 50%;
+    animation: aSpn 0.7s linear infinite;
+}
+@keyframes aSpn { to { transform: rotate(360deg); } }
+.a-loading-label { font-size: 13px; color: #9A9A9A; }
+
+/* Score state */
+.a-ring-wrap {
+    width: 96px; height: 96px; margin: 0 auto 24px;
+    opacity: 0; transform: scale(0.85);
+    transition: opacity 0.5s ease, transform 0.5s cubic-bezier(0.34,1.52,0.64,1);
+}
+.a-ring-wrap.show { opacity: 1; transform: scale(1); }
+.a-ring-wrap svg { width: 96px; height: 96px; transform: rotate(-90deg); }
+.a-ring-bg   { fill: none; stroke: #F0F0F0; stroke-width: 5.5; }
+.a-ring-fill {
+    fill: none; stroke: #0A0A0A; stroke-width: 5.5;
+    stroke-linecap: round;
+    stroke-dasharray: 271; stroke-dashoffset: 271;
+    transition: stroke-dashoffset 1.9s cubic-bezier(0.4,0,0.2,1);
+}
+.a-score-num {
+    font-size: 68px; font-weight: 800; letter-spacing: -3.5px;
+    color: #0A0A0A; line-height: 1;
+    opacity: 0; transform: scale(0.82);
+    transition: opacity 0.45s ease, transform 0.45s cubic-bezier(0.34,1.52,0.64,1);
+}
+.a-score-num.pop { opacity: 1; transform: scale(1); }
+.a-score-sup {
+    font-size: 12px; font-weight: 600; letter-spacing: 1px;
+    text-transform: uppercase; color: #9A9A9A;
+    margin-top: 4px; margin-bottom: 14px;
+    opacity: 0; transition: opacity 0.35s ease 0.35s;
+}
+.a-score-sup.show { opacity: 1; }
+.a-badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    background: #0A0A0A; color: #fff;
+    font-size: 12px; font-weight: 600; letter-spacing: 0.2px;
+    padding: 7px 18px; border-radius: 100px;
+    margin-bottom: 12px;
+    opacity: 0; transform: translateY(10px);
+    transition: opacity 0.35s ease 0.55s, transform 0.35s ease 0.55s;
+}
+.a-badge.show { opacity: 1; transform: translateY(0); }
+.a-subtitle {
+    font-size: 13px; color: #6A6A6A; line-height: 1.65;
+    max-width: 370px; margin-bottom: 30px;
+    opacity: 0; transition: opacity 0.35s ease 0.72s;
+}
+.a-subtitle.show { opacity: 1; }
+.a-p1-actions {
+    display: flex; gap: 10px; justify-content: center;
+    opacity: 0; transition: opacity 0.35s ease 0.88s;
+}
+.a-p1-actions.show { opacity: 1; }
+
+/* ════ ORTAK BUTON STİLLERİ ════ */
+.a-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 12.5px; font-weight: 500; font-family: inherit;
+    padding: 8px 18px; border-radius: 9px;
+    border: 1px solid #E8E8E8; cursor: pointer;
+    transition: all 0.14s ease; text-decoration: none;
+}
+.a-btn-ghost { background: #fff; color: #404040; }
+.a-btn-ghost:hover { background: #F5F5F5; color: #0A0A0A; }
+.a-btn-dark  { background: #0A0A0A; color: #fff; border-color: #0A0A0A; }
+.a-btn-dark:hover { opacity: 0.82; }
+.a-btn-share {
+    background: linear-gradient(135deg, #7C3AED, #2563EB);
+    color: #fff; border-color: transparent;
+}
+.a-btn-share:hover { opacity: 0.88; transform: translateY(-1px); }
+
+/* ════ ORTAK HEADER / FOOTER ════ */
+.a-panel-header {
+    padding: 22px 30px 18px;
+    border-bottom: 1px solid #F0F0F0;
+    background: #FAFAFA;
+    flex-shrink: 0;
+}
+.a-panel-eyebrow {
+    font-size: 10px; font-weight: 600; letter-spacing: 1.2px;
+    text-transform: uppercase; color: #B0B0B0; margin-bottom: 3px;
+}
+.a-panel-title {
+    font-size: 15px; font-weight: 700; color: #0A0A0A;
+    letter-spacing: -0.3px; line-height: 1.3;
+}
+.a-panel-footer {
+    padding: 14px 30px 22px;
+    border-top: 1px solid #F0F0F0;
+    display: flex; justify-content: space-between; align-items: center;
+    gap: 8px; flex-shrink: 0;
+}
+.a-panel-body {
+    padding: 18px 30px 4px;
+    overflow-y: auto;
+    max-height: 420px;
+    flex: 1;
+}
+.a-panel-body::-webkit-scrollbar { width: 3px; }
+.a-panel-body::-webkit-scrollbar-thumb { background: #E4E4E4; border-radius: 10px; }
+
+/* ════ FAZ 2 — BENZERLİK + SİNERJİLER ════ */
+.a-sim-bar-wrap { margin-bottom: 20px; }
+.a-sim-row {
+    display: flex; justify-content: space-between; align-items: baseline;
+    margin-bottom: 7px;
+}
+.a-sim-label { font-size: 11px; font-weight: 600; letter-spacing: 0.8px; text-transform: uppercase; color: #9A9A9A; }
+.a-sim-pct   { font-size: 22px; font-weight: 750; color: #0A0A0A; letter-spacing: -0.7px; }
+.a-bar-bg    { height: 5px; background: #F0F0F0; border-radius: 100px; overflow: hidden; }
+.a-bar-fill  {
+    height: 5px; background: #0A0A0A; border-radius: 100px;
+    width: 0; transition: width 1.3s cubic-bezier(0.4,0,0.2,1) 0.15s;
+}
+
+.a-section-label {
+    font-size: 10.5px; font-weight: 600; letter-spacing: 1px;
+    text-transform: uppercase; color: #B0B0B0;
+    margin: 18px 0 9px;
+}
+.a-chips { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 4px; }
+.a-chip {
+    font-size: 11.5px; font-weight: 500; color: #404040;
+    background: #fff; border: 1px solid #E8E8E8;
+    padding: 4px 11px; border-radius: 100px;
+}
+.a-list { display: flex; flex-direction: column; gap: 8px; }
+.a-list-item {
+    background: #F8F8F8; border: 1px solid #F0F0F0;
+    border-radius: 10px; padding: 11px 13px;
+    opacity: 0; transform: translateY(8px);
+    transition: opacity 0.28s ease, transform 0.28s ease;
+}
+.a-list-item.in { opacity: 1; transform: translateY(0); }
+.a-list-item-title  { font-size: 12.5px; font-weight: 650; color: #0A0A0A; margin-bottom: 3px; }
+.a-list-item-detail { font-size: 12px; color: #6A6A6A; line-height: 1.55; }
+
+/* ════ FAZ 3 — ORTAK FAALİYETLER ════ */
+.a-act-header {
+    padding: 22px 30px 18px;
+    border-bottom: 1px solid #F0F0F0;
+    background: linear-gradient(135deg, #0D0D0D 0%, #1C1C2E 100%);
+    flex-shrink: 0;
+}
+.a-act-eyebrow { font-size: 10px; font-weight: 600; letter-spacing: 1.2px; text-transform: uppercase; color: rgba(255,255,255,0.4); margin-bottom: 3px; }
+.a-act-title   { font-size: 15px; font-weight: 700; color: #fff; letter-spacing: -0.3px; line-height: 1.3; }
+
+.a-act-list { display: flex; flex-direction: column; gap: 9px; }
+.a-act-card {
+    display: flex; gap: 13px;
+    background: #F8F8F8; border: 1px solid #F0F0F0;
+    border-radius: 11px; padding: 13px 14px;
+    opacity: 0; transform: translateX(-12px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+.a-act-card.in { opacity: 1; transform: translateX(0); }
+.a-act-icon { font-size: 20px; flex-shrink: 0; margin-top: 1px; }
+.a-act-body { flex: 1; }
+.a-act-title-card { font-size: 13px; font-weight: 650; color: #0A0A0A; margin-bottom: 3px; letter-spacing: -0.1px; }
+.a-act-desc  { font-size: 12px; color: #6A6A6A; line-height: 1.55; margin-bottom: 5px; }
+.a-act-why   {
+    font-size: 11px; font-weight: 500; color: #7C3AED;
+    background: rgba(124,58,237,0.08);
+    display: inline-block; padding: 2px 8px; border-radius: 100px;
+}
+
+/* ════ FAZ 4 — BAĞLANTI ANALİZİ ════ */
+.a-conn-summary {
+    font-size: 13px; color: #404040; line-height: 1.65;
+    background: #F8F8F8; border: 1px solid #F0F0F0;
+    border-radius: 10px; padding: 14px 16px;
+    margin-bottom: 16px;
+}
+.a-conn-count-badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 11.5px; font-weight: 600;
+    background: #0A0A0A; color: #fff;
+    padding: 4px 12px; border-radius: 100px;
+    margin-bottom: 14px;
+}
+
+/* ════ FAZ 5 — ZITLIKLAR ════ */
+.a-zit-card {
+    background: #F8F8F8; border: 1px solid #F0F0F0;
+    border-radius: 11px; padding: 14px 15px;
+    margin-bottom: 9px;
+    opacity: 0; transform: translateY(10px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+.a-zit-card.in { opacity: 1; transform: translateY(0); }
+.a-zit-header {
+    display: flex; align-items: center; gap: 8px; margin-bottom: 6px;
+}
+.a-zit-icon  { font-size: 18px; }
+.a-zit-title { font-size: 13px; font-weight: 650; color: #0A0A0A; }
+.a-zit-detail { font-size: 12px; color: #6A6A6A; line-height: 1.55; margin-bottom: 8px; }
+.a-zit-yorum {
+    font-size: 11.5px; color: #7C3AED; font-weight: 500;
+    background: rgba(124,58,237,0.07);
+    border-left: 2px solid rgba(124,58,237,0.3);
+    padding: 6px 10px; border-radius: 0 6px 6px 0;
+    line-height: 1.5;
+}
+.a-zit-yorum::before { content: '✦ '; opacity: 0.6; }
+
+/* ── Paylaş kartı ── */
+.a-share-card {
+    background: linear-gradient(135deg, #0D0D0D 0%, #1C1C2E 100%);
+    border-radius: 12px; padding: 20px 22px;
+    margin: 0 0 16px; text-align: center;
+}
+.a-share-score-big {
+    font-size: 44px; font-weight: 800; color: #fff;
+    letter-spacing: -2px; line-height: 1;
+}
+.a-share-label { font-size: 11px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: rgba(255,255,255,0.4); margin: 4px 0 8px; }
+.a-share-names { font-size: 13px; color: rgba(255,255,255,0.7); }
+.a-share-brand { font-size: 10px; color: rgba(255,255,255,0.3); margin-top: 10px; letter-spacing: 1.5px; }
+.a-share-actions { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+
+/* ── Progress dots ── */
+.a-progress {
+    position: absolute; top: 14px; left: 50%; transform: translateX(-50%);
+    display: flex; gap: 5px; z-index: 10;
+}
+.a-dot {
+    width: 5px; height: 5px; border-radius: 50%;
+    background: #DCDCDC;
+    transition: background 0.25s ease, transform 0.25s ease;
+}
+.a-dot.active { background: #0A0A0A; transform: scale(1.2); }
+
+/* Scroll sıfırla */
+.a-panel-body { overscroll-behavior: contain; }
+
+/* ════ FAZ 6 — DM PAYLAŞIM ════ */
+.a-dm-preview {
+    margin-bottom: 18px;
+}
+.a-dm-preview-label {
+    font-size: 10.5px; font-weight: 600; letter-spacing: 1px;
+    text-transform: uppercase; color: #B0B0B0;
+    margin-bottom: 9px;
+}
+.a-dm-card-preview {
+    background: linear-gradient(135deg, #0D0D0D 0%, #1C1C2E 100%);
+    border-radius: 12px; padding: 16px 18px;
+}
+.a-dm-card-header {
+    display: flex; align-items: flex-start; gap: 12px; margin-bottom: 10px;
+}
+.a-dm-card-icon {
+    font-size: 18px; color: rgba(255,255,255,0.7);
+    margin-top: 1px; flex-shrink: 0;
+}
+.a-dm-card-title {
+    font-size: 13px; font-weight: 600; color: #fff;
+    line-height: 1.35; margin-bottom: 3px;
+}
+.a-dm-card-score {
+    font-size: 11.5px; color: rgba(255,255,255,0.55);
+    font-weight: 500;
+}
+.a-dm-card-cta {
+    font-size: 11px; color: rgba(255,255,255,0.35);
+    border-top: 1px solid rgba(255,255,255,0.08);
+    padding-top: 8px; letter-spacing: 0.2px;
+}
+.a-dm-note {
+    font-size: 12.5px; color: #6A6A6A; line-height: 1.6;
+    margin-bottom: 14px;
+}
+.a-dm-send-btn {
+    width: 100%; justify-content: center;
+    padding: 11px 18px; font-size: 13px;
+}
+.a-dm-send-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.a-dm-success-icon {
+    width: 42px; height: 42px; border-radius: 50%;
+    background: #0A0A0A; color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; font-weight: 700;
+    margin: 8px auto 14px;
+}
+.a-dm-success-text {
+    font-size: 13px; color: #404040; text-align: center;
+    line-height: 1.6; margin-bottom: 16px;
+}
+#a-dm-success { text-align: center; }
+#a-dm-success .a-btn { margin: 0 auto; }
+</style>
+
+<div id="aura-overlay" onclick="auraOverlayBgClick(event)">
+<div class="aura-modal">
+
+    <!-- Kapat -->
+    <button class="aura-close" onclick="closeAura()" title="Kapat">✕</button>
+
+    <!-- Progress dots (fazlar için) -->
+    <div class="a-progress" id="a-progress">
+        <div class="a-dot active" id="a-dot-1"></div>
+        <div class="a-dot" id="a-dot-2"></div>
+        <div class="a-dot" id="a-dot-3"></div>
+        <div class="a-dot" id="a-dot-4"></div>
+        <div class="a-dot" id="a-dot-5"></div>
+        <div class="a-dot" id="a-dot-6"></div>
+    </div>
+
+    <!-- ══════════════════════════════════════════
+         FAZ 1 — YÜKLEME + SKOR
+    ══════════════════════════════════════════ -->
+    <div class="aura-phase visible" id="a-phase-1">
+        <div class="a-p1-body">
+
+            <!-- Yükleniyor -->
+            <div id="a-loading">
+                <div class="a-spinner"></div>
+                <p class="a-loading-label" style="margin-top:14px">Auralar analiz ediliyor…</p>
+            </div>
+
+            <!-- Skor (başta gizli) -->
+            <div id="a-score-state" style="display:none; width:100%;">
+                <div class="a-ring-wrap" id="a-ring-wrap">
+                    <svg viewBox="0 0 96 96">
+                        <circle class="a-ring-bg"   cx="48" cy="48" r="43"/>
+                        <circle class="a-ring-fill" id="a-ring" cx="48" cy="48" r="43"/>
+                    </svg>
+                </div>
+                <div class="a-score-num" id="a-score-num">0</div>
+                <div class="a-score-sup" id="a-score-sup">AURA SKORU</div>
+                <div class="a-badge" id="a-badge"><span id="a-badge-txt">—</span></div>
+                <p class="a-subtitle" id="a-subtitle"></p>
+                <div class="a-p1-actions" id="a-p1-actions">
+                    <button class="a-btn a-btn-ghost" onclick="closeAura()">Kapat</button>
+                    <button class="a-btn a-btn-dark" onclick="auraGo(2)">Detaylı İncele →</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════
+         FAZ 2 — BENZERLİK + SİNERJİLER
+    ══════════════════════════════════════════ -->
+    <div class="aura-phase" id="a-phase-2">
+        <div class="a-panel-header">
+            <p class="a-panel-eyebrow">Faz 2 — Analiz Detayı</p>
+            <p class="a-panel-title" id="a-p2-title">Benzerlik &amp; Sinerjiler</p>
+        </div>
+        <div class="a-panel-body" id="a-p2-body">
+
+            <div class="a-sim-bar-wrap">
+                <div class="a-sim-row">
+                    <span class="a-sim-label">Benzerlik Oranı</span>
+                    <span class="a-sim-pct" id="a-sim-pct">0%</span>
+                </div>
+                <div class="a-bar-bg"><div class="a-bar-fill" id="a-sim-bar"></div></div>
+            </div>
+
+            <p class="a-section-label">Kimya Etiketleri</p>
+            <div class="a-chips" id="a-tags"></div>
+
+            <p class="a-section-label">Sinerji Noktaları</p>
+            <div class="a-list" id="a-synergies"></div>
+
+        </div>
+        <div class="a-panel-footer">
+            <button class="a-btn a-btn-ghost" onclick="auraGo(1)">← Geri</button>
+            <button class="a-btn a-btn-dark" onclick="auraGo(3)">Ortak Faaliyetler →</button>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════
+         FAZ 3 — ORTAK FAALİYETLER
+    ══════════════════════════════════════════ -->
+    <div class="aura-phase" id="a-phase-3">
+        <div class="a-act-header">
+            <p class="a-act-eyebrow">Faz 3 — AI Önerisi</p>
+            <p class="a-act-title" id="a-p3-title">Birlikte yapabilecekleriniz</p>
+        </div>
+        <div class="a-panel-body" id="a-p3-body">
+            <div class="a-act-list" id="a-activities"></div>
+        </div>
+        <div class="a-panel-footer">
+            <button class="a-btn a-btn-ghost" onclick="auraGo(2)">← Geri</button>
+            <button class="a-btn a-btn-dark" onclick="auraGo(4)">Bağlantı Analizi →</button>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════
+         FAZ 4 — BAĞLANTI ANALİZİ
+    ══════════════════════════════════════════ -->
+    <div class="aura-phase" id="a-phase-4">
+        <div class="a-panel-header">
+            <p class="a-panel-eyebrow">Faz 4 — Sosyal Bağlantılar</p>
+            <p class="a-panel-title">Bağlantı Analizi</p>
+        </div>
+        <div class="a-panel-body" id="a-p4-body">
+            <div class="a-conn-count-badge" id="a-conn-count">
+                ✦ <span id="a-conn-count-num">0</span> ortak bağlantı
+            </div>
+            <div class="a-conn-summary" id="a-conn-summary">—</div>
+            <p class="a-section-label">İçgörüler</p>
+            <div class="a-list" id="a-conn-insights"></div>
+        </div>
+        <div class="a-panel-footer">
+            <button class="a-btn a-btn-ghost" onclick="auraGo(3)">← Geri</button>
+            <button class="a-btn a-btn-dark" onclick="auraGo(5)">Zıtlıklar →</button>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════
+         FAZ 5 — ZITLIKLAR + PAYLAŞ
+    ══════════════════════════════════════════ -->
+    <div class="aura-phase" id="a-phase-5">
+        <div class="a-panel-header">
+            <p class="a-panel-eyebrow">Faz 5 — Karşıtlık Haritası</p>
+            <p class="a-panel-title">Zıtlıklar</p>
+        </div>
+        <div class="a-panel-body" id="a-p5-body">
+            <div id="a-zit-list"></div>
+
+            <!-- Paylaş kartı -->
+            <div class="a-share-card" id="a-share-card" style="margin-top:20px">
+                <div class="a-share-score-big" id="a-share-score">—</div>
+                <div class="a-share-label">AURA SKORU</div>
+                <div class="a-share-names" id="a-share-names">— &amp; —</div>
+                <div class="a-share-brand">alvera · dijital kimlik</div>
+            </div>
+            <div class="a-share-actions">
+                <button class="a-btn a-btn-share" id="a-share-btn" onclick="auraShare()">
+                    ✦ Aura'yı Paylaş
+                </button>
+                <button class="a-btn a-btn-ghost" onclick="auraCopy()" id="a-copy-btn">
+                    Linki Kopyala
+                </button>
+            </div>
+        </div>
+        <div class="a-panel-footer">
+            <button class="a-btn a-btn-ghost" onclick="auraGo(4)">← Geri</button>
+            <button class="a-btn a-btn-dark" onclick="auraGo(6)">Mesajla Gönder →</button>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════
+         FAZ 6 — DM PAYLAŞIM
+    ══════════════════════════════════════════ -->
+    <div class="aura-phase" id="a-phase-6">
+        <div class="a-panel-header">
+            <p class="a-panel-eyebrow">Faz 6 — Mesajla Paylaş</p>
+            <p class="a-panel-title">Aura'yı Karşı Tarafa Gönder</p>
+        </div>
+        <div class="a-panel-body" id="a-p6-body">
+
+            <!-- Mesaj önizleme kartı -->
+            <div class="a-dm-preview">
+                <p class="a-dm-preview-label">Karşı tarafın göreceği mesaj</p>
+                <div class="a-dm-card-preview">
+                    <div class="a-dm-card-header">
+                        <span class="a-dm-card-icon">✦</span>
+                        <div>
+                            <div class="a-dm-card-title" id="a-dm-card-title">— sizinle Aura analizi yaptı!</div>
+                            <div class="a-dm-card-score" id="a-dm-card-score">Aura Skoru: — — —</div>
+                        </div>
+                    </div>
+                    <div class="a-dm-card-cta">Detayları görmek için raporu incele →</div>
+                </div>
+            </div>
+
+            <!-- Gönder aksiyonu -->
+            <div id="a-dm-action">
+                <p class="a-dm-note">
+                    Bu analiz <strong id="a-dm-target-name">—</strong> kullanıcısına DM olarak gönderilecek.
+                </p>
+                <button class="a-btn a-btn-dark a-dm-send-btn" id="a-dm-send-btn" onclick="auraSendDM()">
+                    <span id="a-dm-send-label">✉ Gönder</span>
+                </button>
+            </div>
+
+            <!-- Başarı durumu (gizli) -->
+            <div id="a-dm-success" style="display:none">
+                <div class="a-dm-success-icon">✓</div>
+                <p class="a-dm-success-text">
+                    Aura analizi <strong id="a-dm-success-name">—</strong> kullanıcısına gönderildi!
+                </p>
+                <a class="a-btn a-btn-ghost" id="a-dm-success-link" href="#">Profilini Görüntüle →</a>
+            </div>
+
+        </div>
+        <div class="a-panel-footer">
+            <button class="a-btn a-btn-ghost" onclick="auraGo(5)">← Geri</button>
+            <button class="a-btn a-btn-dark" onclick="closeAura()">Tamamla ✓</button>
+        </div>
+    </div>
+
+</div><!-- .aura-modal -->
+</div><!-- #aura-overlay -->
+
+<script>
+/* ═══════════════════════════════════════════════════════
+   AURA SİSTEMİ — Global JS
+   5 Fazlı Analiz · Paylaşım
+═══════════════════════════════════════════════════════ */
+(function () {
+
+const AURA_TARGET_ID    = {{ target.id }};
+const AURA_TARGET_NAME  = {{ (target.full_name or target.email)|tojson }};
+const AURA_SELF_NAME    = {{ (current_user.full_name or current_user.email)|tojson if current_user.is_authenticated else '""' }};
+const AURA_URL          = '{{ url_for("mindmap.aura") }}';
+const AURA_CACHED_URL   = '/mindmap/aura/cached/' + {{ target.id }};
+const AURA_SEND_DM_URL  = '{{ url_for("mindmap.aura_send_dm") }}';
+
+let _auraData     = null;
+let _currentPhase = 1;
+let _dmSent       = false;
+
+/* ── Overlay aç ── */
+window.openAura = async function () {
+    const overlay = document.getElementById('aura-overlay');
+    overlay.classList.add('active');
+    document.body.style.overflow = 'hidden';
+
+    _setPhase(1);
+    document.getElementById('a-loading').style.display      = 'block';
+    document.getElementById('a-score-state').style.display  = 'none';
+
+    // Aynı oturumda zaten yüklüyse direkt göster
+    if (_auraData) { _revealScore(); return; }
+
+    try {
+        // Önce cache kontrolü
+        const cacheRes  = await fetch(AURA_CACHED_URL);
+        const cacheJson = await cacheRes.json();
+
+        if (cacheJson.ok && cacheJson.cached) {
+            _auraData = cacheJson.analysis;
+            _revealScore();
+            return;
+        }
+
+        // Cache yoksa AI çağrısı
+        const res  = await fetch(AURA_URL, {
+            method:  'POST',
+            headers: {'Content-Type': 'application/json'},
+            body:    JSON.stringify({target_user_id: AURA_TARGET_ID}),
+        });
+        const json = await res.json();
+        if (!json.ok) throw new Error(json.error || 'Hata');
+        _auraData = json.analysis;
+        _revealScore();
+    } catch (err) {
+        closeAura();
+        if (typeof showToast === 'function') showToast('⚠ ' + err.message);
+        else alert(err.message);
+    }
+};
+
+/* ── Overlay kapat ── */
+window.closeAura = function () {
+    document.getElementById('aura-overlay').classList.remove('active');
+    document.body.style.overflow = '';
+};
+
+window.auraOverlayBgClick = function (e) {
+    if (e.target === document.getElementById('aura-overlay')) closeAura();
+};
+
+/* ── Faz geçişi ── */
+window.auraGo = function (n) {
+    _setPhase(n);
+    if (n === 2) _populateP2();
+    if (n === 3) _populateP3();
+    if (n === 4) _populateP4();
+    if (n === 5) _populateP5();
+    if (n === 6) _populateP6();
+};
+
+function _setPhase(n) {
+    _currentPhase = n;
+    document.querySelectorAll('.aura-phase').forEach(el => el.classList.remove('visible'));
+    const ph = document.getElementById(`a-phase-${n}`);
+    if (ph) { ph.classList.add('visible'); _scrollTop(ph); }
+
+    // Progress dots
+    for (let i = 1; i <= 6; i++) {
+        const d = document.getElementById(`a-dot-${i}`);
+        if (d) d.classList.toggle('active', i === n);
+    }
+}
+
+function _scrollTop(el) {
+    const body = el.querySelector('.a-panel-body');
+    if (body) body.scrollTop = 0;
+}
+
+/* ── Faz 1: Skor Reveal ── */
+function _revealScore() {
+    const d = _auraData;
+    if (!d) return;
+    const score = d.aura_score || 0;
+
+    document.getElementById('a-loading').style.display     = 'none';
+    document.getElementById('a-score-state').style.display = 'block';
+
+    // Ring animasyonu — 2πr = 2π×43 ≈ 270.2
+    const circ   = 270;
+    const offset = circ - (score / 100) * circ;
+    setTimeout(() => {
+        document.getElementById('a-ring-wrap').classList.add('show');
+        document.getElementById('a-ring').style.strokeDashoffset = offset;
+    }, 60);
+
+    // Sayı sayacı
+    const numEl = document.getElementById('a-score-num');
+    let cur = 0;
+    const inc = Math.ceil(score / 60);
+    numEl.classList.remove('pop');
+    const timer = setInterval(() => {
+        cur = Math.min(cur + inc, score);
+        numEl.textContent = cur;
+        if (cur >= score) clearInterval(timer);
+    }, 22);
+    setTimeout(() => numEl.classList.add('pop'), 80);
+
+    // Diğer elementler
+    setTimeout(() => document.getElementById('a-score-sup').classList.add('show'), 380);
+    setTimeout(() => {
+        document.getElementById('a-badge-txt').textContent = d.aura_label || '—';
+        document.getElementById('a-badge').classList.add('show');
+    }, 580);
+    setTimeout(() => {
+        document.getElementById('a-subtitle').textContent = d.aura_subtitle || '';
+        document.getElementById('a-subtitle').classList.add('show');
+    }, 760);
+    setTimeout(() => document.getElementById('a-p1-actions').classList.add('show'), 920);
+}
+
+/* ── Faz 2: Benzerlik + Sinerjiler ── */
+function _populateP2() {
+    const d = _auraData; if (!d) return;
+
+    document.getElementById('a-p2-title').textContent =
+        `Benzerlik & Sinerjiler — ${d.aura_label}`;
+
+    // Benzerlik barı
+    const sim = d.similarity_ratio || 0;
+    document.getElementById('a-sim-pct').textContent = sim + '%';
+    requestAnimationFrame(() => {
+        document.getElementById('a-sim-bar').style.width = sim + '%';
+    });
+
+    // Kimya etiketleri
+    const tagsEl = document.getElementById('a-tags');
+    tagsEl.innerHTML = '';
+    (d.chemistry_tags || []).forEach(t => {
+        const c = document.createElement('span');
+        c.className = 'a-chip'; c.textContent = t;
+        tagsEl.appendChild(c);
+    });
+
+    // Sinerjiler
+    const synEl = document.getElementById('a-synergies');
+    synEl.innerHTML = '';
+    (d.synergies || []).forEach((s, i) => {
+        const item = _listItem(s.title, s.detail);
+        synEl.appendChild(item);
+        setTimeout(() => item.classList.add('in'), 70 + i * 75);
+    });
+}
+
+/* ── Faz 3: Ortak Faaliyetler ── */
+function _populateP3() {
+    const d = _auraData; if (!d) return;
+
+    document.getElementById('a-p3-title').textContent =
+        `${d.aura_label} — Birlikte Yapabilecekleriniz`;
+
+    const listEl = document.getElementById('a-activities');
+    listEl.innerHTML = '';
+    (d.common_activities || []).forEach((act, i) => {
+        const card = document.createElement('div');
+        card.className = 'a-act-card';
+        card.innerHTML = `
+            <div class="a-act-icon">${act.icon || '✦'}</div>
+            <div class="a-act-body">
+                <p class="a-act-title-card">${act.title}</p>
+                <p class="a-act-desc">${act.description}</p>
+                <span class="a-act-why">${act.why}</span>
+            </div>`;
+        listEl.appendChild(card);
+        setTimeout(() => card.classList.add('in'), 55 + i * 85);
+    });
+}
+
+/* ── Faz 4: Bağlantı Analizi ── */
+function _populateP4() {
+    const d = _auraData; if (!d) return;
+    const ca = d.connection_analysis || {};
+
+    document.getElementById('a-conn-count-num').textContent =
+        d.common_follows_count ?? (ca.insights ? ca.insights.length : 0);
+    document.getElementById('a-conn-summary').textContent =
+        ca.summary || 'Ortak bağlantılarınız dijital dünyadaki kesişim noktalarınızı yansıtıyor.';
+
+    const insEl = document.getElementById('a-conn-insights');
+    insEl.innerHTML = '';
+    (ca.insights || []).forEach((ins, i) => {
+        const item = _listItem(ins.title, ins.detail);
+        insEl.appendChild(item);
+        setTimeout(() => item.classList.add('in'), 80 + i * 80);
+    });
+}
+
+/* ── Faz 5: Zıtlıklar + Paylaş kartı ── */
+function _populateP5() {
+    const d = _auraData; if (!d) return;
+
+    const zitEl = document.getElementById('a-zit-list');
+    zitEl.innerHTML = '';
+    (d.zitliklar || []).forEach((z, i) => {
+        const card = document.createElement('div');
+        card.className = 'a-zit-card';
+        card.innerHTML = `
+            <div class="a-zit-header">
+                <span class="a-zit-icon">${z.icon || '⚡'}</span>
+                <span class="a-zit-title">${z.title}</span>
+            </div>
+            <p class="a-zit-detail">${z.detail}</p>
+            <div class="a-zit-yorum">${z.yorum}</div>`;
+        zitEl.appendChild(card);
+        setTimeout(() => card.classList.add('in'), 55 + i * 85);
+    });
+
+    // Paylaş kartı
+    document.getElementById('a-share-score').textContent = d.aura_score || '—';
+    document.getElementById('a-share-names').textContent =
+        `${AURA_SELF_NAME} & ${AURA_TARGET_NAME}`;
+}
+
+/* ── Paylaşım ── */
+window.auraShare = function () {
+    const d = _auraData;
+    const text = `✦ Aura Skoru: ${d?.aura_score || '?'} — ${d?.aura_label || ''}\n` +
+                 `${AURA_SELF_NAME} & ${AURA_TARGET_NAME}\n\n` +
+                 `alvera.me — Dijital Kimlik`;
+    if (navigator.share) {
+        navigator.share({ title: 'Aura Skorum', text }).catch(() => {});
+    } else {
+        _copyText(text);
+        _flashBtn('a-share-btn', '✓ Kopyalandı!');
+    }
+};
+
+window.auraCopy = function () {
+    const d = _auraData;
+    const url = `${location.origin}/mindmap/${AURA_TARGET_ID}`;
+    _copyText(url);
+    _flashBtn('a-copy-btn', '✓ Kopyalandı!');
+};
+
+function _copyText(txt) {
+    try { navigator.clipboard.writeText(txt); } catch (_) {}
+}
+
+function _flashBtn(id, msg) {
+    const btn = document.getElementById(id);
+    if (!btn) return;
+    const orig = btn.textContent;
+    btn.textContent = msg;
+    setTimeout(() => btn.textContent = orig, 1800);
+}
+
+/* ── Faz 6: DM Gönder ── */
+function _populateP6() {
+    const d = _auraData; if (!d) return;
+
+    const score = d.aura_score || '—';
+    const label = d.aura_label || '';
+
+    // Önizleme kartı
+    document.getElementById('a-dm-card-title').textContent =
+        `${AURA_SELF_NAME} sizinle Aura analizi yaptı!`;
+    document.getElementById('a-dm-card-score').textContent =
+        `Aura Skoru: ${score} — ${label}`;
+
+    // Not metni
+    document.getElementById('a-dm-target-name').textContent = AURA_TARGET_NAME;
+
+    // Daha önce gönderildiyse direkt başarı göster
+    if (_dmSent) {
+        document.getElementById('a-dm-action').style.display  = 'none';
+        document.getElementById('a-dm-success').style.display = 'block';
+    } else {
+        document.getElementById('a-dm-action').style.display  = 'block';
+        document.getElementById('a-dm-success').style.display = 'none';
+        const btn = document.getElementById('a-dm-send-btn');
+        if (btn) { btn.disabled = false; }
+        document.getElementById('a-dm-send-label').textContent = '✉ Gönder';
+    }
+}
+
+window.auraSendDM = async function () {
+    const btn   = document.getElementById('a-dm-send-btn');
+    const label = document.getElementById('a-dm-send-label');
+    if (!btn || btn.disabled) return;
+
+    btn.disabled = true;
+    label.textContent = 'Gönderiliyor…';
+
+    try {
+        const res  = await fetch(AURA_SEND_DM_URL, {
+            method:  'POST',
+            headers: {'Content-Type': 'application/json'},
+            body:    JSON.stringify({target_user_id: AURA_TARGET_ID}),
+        });
+        const json = await res.json();
+        if (!json.ok) throw new Error(json.error || 'Gönderilemedi');
+
+        _dmSent = true;
+
+        // Başarı durumuna geç
+        document.getElementById('a-dm-action').style.display  = 'none';
+        document.getElementById('a-dm-success').style.display = 'block';
+        document.getElementById('a-dm-success-name').textContent = AURA_TARGET_NAME;
+        const link = document.getElementById('a-dm-success-link');
+        if (link) link.href = `/mindmap/${AURA_TARGET_ID}`;
+
+    } catch (err) {
+        btn.disabled = false;
+        label.textContent = '✉ Gönder';
+        if (typeof showToast === 'function') showToast('⚠ ' + err.message);
+        else alert(err.message);
+    }
+};
+
+/* ── Yardımcı ── */
+function _listItem(title, detail) {
+    const div = document.createElement('div');
+    div.className = 'a-list-item';
+    div.innerHTML = `<p class="a-list-item-title">${title}</p>
+                     <p class="a-list-item-detail">${detail}</p>`;
+    return div;
+}
+
+/* ── ESC ile kapat ── */
+document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && document.getElementById('aura-overlay').classList.contains('active')) {
+        closeAura();
+    }
+});
+
+})();
+</script>

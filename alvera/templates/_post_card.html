@@ -1,0 +1,60 @@
+{# ── Gönderi Kartı — dashboard + profil sayfasında ortak kullanılır ─────────
+   Değişkenler:
+     post   → Post modeli
+     owner  → User modeli (opsiyonel, dashboard'da gerekli)
+     editable → True ise sil butonu gösterilir (dashboard)
+#}
+<article class="post-card" data-post-id="{{ post.id }}">
+    <div class="post-header">
+        <div class="post-meta">
+            <span class="post-date">{{ post.created_at.strftime('%d %b %Y') }}</span>
+        </div>
+        {% if editable %}
+        <div style="display:flex;align-items:center;gap:6px;">
+            <button class="post-pin-btn"
+                    data-pinned="{{ 'true' if post.is_pinned else 'false' }}"
+                    onclick="togglePin({{ post.id }}, this)"
+                    title="{{ 'Sabitlenmiş — kaldırmak için tıkla' if post.is_pinned else 'Profile sabitle' }}"
+                    style="background:none;border:none;cursor:pointer;font-size:14px;padding:2px 5px;color:{{ '#0A0A0A' if post.is_pinned else '#A3A3A3' }};transition:color 0.2s;">
+                {{ '📌' if post.is_pinned else '📍' }}
+            </button>
+            <button class="post-delete-btn"
+                    onclick="deletePost({{ post.id }}, this)"
+                    title="Sil">
+                ✕
+            </button>
+        </div>
+        {% endif %}
+    </div>
+
+    <p class="post-content">{{ post.content }}</p>
+
+    {% if post.media_list %}
+    <div class="post-media {% if post.media_list|length == 1 %}single{% else %}multi{% endif %}">
+        {% for media in post.media_list %}
+            {% if media.type == 'image' %}
+            <div class="media-item">
+                <img src="/uploads/{{ owner.id if owner else post.user_id }}/{{ media.filename }}"
+                     alt="{{ media.original_name }}"
+                     loading="lazy"
+                     onclick="openMedia(this.src)">
+            </div>
+            {% elif media.type == 'video' %}
+            <div class="media-item media-video">
+                <video controls preload="metadata" playsinline>
+                    <source src="/uploads/{{ owner.id if owner else post.user_id }}/{{ media.filename }}">
+                </video>
+            </div>
+            {% else %}
+            <a class="media-doc"
+               href="/uploads/{{ owner.id if owner else post.user_id }}/{{ media.filename }}"
+               target="_blank" rel="noopener">
+                <span class="doc-icon">📄</span>
+                <span class="doc-name">{{ media.original_name }}</span>
+                <span class="doc-arrow">↗</span>
+            </a>
+            {% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+</article>

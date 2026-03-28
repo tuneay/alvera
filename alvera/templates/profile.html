@@ -1,0 +1,2326 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    {# ── Temel SEO ── #}
+    <title>{{ owner.full_name }} — {{ owner_data.job_title }}{% if owner_data.company %} · {{ owner_data.company }}{% endif %}</title>
+    <meta name="description" content="{{ site.bio_text | truncate(160, true, '...') if site.bio_text else site.tagline }}">
+    <meta name="keywords"    content="{{ owner.full_name }}, {{ owner_data.job_title }}{% if owner_data.company %}, {{ owner_data.company }}{% endif %}{% if skills %}, {{ skills | join(', ') }}{% endif %}">
+    <meta name="author"      content="{{ owner.full_name }}">
+    <meta name="robots"      content="index, follow">
+    <link rel="canonical"    href="{{ request.url }}">
+
+    {# ── Open Graph (Facebook / LinkedIn önizleme) ── #}
+    <meta property="og:type"        content="profile">
+    <meta property="og:title"       content="{{ owner.full_name }} — {{ owner_data.job_title }}">
+    <meta property="og:description" content="{{ site.bio_text | truncate(160, true, '...') if site.bio_text else site.tagline }}">
+    <meta property="og:url"         content="{{ request.url }}">
+    <meta property="og:site_name"   content="Alvera">
+    <meta property="og:locale"      content="tr_TR">
+    <meta property="profile:first_name" content="{{ owner.full_name.split()[0] if owner.full_name else '' }}">
+    <meta property="profile:last_name"  content="{{ owner.full_name.split()[-1] if owner.full_name and owner.full_name.split()|length > 1 else '' }}">
+
+    {# ── Twitter Card ── #}
+    <meta name="twitter:card"        content="summary">
+    <meta name="twitter:title"       content="{{ owner.full_name }} — {{ owner_data.job_title }}">
+    <meta name="twitter:description" content="{{ site.bio_text | truncate(160, true, '...') if site.bio_text else site.tagline }}">
+    {% if owner_data.twitter %}
+    <meta name="twitter:site" content="{{ owner_data.twitter | replace('https://twitter.com/', '@') | replace('https://x.com/', '@') }}">
+    {% endif %}
+
+    {# ── JSON-LD Structured Data (Google Kişi Kartı) ── #}
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Person",
+      "name": "{{ owner.full_name }}",
+      "jobTitle": "{{ owner_data.job_title }}",
+      {% if owner_data.company %}"worksFor": { "@type": "Organization", "name": "{{ owner_data.company }}" },{% endif %}
+      "description": "{{ site.bio_text | replace('"', '\\"') | replace('\n', ' ') if site.bio_text else site.tagline }}",
+      "url": "{{ request.url }}",
+      "email": "{{ owner.email }}",
+      "knowsAbout": [{% for skill in skills %}"{{ skill }}"{% if not loop.last %}, {% endif %}{% endfor %}],
+      "sameAs": [
+        {% set links = [] %}
+        {% if owner_data.linkedin %}{% set _ = links.append('"' ~ owner_data.linkedin ~ '"') %}{% endif %}
+        {% if owner_data.github %}{% set _ = links.append('"' ~ owner_data.github ~ '"') %}{% endif %}
+        {% if owner_data.twitter %}{% set _ = links.append('"' ~ owner_data.twitter ~ '"') %}{% endif %}
+        {% if owner_data.website %}{% set _ = links.append('"' ~ owner_data.website ~ '"') %}{% endif %}
+        {{ links | join(', ') }}
+      ]
+    }
+    </script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        /* ══════════════════════════════════════════
+           TEMA DEĞİŞKENLERİ  (vibe'a göre override)
+        ══════════════════════════════════════════ */
+
+        /* ── Minimal (varsayılan) ── */
+        :root {
+            --bg:           #FFFFFF;
+            --bg-subtle:    #FAFAFA;
+            --text-h:       #0A0A0A;
+            --text-body:    #404040;
+            --text-muted:   #A3A3A3;
+            --border:       #E5E5E5;
+            --chip-bg:      #F5F5F5;
+            --chip-color:   #525252;
+            --cta-bg:       #0A0A0A;
+            --cta-color:    #FFFFFF;
+            --cta-hover:    #1f1f1f;
+            --dot-color:    #D4D4D4;
+            --ease:         cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* ── Bold ── */
+        body.vibe-bold {
+            --bg:           #0A0A0A;
+            --bg-subtle:    #141414;
+            --text-h:       #FFFFFF;
+            --text-body:    #A3A3A3;
+            --text-muted:   #525252;
+            --border:       #262626;
+            --chip-bg:      #1A1A1A;
+            --chip-color:   #D4D4D4;
+            --cta-bg:       #FFFFFF;
+            --cta-color:    #0A0A0A;
+            --cta-hover:    #E5E5E5;
+            --dot-color:    #262626;
+        }
+
+        /* ── Warm ── */
+        body.vibe-warm {
+            --bg:           #FFFDF9;
+            --bg-subtle:    #FDF8F0;
+            --text-h:       #1C1209;
+            --text-body:    #5C4A32;
+            --text-muted:   #B8997A;
+            --border:       #EDE3D5;
+            --chip-bg:      #F5EDE0;
+            --chip-color:   #7A5C3E;
+            --cta-bg:       #1C1209;
+            --cta-color:    #FFFDF9;
+            --cta-hover:    #2E1E0F;
+            --dot-color:    #E8D9C5;
+        }
+
+        /* ══════════════════════════════════════════
+           BASE
+        ══════════════════════════════════════════ */
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg);
+            color: var(--text-body);
+            -webkit-font-smoothing: antialiased;
+            min-height: 100vh;
+            transition: background 0.4s var(--ease);
+        }
+
+        /* Dot grid */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image: radial-gradient(circle, var(--dot-color) 1px, transparent 1px);
+            background-size: 28px 28px;
+            opacity: 0.5;
+            pointer-events: none;
+            z-index: 0;
+            mask-image: radial-gradient(ellipse 90% 80% at 50% 0%, black 20%, transparent 90%);
+            -webkit-mask-image: radial-gradient(ellipse 90% 80% at 50% 0%, black 20%, transparent 90%);
+        }
+
+        /* ══════════════════════════════════════════
+           NAVBAR
+        ══════════════════════════════════════════ */
+        nav {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            z-index: 100;
+            height: 56px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 32px;
+            background: color-mix(in srgb, var(--bg) 85%, transparent);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .nav-name {
+            font-size: 15px;
+            font-weight: 600;
+            letter-spacing: -0.4px;
+            color: var(--text-h);
+        }
+
+        .nav-alvera {
+            font-size: 12px;
+            color: var(--text-muted);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: color 0.25s var(--ease);
+        }
+
+        .nav-alvera:hover { color: var(--text-body); }
+
+        .nav-alvera-dot {
+            width: 5px; height: 5px;
+            border-radius: 50%;
+            background: var(--text-muted);
+        }
+
+        /* ══════════════════════════════════════════
+           HERO
+        ══════════════════════════════════════════ */
+        .hero {
+            min-height: 100vh;
+            display: grid;
+            grid-template-columns: 1fr 360px;
+            align-items: center;
+            gap: 72px;
+            padding: 80px 64px;
+            max-width: 1160px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero-left {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .hero-eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            background: var(--bg-subtle);
+            border: 1px solid var(--border);
+            padding: 5px 12px;
+            border-radius: 100px;
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-muted);
+            margin-bottom: 28px;
+            letter-spacing: 0.3px;
+        }
+
+        .eyebrow-dot {
+            width: 5px; height: 5px;
+            border-radius: 50%;
+            background: var(--text-muted);
+        }
+
+        h1 {
+            font-size: clamp(36px, 6vw, 72px);
+            font-weight: 700;
+            letter-spacing: -2.5px;
+            line-height: 1.02;
+            color: var(--text-h);
+            margin-bottom: 20px;
+        }
+
+        .tagline {
+            font-size: clamp(15px, 1.8vw, 18px);
+            color: var(--text-body);
+            line-height: 1.75;
+            max-width: 520px;
+            margin-bottom: 16px;
+            font-weight: 400;
+        }
+
+        /* ── Bio ── */
+        .bio {
+            font-size: 15px;
+            color: var(--text-body);
+            line-height: 1.8;
+            max-width: 540px;
+            margin-bottom: 32px;
+            border-left: 2px solid var(--border);
+            padding-left: 18px;
+            opacity: 0.85;
+        }
+
+        /* ── Skills ── */
+        .skills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 36px;
+        }
+
+        .skill-chip {
+            background: var(--chip-bg);
+            border: 1px solid var(--border);
+            color: var(--chip-color);
+            padding: 6px 14px;
+            border-radius: 100px;
+            font-size: 13px;
+            font-weight: 500;
+            letter-spacing: -0.1px;
+            transition: all 0.25s var(--ease);
+        }
+
+        .skill-chip:hover {
+            border-color: var(--text-muted);
+            color: var(--text-h);
+        }
+
+        /* ── CTA row ── */
+        .cta-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .btn-cta {
+            background: var(--cta-bg);
+            color: var(--cta-color);
+            border: 1px solid var(--cta-bg);
+            padding: 11px 26px;
+            border-radius: 8px;
+            font-size: 14.5px;
+            font-weight: 500;
+            font-family: inherit;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.35s var(--ease);
+        }
+
+        .btn-cta:hover {
+            background: var(--cta-hover);
+            border-color: var(--cta-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+        }
+
+        /* ── Social links ── */
+        .social-links {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .social-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 9px 16px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-muted);
+            text-decoration: none;
+            background: var(--bg-subtle);
+            transition: all 0.25s var(--ease);
+        }
+
+        .social-link:hover {
+            color: var(--text-h);
+            border-color: var(--text-muted);
+            transform: translateY(-1px);
+        }
+
+        /* ══════════════════════════════════════════
+           IDENTITY PANEL (sağ sütun) — Unified Card
+        ══════════════════════════════════════════ */
+        .identity-panel {
+            position: sticky;
+            top: 80px;
+            animation: panelEntrance 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.25s both;
+        }
+
+        @keyframes panelEntrance {
+            from { opacity: 0; transform: translateX(28px) translateY(10px); }
+            to   { opacity: 1; transform: none; }
+        }
+
+        /* ── Ana Kart ── */
+        .id-main-card {
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            background: var(--bg-subtle);
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Subtle top gradient shimmer */
+        .id-main-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 1px;
+            background: linear-gradient(90deg,
+                transparent 0%,
+                rgba(255,255,255,0.9) 30%,
+                rgba(255,255,255,0.6) 60%,
+                transparent 100%);
+            pointer-events: none;
+        }
+
+        /* ── Kart Header ── */
+        .id-card-header {
+            padding: 22px 22px 20px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            animation: sectionFade 0.6s var(--ease) 0.4s both;
+        }
+
+        .id-avatar {
+            width: 46px; height: 46px;
+            border-radius: 50%;
+            background: var(--cta-bg);
+            color: var(--cta-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 17px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            flex-shrink: 0;
+            position: relative;
+        }
+
+        .id-avatar-img {
+            width: 100%; height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .id-header-meta {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .id-header-name {
+            font-size: 14px;
+            font-weight: 650;
+            color: var(--text-h);
+            letter-spacing: -0.3px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .id-header-role {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* ── Separator ── */
+        .id-card-sep {
+            height: 1px;
+            background: var(--border);
+            margin: 0;
+        }
+
+        /* ── Status Row ── */
+        .id-status-row {
+            padding: 14px 22px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            animation: sectionFade 0.6s var(--ease) 0.5s both;
+        }
+
+        @keyframes sectionFade {
+            from { opacity: 0; transform: translateY(8px); }
+            to   { opacity: 1; transform: none; }
+        }
+
+        .id-status-pulse {
+            width: 7px; height: 7px;
+            border-radius: 50%;
+            background: #22c55e;
+            flex-shrink: 0;
+            position: relative;
+        }
+
+        .id-status-pulse::after {
+            content: '';
+            position: absolute;
+            inset: -3px;
+            border-radius: 50%;
+            border: 1.5px solid #22c55e;
+            animation: pulsering 2.2s ease-out infinite;
+            opacity: 0;
+        }
+
+        @keyframes pulsering {
+            0%   { transform: scale(0.8); opacity: 0.8; }
+            80%  { transform: scale(1.9); opacity: 0; }
+            100% { transform: scale(1.9); opacity: 0; }
+        }
+
+        .id-status-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .id-status-badge {
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 1.6px;
+            text-transform: uppercase;
+            color: #22c55e;
+        }
+
+        .id-status-text {
+            font-size: 12.5px;
+            font-weight: 500;
+            color: var(--text-h);
+            margin-top: 1px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .id-status-emoji {
+            font-size: 14px;
+        }
+
+        /* ── CTA Section ── */
+        .id-cta-section {
+            padding: 18px 22px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            animation: sectionFade 0.6s var(--ease) 0.55s both;
+        }
+
+        .id-cta-btn {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            width: 100%;
+            padding: 15px 20px;
+            background: var(--cta-bg);
+            color: var(--cta-color);
+            border: none;
+            border-radius: 14px;
+            font-size: 14px;
+            font-weight: 650;
+            font-family: inherit;
+            letter-spacing: -0.2px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .id-cta-btn::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.09) 0%, transparent 55%);
+            pointer-events: none;
+        }
+
+        .id-cta-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.16);
+            text-decoration: none;
+            color: var(--cta-color);
+        }
+
+        .id-cta-arrow {
+            width: 26px; height: 26px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.13);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            flex-shrink: 0;
+            transition: transform 0.3s var(--ease);
+        }
+
+        .id-cta-btn:hover .id-cta-arrow {
+            transform: translate(2px, -2px);
+        }
+
+        .id-cta-secondary {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            font-size: 12.5px;
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: color 0.2s var(--ease);
+            padding: 2px 0;
+        }
+
+        .id-cta-secondary:hover {
+            color: var(--text-h);
+        }
+
+        .id-cta-secondary svg {
+            opacity: 0.5;
+            transition: opacity 0.2s;
+        }
+
+        .id-cta-secondary:hover svg {
+            opacity: 1;
+        }
+
+        /* ── Work Prefs Section ── */
+        .id-workprefs-section {
+            padding: 16px 22px 18px;
+            animation: sectionFade 0.6s var(--ease) 0.6s both;
+        }
+
+        .id-wp-label {
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 1.6px;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-bottom: 10px;
+        }
+
+        .id-wp-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .id-wp-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 5px 11px;
+            border: 1px solid var(--border);
+            border-radius: 100px;
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-body);
+            background: var(--bg);
+            transition: all 0.22s var(--ease);
+        }
+
+        .id-wp-chip:hover {
+            border-color: var(--text-muted);
+            color: var(--text-h);
+        }
+
+        /* ── Social Row ── */
+        .id-social-row {
+            padding: 14px 22px 18px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            animation: sectionFade 0.6s var(--ease) 0.65s both;
+        }
+
+        .id-social-label {
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 1.6px;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-right: 4px;
+            flex-shrink: 0;
+        }
+
+        .id-social-icons {
+            display: flex;
+            gap: 7px;
+            flex-wrap: wrap;
+        }
+
+        .id-social-icon {
+            width: 32px; height: 32px;
+            border-radius: 50%;
+            border: 1px solid var(--border);
+            background: var(--bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            color: var(--text-muted);
+            font-size: 13px;
+            transition: all 0.25s var(--ease);
+            flex-shrink: 0;
+        }
+
+        .id-social-icon:hover {
+            border-color: var(--text-h);
+            color: var(--text-h);
+            background: var(--bg-subtle);
+            transform: translateY(-2px);
+        }
+
+        /* ── Card Footer ── */
+        .id-card-footer {
+            padding: 12px 22px;
+            background: var(--bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            animation: sectionFade 0.6s var(--ease) 0.7s both;
+        }
+
+        .id-footer-badge {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            text-decoration: none;
+            color: var(--text-muted);
+            font-size: 10.5px;
+            letter-spacing: 0.2px;
+            transition: color 0.2s var(--ease);
+        }
+
+        .id-footer-badge:hover {
+            color: var(--text-h);
+        }
+
+        .id-footer-dot {
+            width: 5px; height: 5px;
+            border-radius: 50%;
+            background: var(--cta-bg);
+            opacity: 0.7;
+        }
+
+        /* ══════════════════════════════════════════
+           DIVIDER
+        ══════════════════════════════════════════ */
+        .section-divider {
+            border: none;
+            border-top: 1px solid var(--border);
+            margin: 0 64px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* ══════════════════════════════════════════
+           ABOUT SECTION
+        ══════════════════════════════════════════ */
+        .about-section {
+            padding: 80px 64px;
+            max-width: 820px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .section-label {
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-bottom: 20px;
+        }
+
+        .about-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+
+        .about-card {
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            background: var(--bg-subtle);
+        }
+
+        .about-card-label {
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-bottom: 10px;
+        }
+
+        .about-card-value {
+            font-size: 15px;
+            font-weight: 500;
+            color: var(--text-h);
+            letter-spacing: -0.2px;
+        }
+
+        /* ══════════════════════════════════════════
+           FOOTER
+        ══════════════════════════════════════════ */
+        footer {
+            border-top: 1px solid var(--border);
+            padding: 28px 64px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: relative;
+            z-index: 1;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .footer-left {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .footer-alvera {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12.5px;
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: color 0.25s var(--ease);
+        }
+
+        .footer-alvera:hover { color: var(--text-body); }
+
+        .footer-alvera-name {
+            font-weight: 600;
+            letter-spacing: -0.3px;
+        }
+
+        /* ── Müsait Rozeti ── */
+        .avail-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 11px;
+            font-weight: 600;
+            padding: 3px 9px;
+            border-radius: 100px;
+            background: rgba(22, 163, 74, 0.08);
+            border: 1px solid rgba(22, 163, 74, 0.25);
+            color: #16a34a;
+            margin-left: 6px;
+            vertical-align: middle;
+            letter-spacing: 0.2px;
+        }
+
+        /* ── Pinlenmiş gönderi işareti ── */
+        .pin-indicator {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-left: 6px;
+        }
+
+        /* ══════════════════════════════════════════
+           SOCIAL POSTS FEED  (tüm paketler)
+        ══════════════════════════════════════════ */
+        .posts-feed-section {
+            max-width: 720px;
+            margin: 0 auto;
+            padding: 60px 40px;
+        }
+
+        .posts-feed-section .section-label {
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-bottom: 28px;
+        }
+
+        .posts-feed-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 28px;
+        }
+
+        .posts-feed-header .section-label { margin-bottom: 0; }
+
+        .feed-link {
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-muted);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            transition: color 0.2s var(--ease);
+        }
+
+        .feed-link:hover { color: var(--text-body); }
+
+        .post-card {
+            border-bottom: 1px solid var(--border);
+            padding: 24px 0;
+        }
+
+        .post-card:first-of-type { padding-top: 0; }
+        .post-card:last-of-type  { border-bottom: none; }
+
+        .post-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+
+        .post-header-left {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .post-header-right {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Gönderi tipi rozeti */
+        .post-type-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 11px;
+            font-weight: 500;
+            padding: 3px 9px;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            background: var(--bg-subtle);
+            color: var(--text-muted);
+        }
+
+        .post-type-badge.badge-project { color: #7c3aed; background: #f5f3ff; border-color: #e9d5ff; }
+        .post-type-badge.badge-link    { color: #0369a1; background: #f0f9ff; border-color: #bae6fd; }
+        .post-type-badge.badge-collab  { color: #047857; background: #ecfdf5; border-color: #a7f3d0; }
+        body.vibe-bold .post-type-badge.badge-project { background: #1e1027; border-color: #4c1d95; }
+        body.vibe-bold .post-type-badge.badge-link    { background: #0c1a27; border-color: #075985; }
+        body.vibe-bold .post-type-badge.badge-collab  { background: #0a1f18; border-color: #064e3b; }
+
+        .pin-indicator {
+            font-size: 11px;
+            opacity: 0.5;
+        }
+
+        .post-date {
+            font-size: 12px;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .post-content {
+            font-size: 15px;
+            color: var(--text-body);
+            line-height: 1.75;
+            white-space: pre-line;
+        }
+
+        /* Link önizleme kartı */
+        .post-link-card {
+            display: flex;
+            align-items: stretch;
+            gap: 0;
+            margin-top: 14px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            overflow: hidden;
+            text-decoration: none;
+            transition: box-shadow 0.2s var(--ease);
+        }
+
+        .post-link-card:hover {
+            box-shadow: 0 3px 12px rgba(0,0,0,0.06);
+        }
+
+        .post-link-bar {
+            width: 4px;
+            background: var(--text-muted);
+            opacity: 0.3;
+            flex-shrink: 0;
+        }
+
+        .post-link-body {
+            padding: 12px 14px;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .post-link-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-h);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .post-link-url {
+            font-size: 11.5px;
+            color: var(--text-muted);
+            margin-top: 2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* İstatistik satırı */
+        .post-stats {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-top: 16px;
+        }
+
+        .stat-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 12.5px;
+            font-weight: 500;
+            color: var(--text-muted);
+            background: none;
+            border: none;
+            padding: 0;
+            cursor: pointer;
+            font-family: inherit;
+            transition: color 0.2s var(--ease);
+        }
+
+        .stat-btn:hover { color: var(--text-body); }
+
+        .stat-btn.liked { color: #e11d48; }
+        .stat-btn.liked:hover { color: #be123c; }
+
+        .stat-btn:disabled {
+            cursor: default;
+        }
+
+        .stat-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 12.5px;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .post-media {
+            display: grid;
+            gap: 8px;
+            margin-top: 14px;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .post-media.single { grid-template-columns: 1fr; }
+        .post-media.multi  { grid-template-columns: repeat(2, 1fr); }
+
+        .media-item img,
+        .media-item video {
+            width: 100%;
+            display: block;
+            max-height: 400px;
+            object-fit: cover;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        .media-item img:hover { opacity: 0.92; }
+
+        .media-doc {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 16px;
+            background: var(--bg-subtle);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            text-decoration: none;
+            color: var(--text-body);
+            font-size: 13.5px;
+            transition: background 0.2s;
+            margin-top: 8px;
+        }
+
+        .media-doc:hover { opacity: 0.8; }
+        .doc-icon { font-size: 16px; }
+        .doc-name {
+            flex: 1;
+            font-weight: 500;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .doc-arrow { color: var(--text-muted); font-size: 13px; }
+
+        /* Lightbox */
+        .lightbox {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.9);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: zoom-out;
+            animation: lbIn 0.2s ease both;
+        }
+
+        .lightbox img {
+            max-width: 92vw;
+            max-height: 92vh;
+            object-fit: contain;
+            border-radius: 6px;
+        }
+
+        @keyframes lbIn { from { opacity: 0; } to { opacity: 1; } }
+
+        @media (max-width: 768px) {
+            .posts-feed-section { padding: 40px 24px; }
+            .post-media.multi   { grid-template-columns: 1fr; }
+        }
+
+        /* ══════════════════════════════════════════
+           AVATAR (profil fotoğrafı — tüm paketler)
+        ══════════════════════════════════════════ */
+        .hero-avatar {
+            width: 72px; height: 72px;
+            border-radius: 50%;
+            border: 3px solid var(--border);
+            overflow: hidden;
+            margin-bottom: 24px;
+            flex-shrink: 0;
+        }
+
+        .hero-avatar img {
+            width: 100%; height: 100%;
+            object-fit: cover;
+        }
+
+        /* ══════════════════════════════════════════
+           PAKET 3 — HİZMETLER
+        ══════════════════════════════════════════ */
+        .p3-section {
+            padding: 72px 64px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .p3-section .section-label {
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+
+        .p3-section-title {
+            font-size: clamp(22px, 3vw, 30px);
+            font-weight: 700;
+            letter-spacing: -0.8px;
+            color: var(--text-h);
+            margin-bottom: 36px;
+        }
+
+        /* Hizmet kartları */
+        .service-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 16px;
+        }
+
+        .service-card {
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            background: var(--bg-subtle);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            transition: box-shadow 0.3s var(--ease), transform 0.3s var(--ease);
+        }
+
+        .service-card:hover {
+            box-shadow: 0 6px 24px rgba(0,0,0,0.06);
+            transform: translateY(-2px);
+        }
+
+        .service-title {
+            font-size: 15.5px;
+            font-weight: 700;
+            letter-spacing: -0.3px;
+            color: var(--text-h);
+        }
+
+        .service-desc {
+            font-size: 13.5px;
+            color: var(--text-body);
+            line-height: 1.65;
+            flex: 1;
+        }
+
+        .service-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-top: 14px;
+            border-top: 1px solid var(--border);
+            margin-top: 4px;
+        }
+
+        .service-price {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        .service-cta-btn {
+            font-size: 12.5px;
+            font-weight: 500;
+            color: var(--cta-color);
+            background: var(--cta-bg);
+            border: none;
+            border-radius: 6px;
+            padding: 6px 14px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: opacity 0.2s;
+        }
+
+        .service-cta-btn:hover { opacity: 0.85; }
+
+        /* ══════════════════════════════════════════
+           PAKET 3 — PORTFÖY
+        ══════════════════════════════════════════ */
+        .portfolio-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 20px;
+        }
+
+        .portfolio-card {
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+            background: var(--bg-subtle);
+            transition: box-shadow 0.3s var(--ease), transform 0.3s var(--ease);
+        }
+
+        .portfolio-card:hover {
+            box-shadow: 0 8px 32px rgba(0,0,0,0.07);
+            transform: translateY(-2px);
+        }
+
+        .portfolio-cover {
+            width: 100%;
+            height: 180px;
+            background: linear-gradient(135deg, #f0f0f0 0%, #e8e8e8 100%);
+            overflow: hidden;
+        }
+
+        .portfolio-cover img {
+            width: 100%; height: 100%;
+            object-fit: cover;
+        }
+
+        .portfolio-body {
+            padding: 20px 22px;
+        }
+
+        .portfolio-title {
+            font-size: 16px;
+            font-weight: 700;
+            letter-spacing: -0.4px;
+            color: var(--text-h);
+            margin-bottom: 14px;
+        }
+
+        .portfolio-section-row {
+            margin-bottom: 10px;
+        }
+
+        .portfolio-row-label {
+            font-size: 10.5px;
+            font-weight: 700;
+            letter-spacing: 1.2px;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-bottom: 3px;
+        }
+
+        .portfolio-row-text {
+            font-size: 13.5px;
+            color: var(--text-body);
+            line-height: 1.6;
+        }
+
+        .portfolio-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 14px;
+        }
+
+        .portfolio-tag {
+            font-size: 11.5px;
+            font-weight: 500;
+            color: var(--chip-color);
+            background: var(--chip-bg);
+            border: 1px solid var(--border);
+            border-radius: 100px;
+            padding: 3px 10px;
+        }
+
+        .portfolio-url {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 12.5px;
+            font-weight: 500;
+            color: var(--text-muted);
+            text-decoration: none;
+            margin-top: 14px;
+            transition: color 0.2s;
+        }
+
+        .portfolio-url:hover { color: var(--text-h); }
+
+        /* ══════════════════════════════════════════
+           PAKET 3 — REFERANSLAR
+        ══════════════════════════════════════════ */
+        .testimonials-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 16px;
+        }
+
+        .testimonial-card {
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 22px;
+            background: var(--bg-subtle);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .testimonial-stars {
+            display: flex;
+            gap: 2px;
+            font-size: 13px;
+        }
+
+        .testimonial-quote {
+            font-size: 14.5px;
+            color: var(--text-body);
+            line-height: 1.7;
+            flex: 1;
+            font-style: italic;
+        }
+
+        .testimonial-quote::before { content: '"'; }
+        .testimonial-quote::after  { content: '"'; }
+
+        .testimonial-client {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            padding-top: 12px;
+            border-top: 1px solid var(--border);
+        }
+
+        .testimonial-name {
+            font-size: 13.5px;
+            font-weight: 600;
+            color: var(--text-h);
+        }
+
+        .testimonial-role {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        /* ══════════════════════════════════════════
+           PAKET 3 — İLETİŞİM FORMU
+        ══════════════════════════════════════════ */
+        .contact-section {
+            padding: 72px 64px;
+            background: var(--bg-subtle);
+            border-top: 1px solid var(--border);
+            position: relative;
+            z-index: 1;
+        }
+
+        .contact-inner {
+            max-width: 600px;
+        }
+
+        .contact-form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+            margin-top: 28px;
+        }
+
+        .contact-form-grid .full { grid-column: 1 / -1; }
+
+        .cf-field {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .cf-label {
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-muted);
+            letter-spacing: 0.2px;
+        }
+
+        .cf-input, .cf-textarea, .cf-select {
+            width: 100%;
+            padding: 10px 13px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            color: var(--text-h);
+            background: var(--bg);
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .cf-input:focus, .cf-textarea:focus, .cf-select:focus {
+            border-color: var(--text-h);
+            box-shadow: 0 0 0 3px rgba(10,10,10,0.06);
+        }
+
+        .cf-textarea {
+            resize: none;
+            height: 120px;
+            line-height: 1.65;
+        }
+
+        .cf-submit {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 11px 28px;
+            background: var(--cta-bg);
+            color: var(--cta-color);
+            border: none;
+            border-radius: 8px;
+            font-size: 14.5px;
+            font-weight: 500;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.3s var(--ease);
+            margin-top: 4px;
+        }
+
+        .cf-submit:hover {
+            background: var(--cta-hover);
+            transform: translateY(-1px);
+        }
+
+        .cf-success {
+            display: none;
+            align-items: center;
+            gap: 8px;
+            margin-top: 16px;
+            padding: 12px 16px;
+            background: rgba(22,163,74,0.08);
+            border: 1px solid rgba(22,163,74,0.2);
+            border-radius: 8px;
+            font-size: 13.5px;
+            color: #16a34a;
+        }
+
+        .cf-error-msg {
+            display: none;
+            align-items: center;
+            gap: 8px;
+            margin-top: 16px;
+            padding: 12px 16px;
+            background: rgba(220,38,38,0.06);
+            border: 1px solid rgba(220,38,38,0.2);
+            border-radius: 8px;
+            font-size: 13.5px;
+            color: #dc2626;
+        }
+
+        @media (max-width: 768px) {
+            .p3-section       { padding: 52px 24px; }
+            .contact-section  { padding: 52px 24px; }
+            .service-grid     { grid-template-columns: 1fr; }
+            .portfolio-grid   { grid-template-columns: 1fr; }
+            .testimonials-grid { grid-template-columns: 1fr; }
+            .contact-form-grid { grid-template-columns: 1fr; }
+        }
+
+        /* ══════════════════════════════════════════
+           LINKS SECTION
+        ══════════════════════════════════════════ */
+        .links-section {
+            padding: 52px 64px;
+            max-width: 720px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .links-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 18px;
+        }
+
+        .link-item {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 14px 18px;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            text-decoration: none;
+            color: var(--text-h);
+            background: var(--bg-subtle);
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.25s var(--ease);
+        }
+
+        .link-item:hover {
+            border-color: var(--text-muted);
+            transform: translateX(4px);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.05);
+        }
+
+        .link-emoji {
+            font-size: 20px;
+            width: 28px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        .link-title { flex: 1; }
+
+        .link-arrow {
+            color: var(--text-muted);
+            font-size: 13px;
+            transition: transform 0.2s var(--ease);
+        }
+
+        .link-item:hover .link-arrow {
+            transform: translate(2px, -2px);
+            color: var(--text-h);
+        }
+
+        @media (max-width: 768px) {
+            .links-section { padding: 40px 24px; }
+        }
+
+        /* ══════════════════════════════════════════
+           CAREER SECTION
+        ══════════════════════════════════════════ */
+        .career-section {
+            padding: 52px 64px;
+            max-width: 720px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .career-timeline {
+            margin-top: 24px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+        }
+
+        .timeline-line {
+            position: absolute;
+            left: 7px;
+            top: 8px;
+            bottom: 8px;
+            width: 2px;
+            background: var(--border);
+            border-radius: 2px;
+        }
+
+        .timeline-item {
+            display: flex;
+            gap: 22px;
+            padding-bottom: 28px;
+            position: relative;
+        }
+
+        .timeline-item:last-child { padding-bottom: 0; }
+
+        .timeline-dot {
+            width: 16px; height: 16px;
+            border-radius: 50%;
+            border: 2px solid var(--text-muted);
+            background: var(--bg);
+            flex-shrink: 0;
+            margin-top: 3px;
+            position: relative;
+            z-index: 1;
+            transition: all 0.25s var(--ease);
+        }
+
+        .timeline-dot-active {
+            background: var(--text-h);
+            border-color: var(--text-h);
+            box-shadow: 0 0 0 4px color-mix(in srgb, var(--text-h) 12%, transparent);
+        }
+
+        .timeline-body { flex: 1; }
+
+        .timeline-role {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--text-h);
+            letter-spacing: -0.2px;
+        }
+
+        .timeline-company {
+            font-size: 13px;
+            color: var(--text-body);
+            margin-top: 2px;
+        }
+
+        .timeline-period {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 3px;
+            font-weight: 500;
+        }
+
+        .timeline-desc {
+            font-size: 13px;
+            color: var(--text-body);
+            margin-top: 7px;
+            line-height: 1.6;
+        }
+
+        @media (max-width: 768px) {
+            .career-section { padding: 40px 24px; }
+        }
+
+        /* ══════════════════════════════════════════
+           SCROLL ANIMATIONS
+        ══════════════════════════════════════════ */
+        .reveal {
+            opacity: 0;
+            transform: translateY(14px);
+            transition: opacity 0.6s var(--ease), transform 0.6s var(--ease);
+        }
+
+        .reveal.in { opacity: 1; transform: none; }
+
+        /* ══════════════════════════════════════════
+           RESPONSIVE
+        ══════════════════════════════════════════ */
+        @media (max-width: 960px) {
+            .hero {
+                grid-template-columns: 1fr;
+                gap: 40px;
+                padding: 80px 40px 60px;
+                min-height: auto;
+                padding-top: 100px;
+            }
+            .identity-panel {
+                position: static;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .hero          { padding: 90px 24px 52px; gap: 32px; }
+            .section-divider { margin: 0 24px; }
+            .about-section { padding: 60px 24px; }
+            footer         { padding: 24px; }
+            nav            { padding: 0 20px; }
+            .about-grid    { grid-template-columns: 1fr; }
+            h1             { letter-spacing: -1.5px; }
+        }
+    </style>
+</head>
+
+{% set vibe = site.vibe or 'minimal' %}
+<body class="vibe-{{ vibe }}">
+
+    <!-- ── Navbar ── -->
+    <nav>
+        <span class="nav-name">{{ owner.full_name }}</span>
+        <a href="{{ url_for('main.index') }}" class="nav-alvera">
+            <span class="nav-alvera-dot"></span>
+            alvera
+        </a>
+    </nav>
+
+    <!-- ── Hero ── -->
+    <section class="hero">
+
+        <!-- Sol: Ana içerik -->
+        <div class="hero-left">
+            {% if site.avatar_file %}
+            <div class="hero-avatar">
+                <img src="{{ site.avatar_file }}" alt="{{ owner.full_name }}">
+            </div>
+            {% endif %}
+            <div class="hero-eyebrow">
+                <span class="eyebrow-dot"></span>
+                {{ owner_data.job_title }}{% if owner_data.company %} · {{ owner_data.company }}{% endif %}
+                {% if owner.is_available %}
+                <span class="avail-badge">◉ Müsait</span>
+                {% endif %}
+            </div>
+
+            <h1>{{ site.headline }}</h1>
+
+            <p class="tagline">{{ site.tagline }}</p>
+
+            {% if site.bio_text %}
+            <p class="bio">{{ site.bio_text }}</p>
+            {% endif %}
+
+            {% if skills %}
+            <div class="skills reveal">
+                {% for skill in skills %}
+                <span class="skill-chip">{{ skill }}</span>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            {# Sosyal linkler sağ panele taşındı #}
+        </div>
+
+        <!-- Sağ: Kimlik Paneli — Unified Digital Kartvizit -->
+        <div class="identity-panel">
+            <div class="id-main-card">
+
+                {# ── Header: Avatar + İsim + Unvan ── #}
+                <div class="id-card-header">
+                    <div class="id-avatar">
+                        {{ (owner.full_name or owner.email)[0] | upper }}
+                    </div>
+                    <div class="id-header-meta">
+                        <div class="id-header-name">{{ owner.full_name or owner.email.split('@')[0] }}</div>
+                        {% if owner_data.job_title %}
+                        <div class="id-header-role">{{ owner_data.job_title }}{% if owner_data.company %} · {{ owner_data.company }}{% endif %}</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                {# ── Durum Satırı ── #}
+                {% if extras and extras.status_text %}
+                <div class="id-card-sep"></div>
+                <div class="id-status-row">
+                    <div class="id-status-pulse"></div>
+                    <div class="id-status-content">
+                        <div class="id-status-badge">Aktif</div>
+                        <div class="id-status-text">
+                            {% if extras.status_emoji %}
+                            <span class="id-status-emoji">{{ extras.status_emoji }}</span>
+                            {% endif %}
+                            {{ extras.status_text }}
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                {# ── CTA Bölümü ── #}
+                <div class="id-card-sep"></div>
+                <div class="id-cta-section">
+                    {% if extras and extras.cta_enabled and extras.cta_url %}
+                    <a href="{{ extras.cta_url }}" target="_blank" rel="noopener" class="id-cta-btn">
+                        <span>{{ extras.cta_text or 'Devam Et' }}</span>
+                        <span class="id-cta-arrow">↗</span>
+                    </a>
+                    {% else %}
+                    <a href="mailto:{{ owner.email }}" class="id-cta-btn">
+                        <span>{{ site.cta_text or 'İletişime Geçin' }}</span>
+                        <span class="id-cta-arrow">↗</span>
+                    </a>
+                    {% endif %}
+                    {# Varsa custom CTA ile birlikte e-posta ikincil link ── #}
+                    {% if extras and extras.cta_enabled and extras.cta_url %}
+                    <a href="mailto:{{ owner.email }}" class="id-cta-secondary">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><polyline points="2,4 12,13 22,4"/></svg>
+                        {{ owner.email }}
+                    </a>
+                    {% endif %}
+                </div>
+
+                {# ── Çalışma Tercihleri ── #}
+                {% if extras and (extras.work_type or extras.work_engagement or extras.work_budget) %}
+                <div class="id-card-sep"></div>
+                <div class="id-workprefs-section">
+                    <div class="id-wp-label">Çalışma Tercihleri</div>
+                    <div class="id-wp-chips">
+                        {% if extras.work_type %}
+                        {% set wt_map = {'remote': '🌍 Uzaktan', 'hybrid': '🏢 Hibrit', 'onsite': '📍 Ofis', 'esnek': '✨ Esnek'} %}
+                        <span class="id-wp-chip">{{ wt_map.get(extras.work_type, extras.work_type) }}</span>
+                        {% endif %}
+                        {% if extras.work_engagement %}
+                        {% set we_map = {'freelance': '⚡ Freelance', 'tam-zamanli': '💼 Tam Zamanlı', 'proje': '🎯 Proje Bazlı', 'danismanlik': '🔍 Danışmanlık'} %}
+                        <span class="id-wp-chip">{{ we_map.get(extras.work_engagement, extras.work_engagement) }}</span>
+                        {% endif %}
+                        {% if extras.work_budget %}
+                        <span class="id-wp-chip">💰 {{ extras.work_budget }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+
+                {# ── Sosyal İkonlar ── #}
+                {% if owner_data.linkedin or owner_data.github or owner_data.twitter or owner_data.website %}
+                <div class="id-card-sep"></div>
+                <div class="id-social-row">
+                    <span class="id-social-label">Bağlantılar</span>
+                    <div class="id-social-icons">
+                        {% if owner_data.linkedin %}
+                        <a href="{{ owner_data.linkedin }}" target="_blank" rel="noopener" class="id-social-icon" title="LinkedIn">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6zM2 9h4v12H2z"/><circle cx="4" cy="4" r="2"/></svg>
+                        </a>
+                        {% endif %}
+                        {% if owner_data.github %}
+                        <a href="{{ owner_data.github }}" target="_blank" rel="noopener" class="id-social-icon" title="GitHub">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 00-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0020 4.77 5.07 5.07 0 0019.91 1S18.73.65 16 2.48a13.38 13.38 0 00-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 005 4.77a5.44 5.44 0 00-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 009 18.13V22"/></svg>
+                        </a>
+                        {% endif %}
+                        {% if owner_data.twitter %}
+                        <a href="{{ owner_data.twitter }}" target="_blank" rel="noopener" class="id-social-icon" title="Twitter / X">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                        </a>
+                        {% endif %}
+                        {% if owner_data.website %}
+                        <a href="{{ owner_data.website }}" target="_blank" rel="noopener" class="id-social-icon" title="Website">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+
+                {# ── Footer Badge ── #}
+                <div class="id-card-sep"></div>
+                <div class="id-card-footer">
+                    <a href="/" class="id-footer-badge">
+                        <span class="id-footer-dot"></span>
+                        <span>Alvera ile oluşturuldu</span>
+                    </a>
+                </div>
+
+            </div>
+        </div>
+
+    </section>
+
+    {% if custom_links %}
+    <hr class="section-divider">
+    <section class="reveal links-section">
+        <div class="section-label">Linkler</div>
+        <div class="links-list">
+            {% for link in custom_links %}
+            <a href="{{ link.url }}" target="_blank" rel="noopener"
+               onclick="fetch('/extras/links/{{ link.id }}/click',{method:'POST'})"
+               class="link-item">
+                <span class="link-emoji">{{ link.emoji or '🔗' }}</span>
+                <span class="link-title">{{ link.title }}</span>
+                <span class="link-arrow">↗</span>
+            </a>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    {% if career_entries %}
+    <hr class="section-divider">
+    <section class="reveal career-section">
+        <div class="section-label">Kariyer</div>
+        <div class="career-timeline">
+            <div class="timeline-line"></div>
+            {% for entry in career_entries %}
+            <div class="timeline-item">
+                <div class="timeline-dot {% if entry.is_current %}timeline-dot-active{% endif %}"></div>
+                <div class="timeline-body">
+                    <div class="timeline-role">{{ entry.role }}</div>
+                    <div class="timeline-company">{{ entry.company }}</div>
+                    <div class="timeline-period">
+                        {{ entry.start_year }}{% if entry.is_current %} — Günümüz{% elif entry.end_year %} — {{ entry.end_year }}{% endif %}
+                    </div>
+                    {% if entry.description %}
+                    <div class="timeline-desc">{{ entry.description }}</div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+
+    <!-- ── About section (uzmanlık + kişisel bilgiler) ── -->
+    {% if owner_data.job_title or owner_data.company %}
+    <hr class="section-divider">
+    <section class="about-section reveal">
+        <div class="section-label">Hakkında</div>
+        <div class="about-grid">
+            {% if owner_data.job_title %}
+            <div class="about-card">
+                <div class="about-card-label">Unvan</div>
+                <div class="about-card-value">{{ owner_data.job_title }}</div>
+            </div>
+            {% endif %}
+            {% if owner_data.company %}
+            <div class="about-card">
+                <div class="about-card-label">Kurum</div>
+                <div class="about-card-value">{{ owner_data.company }}</div>
+            </div>
+            {% endif %}
+        </div>
+    </section>
+    {% endif %}
+
+    <!-- ── Alvera Social Gönderileri (tüm paketler) ── -->
+    {% if posts %}
+    {% set type_labels = {
+        'text':    ('💬', 'Not',       'badge-text'),
+        'project': ('🚀', 'Proje',     'badge-project'),
+        'link':    ('🔗', 'Link',      'badge-link'),
+        'collab':  ('🤝', 'İşbirliği', 'badge-collab'),
+    } %}
+    {# ══ Zihin Haritası Section ══ #}
+    {% if mind_map and mind_map.map_data %}
+    <hr class="section-divider">
+    <section class="reveal" style="padding: 48px 0 0;">
+        {% set target = owner %}
+        {% set is_own = (viewer and viewer.id == owner.id) %}
+        {% include '_mindmap_widget.html' %}
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+    </section>
+    {% endif %}
+
+    <hr class="section-divider">
+    <section class="posts-feed-section reveal">
+        <div class="posts-feed-header">
+            <div class="section-label">Gönderiler</div>
+            {% if viewer %}
+            <a href="{{ url_for('feed.index') }}" class="feed-link">
+                Alvera Social'da gör ↗
+            </a>
+            {% endif %}
+        </div>
+
+        {% for post in posts %}
+        {% set type_info = type_labels.get(post.post_type, ('💬', 'Not', 'badge-text')) %}
+        <article class="post-card"
+                 id="profile-post-{{ post.id }}"
+                 itemscope itemtype="https://schema.org/SocialMediaPosting">
+            <meta itemprop="datePublished" content="{{ post.created_at.isoformat() }}">
+            <meta itemprop="author" content="{{ owner.full_name }}">
+
+            {# ── Başlık satırı: tip rozeti + tarih ── #}
+            <div class="post-header">
+                <div class="post-header-left">
+                    <span class="post-type-badge {{ type_info[2] }}">
+                        {{ type_info[0] }} {{ type_info[1] }}
+                    </span>
+                    {% if post.is_pinned %}
+                    <span class="pin-indicator" title="Sabitlenmiş">📌</span>
+                    {% endif %}
+                </div>
+                <div class="post-header-right">
+                    <time class="post-date" datetime="{{ post.created_at.isoformat() }}">
+                        {{ post.created_at.strftime('%d %b %Y') }}
+                    </time>
+                </div>
+            </div>
+
+            {# ── İçerik ── #}
+            <p class="post-content" itemprop="text">{{ post.content }}</p>
+
+            {# ── Link önizleme ── #}
+            {% if post.post_type == 'link' and post.link_url %}
+            <a href="{{ post.link_url }}" target="_blank" rel="noopener" class="post-link-card">
+                <div class="post-link-bar"></div>
+                <div class="post-link-body">
+                    <div class="post-link-title">{{ post.link_title or post.link_url }}</div>
+                    <div class="post-link-url">{{ post.link_url }}</div>
+                </div>
+            </a>
+            {% endif %}
+
+            {# ── Medya (Paket 2 yüklemeleri) ── #}
+            {% if post.media_list %}
+            <div class="post-media {% if post.media_list|length == 1 %}single{% else %}multi{% endif %}">
+                {% for media in post.media_list %}
+                    {% if media.type == 'image' %}
+                    <div class="media-item">
+                        <img src="/uploads/{{ owner.id }}/{{ media.filename }}"
+                             alt="{{ media.original_name }}"
+                             loading="lazy"
+                             onclick="openMedia(this.src)"
+                             itemprop="image">
+                    </div>
+                    {% elif media.type == 'video' %}
+                    <div class="media-item media-video">
+                        <video controls preload="metadata" playsinline>
+                            <source src="/uploads/{{ owner.id }}/{{ media.filename }}">
+                        </video>
+                    </div>
+                    {% else %}
+                    <a class="media-doc"
+                       href="/uploads/{{ owner.id }}/{{ media.filename }}"
+                       target="_blank" rel="noopener">
+                        <span class="doc-icon">📄</span>
+                        <span class="doc-name">{{ media.original_name }}</span>
+                        <span class="doc-arrow">↗</span>
+                    </a>
+                    {% endif %}
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            {# ── İstatistik / onay & yankı satırı ── #}
+            <div class="post-stats">
+                {% if viewer and not is_owner %}
+                {# Giriş yapmış, başka birinin profili → interaktif onay ── #}
+                <button class="stat-btn like-btn {% if post.is_liked_by(viewer) %}liked{% endif %}"
+                        onclick="profileToggleLike(this, '{{ post.slug }}')"
+                        title="Onayla">
+                    <span class="like-icon">✓</span>
+                    <span class="like-count">{{ post.like_count }}</span>
+                    <span style="font-size:11px;opacity:0.7;">Onay</span>
+                </button>
+                {% else %}
+                {# Giriş yok veya kendi profili → sadece sayı ── #}
+                <span class="stat-item">
+                    <span>✓</span>
+                    <span>{{ post.like_count }}</span>
+                    <span style="font-size:11px;opacity:0.7;">Onay</span>
+                </span>
+                {% endif %}
+
+                {% if post.yanka_count > 0 %}
+                <span class="stat-item" title="Yankı sayısı">
+                    <span>⚡</span>
+                    <span>{{ post.yanka_count }}</span>
+                    <span style="font-size:11px;opacity:0.7;">Yankı</span>
+                </span>
+                {% endif %}
+
+                <span class="stat-item">
+                    <span>💬</span>
+                    <span>{{ post.comment_count }}</span>
+                </span>
+            </div>
+        </article>
+        {% endfor %}
+    </section>
+    {% endif %}
+
+    {# ════════════════════════════════════════
+       PAKET 3 — Hizmetler, Portföy, Referanslar, İletişim
+    ════════════════════════════════════════ #}
+    {% if owner.package == '3' %}
+
+    {# ── Hizmetler ── #}
+    {% if p3_services %}
+    <hr class="section-divider">
+    <section class="p3-section reveal" id="hizmetler">
+        <div class="section-label">Hizmetler</div>
+        <h2 class="p3-section-title">Neler sunuyorum?</h2>
+        <div class="service-grid">
+            {% for svc in p3_services %}
+            <div class="service-card">
+                <div class="service-title">{{ svc.title }}</div>
+                {% if svc.description %}
+                <div class="service-desc">{{ svc.description }}</div>
+                {% endif %}
+                <div class="service-footer">
+                    <span class="service-price">{{ svc.price_range or '' }}</span>
+                    <a href="#iletisim"
+                       class="service-cta-btn"
+                       onclick="prefillService('{{ svc.id }}', '{{ svc.title }}')">
+                        {{ svc.cta_label or 'İletişime Geç' }}
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    {# ── Portföy ── #}
+    {% if p3_portfolio %}
+    <hr class="section-divider">
+    <section class="p3-section reveal" id="portfolyo">
+        <div class="section-label">Portföy</div>
+        <h2 class="p3-section-title">Seçili projeler.</h2>
+        <div class="portfolio-grid">
+            {% for item in p3_portfolio %}
+            <div class="portfolio-card">
+                {% if item.cover_file %}
+                <div class="portfolio-cover">
+                    <img src="/uploads/{{ owner.id }}/{{ item.cover_file }}"
+                         alt="{{ item.title }}" loading="lazy">
+                </div>
+                {% endif %}
+                <div class="portfolio-body">
+                    <div class="portfolio-title">{{ item.title }}</div>
+                    {% if item.problem %}
+                    <div class="portfolio-section-row">
+                        <div class="portfolio-row-label">Problem</div>
+                        <div class="portfolio-row-text">{{ item.problem }}</div>
+                    </div>
+                    {% endif %}
+                    {% if item.solution %}
+                    <div class="portfolio-section-row">
+                        <div class="portfolio-row-label">Yaklaşım</div>
+                        <div class="portfolio-row-text">{{ item.solution }}</div>
+                    </div>
+                    {% endif %}
+                    {% if item.result %}
+                    <div class="portfolio-section-row">
+                        <div class="portfolio-row-label">Sonuç</div>
+                        <div class="portfolio-row-text">{{ item.result }}</div>
+                    </div>
+                    {% endif %}
+                    {% if item.tags_list %}
+                    <div class="portfolio-tags">
+                        {% for tag in item.tags_list %}
+                        <span class="portfolio-tag">{{ tag }}</span>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    {% if item.url %}
+                    <a href="{{ item.url }}" target="_blank" rel="noopener" class="portfolio-url">
+                        Projeyi Gör ↗
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    {# ── Referanslar ── #}
+    {% if p3_testimonials %}
+    <hr class="section-divider">
+    <section class="p3-section reveal" id="referanslar">
+        <div class="section-label">Referanslar</div>
+        <h2 class="p3-section-title">Müşterilerim ne diyor?</h2>
+        <div class="testimonials-grid">
+            {% for t in p3_testimonials %}
+            <div class="testimonial-card">
+                <div class="testimonial-stars">
+                    {% for i in range(t.rating) %}⭐{% endfor %}
+                </div>
+                <div class="testimonial-quote">{{ t.quote }}</div>
+                <div class="testimonial-client">
+                    <div class="testimonial-name">{{ t.client_name }}</div>
+                    {% if t.client_role %}
+                    <div class="testimonial-role">{{ t.client_role }}</div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    {# ── İletişim Formu ── #}
+    <section class="contact-section reveal" id="iletisim">
+        <div class="contact-inner">
+            <div class="section-label">İletişim</div>
+            <h2 class="p3-section-title">Projenizi konuşalım.</h2>
+
+            <form class="contact-form-grid" id="contactForm" onsubmit="submitContact(event)">
+                {% if p3_services %}
+                <div class="cf-field full">
+                    <label class="cf-label">Hangi hizmet için yazıyorsunuz?</label>
+                    <select class="cf-select" id="cfService" name="service_id">
+                        <option value="">— Hizmet seçin (opsiyonel) —</option>
+                        {% for svc in p3_services %}
+                        <option value="{{ svc.id }}">{{ svc.title }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                {% endif %}
+                <div class="cf-field">
+                    <label class="cf-label">Adınız *</label>
+                    <input class="cf-input" type="text" id="cfName" placeholder="Adınız Soyadınız" required maxlength="120">
+                </div>
+                <div class="cf-field">
+                    <label class="cf-label">E-posta *</label>
+                    <input class="cf-input" type="email" id="cfEmail" placeholder="siz@email.com" required maxlength="255">
+                </div>
+                <div class="cf-field full">
+                    <label class="cf-label">Konu</label>
+                    <input class="cf-input" type="text" id="cfSubject" placeholder="Konu başlığı" maxlength="200">
+                </div>
+                <div class="cf-field full">
+                    <label class="cf-label">Mesajınız *</label>
+                    <textarea class="cf-textarea" id="cfMessage" placeholder="Projenizi veya sorunuzu yazın..." required></textarea>
+                </div>
+                <div class="full">
+                    <button type="submit" class="cf-submit" id="cfSubmitBtn">
+                        <span id="cfBtnLabel">Gönder →</span>
+                    </button>
+                    <div class="cf-success" id="cfSuccess">
+                        ✓ Mesajınız iletildi. En kısa sürede dönüş yapacağım.
+                    </div>
+                    <div class="cf-error-msg" id="cfErrorMsg"></div>
+                </div>
+            </form>
+        </div>
+    </section>
+
+    {% endif %}{# /owner.package == '3' #}
+
+    <!-- ── Footer ── -->
+    <footer>
+        <span class="footer-left">© {{ owner.full_name }}</span>
+        <a href="{{ url_for('main.index') }}" class="footer-alvera">
+            Powered by <span class="footer-alvera-name">alvera</span>
+        </a>
+    </footer>
+
+    <script>
+        const observer = new IntersectionObserver(entries => {
+            entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('in'); });
+        }, { threshold: 0.1 });
+
+        document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+        function openMedia(src) {
+            const lb = document.createElement('div');
+            lb.className = 'lightbox';
+            lb.onclick = () => lb.remove();
+            lb.innerHTML = `<img src="${src}" alt="">`;
+            document.body.appendChild(lb);
+        }
+
+        // ── Profil Sayfası: Onay Toggle ─────────────────────────────────────
+        async function profileToggleLike(btn, postId) {
+            try {
+                const res  = await fetch(`/feed/post/${postId}/like`, {
+                    method:  'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                });
+                const data = await res.json();
+                if (!data.ok) return;
+
+                const count = btn.querySelector('.like-count');
+
+                if (data.liked) {
+                    btn.classList.add('liked');
+                } else {
+                    btn.classList.remove('liked');
+                }
+                if (count) count.textContent = data.like_count;
+
+                // Kısa pulse animasyonu
+                btn.style.transform = 'scale(1.25)';
+                setTimeout(() => btn.style.transform = '', 200);
+            } catch (e) {
+                console.error('Beğeni hatası:', e);
+            }
+        }
+
+        // ── Paket 3: Hizmet kartından iletişim formunu doldur ───────────────
+        function prefillService(serviceId, serviceTitle) {
+            const sel = document.getElementById('cfService');
+            if (sel) {
+                for (let opt of sel.options) {
+                    if (opt.value === String(serviceId)) {
+                        opt.selected = true;
+                        break;
+                    }
+                }
+            }
+            const subj = document.getElementById('cfSubject');
+            if (subj && !subj.value) {
+                subj.value = serviceTitle + ' hakkında bilgi almak istiyorum';
+            }
+        }
+
+        // ── Paket 3: İletişim formu gönder ──────────────────────────────────
+        async function submitContact(e) {
+            e.preventDefault();
+            const btn      = document.getElementById('cfSubmitBtn');
+            const label    = document.getElementById('cfBtnLabel');
+            const success  = document.getElementById('cfSuccess');
+            const errDiv   = document.getElementById('cfErrorMsg');
+
+            success.style.display  = 'none';
+            errDiv.style.display   = 'none';
+            label.textContent      = 'Gönderiliyor…';
+            btn.disabled           = true;
+
+            const body = {
+                name:       document.getElementById('cfName').value.trim(),
+                email:      document.getElementById('cfEmail').value.trim(),
+                subject:    document.getElementById('cfSubject')?.value.trim() || '',
+                message:    document.getElementById('cfMessage').value.trim(),
+                service_id: document.getElementById('cfService')?.value || null,
+            };
+
+            try {
+                const res  = await fetch('/contact/{{ site.slug }}', {
+                    method:  'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body:    JSON.stringify(body),
+                });
+                const data = await res.json();
+                if (data.ok) {
+                    success.style.display = 'flex';
+                    document.getElementById('contactForm').reset();
+                } else {
+                    errDiv.textContent     = data.error || 'Bir hata oluştu. Lütfen tekrar deneyin.';
+                    errDiv.style.display   = 'flex';
+                }
+            } catch {
+                errDiv.textContent   = 'Bağlantı hatası. Lütfen tekrar deneyin.';
+                errDiv.style.display = 'flex';
+            } finally {
+                label.textContent = 'Gönder →';
+                btn.disabled      = false;
+            }
+        }
+    </script>
+
+</body>
+</html>

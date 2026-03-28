@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ target.full_name }} — Zihin Haritası · Alvera</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg:         #FFFFFF;
+            --bg-subtle:  #F7F7F7;
+            --border:     #E8E8E8;
+            --text-h:     #0A0A0A;
+            --text-body:  #404040;
+            --text-muted: #9A9A9A;
+            --accent:     #0A0A0A;
+            --accent-fg:  #FFFFFF;
+            --ease:       cubic-bezier(0.4, 0, 0.2, 1);
+
+            /* Kategori renkleri — sadece ince nokta göstergesi için */
+            --c-identity:  #0A0A0A;
+            --c-expertise: #7C3AED;
+            --c-value:     #2563EB;
+            --c-goal:      #16A34A;
+            --c-interest:  #D97706;
+        }
+
+        html, body {
+            min-height: 100%;
+            background: var(--bg-subtle);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            color: var(--text-body);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ════ NAV ════ */
+        .topnav {
+            position: sticky; top: 0; z-index: 200;
+            height: 54px;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 28px;
+            background: rgba(255,255,255,0.96);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--border);
+        }
+        .nav-left  { display: flex; align-items: center; gap: 18px; }
+        .nav-brand { display: flex; align-items: center; gap: 6px; text-decoration: none; }
+        .nav-brand-word { font-size: 14px; font-weight: 650; letter-spacing: -0.3px; color: var(--text-h); }
+        .nav-back {
+            display: flex; align-items: center; gap: 6px;
+            font-size: 13px; font-weight: 500; color: var(--text-muted);
+            text-decoration: none; padding: 5px 10px; border-radius: 8px;
+            transition: all 0.16s var(--ease);
+        }
+        .nav-back:hover { color: var(--text-h); background: #F0F0F0; }
+        .nav-right { display: flex; align-items: center; gap: 8px; }
+        .nav-avatar {
+            width: 28px; height: 28px; border-radius: 50%;
+            background: var(--accent); color: var(--accent-fg);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 11px; font-weight: 700; text-decoration: none;
+        }
+
+        /* ════ PAGE LAYOUT ════ */
+        .mm-page {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 32px 24px 80px;
+        }
+
+        /* ════ HEADER ════ */
+        .mm-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+        .mm-pretitle {
+            font-size: 11px; font-weight: 600; letter-spacing: 1px;
+            text-transform: uppercase; color: var(--text-muted);
+            margin-bottom: 6px;
+        }
+        .mm-title {
+            font-size: 22px; font-weight: 700; letter-spacing: -0.5px;
+            color: var(--text-h); line-height: 1.2;
+        }
+        .mm-subtitle {
+            font-size: 13px; color: var(--text-muted);
+            margin-top: 5px; line-height: 1.5;
+        }
+        .mm-header-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+
+        /* Butonlar */
+        .btn {
+            display: inline-flex; align-items: center; gap: 6px;
+            font-size: 13px; font-weight: 500; font-family: inherit;
+            padding: 8px 16px; border-radius: 9px;
+            border: 1px solid var(--border);
+            cursor: pointer; transition: all 0.15s var(--ease);
+            text-decoration: none;
+        }
+        .btn-primary  { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); }
+        .btn-primary:hover  { opacity: 0.85; }
+        .btn-secondary { background: var(--bg); color: var(--text-body); }
+        .btn-secondary:hover { background: #F3F3F3; }
+        .btn:disabled { opacity: 0.5; pointer-events: none; }
+
+        /* ════ CANVAS ════ */
+        .mm-canvas-wrap {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            overflow: hidden;
+            position: relative;
+            height: 560px;
+            /* ince noktalı grid — tema bağımsız */
+            background-image: radial-gradient(circle, #E8E8E8 1px, transparent 1px);
+            background-size: 28px 28px;
+        }
+        /* canvas'ın üstüne beyaz overlay — grid çok baskın olmasın */
+        .mm-canvas-wrap::before {
+            content: '';
+            position: absolute; inset: 0;
+            background: rgba(255,255,255,0.55);
+            pointer-events: none; z-index: 0;
+        }
+        #mm-svg {
+            width: 100%; height: 100%;
+            display: block;
+            position: relative; z-index: 1;
+        }
+
+        /* ════ BOŞ DURUM ════ */
+        .mm-empty {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            gap: 12px;
+            padding: 40px;
+            text-align: center;
+            position: relative; z-index: 2;
+        }
+        .mm-empty-icon {
+            width: 52px; height: 52px;
+            background: #F5F5F5;
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 24px;
+        }
+        .mm-empty-title { font-size: 14px; font-weight: 600; color: var(--text-h); }
+        .mm-empty-sub   { font-size: 13px; color: var(--text-muted); line-height: 1.5; max-width: 280px; }
+
+        /* ════ YÜKLENİYOR ════ */
+        .mm-loading {
+            display: none; flex-direction: column;
+            align-items: center; justify-content: center;
+            height: 100%; gap: 14px;
+            position: absolute; inset: 0; z-index: 3;
+            background: rgba(255,255,255,0.8);
+            backdrop-filter: blur(4px);
+        }
+        .mm-loading.active { display: flex; }
+        .mm-spinner {
+            width: 24px; height: 24px;
+            border: 2px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .mm-loading-text { font-size: 13px; color: var(--text-muted); }
+
+        /* ════ ZOOM KONTROLLERI ════ */
+        .mm-controls {
+            position: absolute; bottom: 14px; right: 14px;
+            display: flex; gap: 3px; z-index: 10;
+        }
+        .mm-ctrl-btn {
+            width: 30px; height: 30px;
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(8px);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; font-size: 15px; color: var(--text-muted);
+            transition: all 0.14s var(--ease);
+        }
+        .mm-ctrl-btn:hover { color: var(--text-h); border-color: #C0C0C0; }
+
+        /* ════ VERSİYON META ════ */
+        .mm-meta {
+            position: absolute; bottom: 14px; left: 14px;
+            font-size: 10.5px; color: var(--text-muted);
+            background: rgba(255,255,255,0.9);
+            border: 1px solid var(--border);
+            border-radius: 6px; padding: 3px 8px;
+            z-index: 10;
+        }
+
+        /* ════ LEJANT + İSTATİSTİKLER ════ */
+        .mm-bottom {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 16px;
+            margin-top: 16px;
+            flex-wrap: wrap;
+        }
+        .mm-legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            align-items: center;
+        }
+        .mm-legend-label {
+            font-size: 11px; color: var(--text-muted);
+            margin-right: 4px; font-weight: 500;
+        }
+        .mm-legend-item {
+            display: flex; align-items: center; gap: 5px;
+            font-size: 11.5px; color: var(--text-body);
+            padding: 4px 10px;
+            border: 1px solid var(--border);
+            border-radius: 100px;
+            background: var(--bg);
+        }
+        .mm-legend-dot {
+            width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0;
+        }
+
+        /* İstatistik çipleri */
+        .mm-stats {
+            display: flex; gap: 8px; flex-wrap: wrap;
+        }
+        .mm-stat-chip {
+            display: flex; align-items: baseline; gap: 5px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 8px 14px;
+        }
+        .mm-stat-num   { font-size: 17px; font-weight: 700; color: var(--text-h); letter-spacing: -0.4px; }
+        .mm-stat-label { font-size: 11.5px; color: var(--text-muted); }
+
+        /* ════ TOOLTIP ════ */
+        #mm-tooltip {
+            position: fixed; pointer-events: none; z-index: 9999;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 11px 14px;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.05);
+            max-width: 210px;
+            opacity: 0; transition: opacity 0.12s var(--ease);
+        }
+        #mm-tooltip.visible { opacity: 1; }
+        .tt-label {
+            font-size: 12.5px; font-weight: 600; color: var(--text-h); margin-bottom: 4px;
+        }
+        .tt-category {
+            display: flex; align-items: center; gap: 5px;
+            font-size: 10px; font-weight: 600; letter-spacing: 0.7px;
+            text-transform: uppercase; color: var(--text-muted); margin-bottom: 7px;
+        }
+        .tt-cat-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+        .tt-desc { font-size: 11.5px; color: var(--text-muted); line-height: 1.55; }
+
+        /* ════ AURA BUTTON ════ */
+        .btn-aura {
+            background: linear-gradient(135deg, #0A0A0A 0%, #2a2a2a 100%);
+            color: #fff;
+            border-color: transparent;
+            position: relative;
+            overflow: hidden;
+        }
+        .btn-aura::before {
+            content: '';
+            position: absolute; inset: 0;
+            background: linear-gradient(135deg, rgba(124,58,237,0.25) 0%, rgba(37,99,235,0.2) 100%);
+            opacity: 0;
+            transition: opacity 0.25s var(--ease);
+        }
+        .btn-aura:hover::before { opacity: 1; }
+        .btn-aura:hover { opacity: 1; transform: translateY(-1px); box-shadow: 0 4px 14px rgba(0,0,0,0.18); }
+        .btn-aura .aura-icon {
+            font-size: 14px;
+            animation: auraPulse 2.2s ease-in-out infinite;
+        }
+        @keyframes auraPulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50%       { transform: scale(1.18); opacity: 0.85; }
+        }
+
+        /* ════ TOAST ════ */
+        #mm-toast {
+            position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%);
+            background: var(--text-h); color: #fff;
+            font-size: 13px; font-weight: 500;
+            padding: 10px 18px; border-radius: 10px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+            opacity: 0; transition: opacity 0.2s var(--ease);
+            pointer-events: none; white-space: nowrap; z-index: 10000;
+        }
+        #mm-toast.show { opacity: 1; }
+
+        /* ════ D3 NODE STİLLERİ ════ */
+        .node-card {
+            cursor: grab;
+            transition: filter 0.15s;
+        }
+        .node-card:active { cursor: grabbing; }
+        .node-card:hover .node-rect { filter: drop-shadow(0 3px 8px rgba(0,0,0,0.12)); }
+
+        .node-rect {
+            rx: 8px;
+            transition: filter 0.15s;
+        }
+        .node-text {
+            font-family: 'Inter', -apple-system, sans-serif;
+            pointer-events: none;
+            dominant-baseline: middle;
+            text-anchor: middle;
+        }
+        .node-cat-dot {
+            pointer-events: none;
+        }
+        .link-line {
+            stroke: #DCDCDC;
+            stroke-linecap: round;
+            fill: none;
+        }
+    </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="topnav">
+    <div class="nav-left">
+        <a href="{{ url_for('main.index') }}" class="nav-brand">
+            <span class="nav-brand-word">alvera</span>
+        </a>
+        <a href="{{ url_for('feed.social_profile', user_id=target.id) }}" class="nav-back">
+            ← {{ target.full_name }}
+        </a>
+    </div>
+    <div class="nav-right">
+        {% if current_user.is_authenticated %}
+        <a href="{{ url_for('feed.index') }}" class="nav-back">Social</a>
+        <a href="{{ url_for('site.dashboard') }}" class="nav-avatar">
+            {{ current_user.full_name[0].upper() if current_user.full_name else '?' }}
+        </a>
+        {% endif %}
+    </div>
+</nav>
+
+<!-- SAYFA -->
+<div class="mm-page">
+
+    <!-- Başlık -->
+    <div class="mm-header">
+        <div>
+            <p class="mm-pretitle">Zihin Haritası</p>
+            <h1 class="mm-title">{{ target.full_name }}</h1>
+            <p class="mm-subtitle">
+                {% if mind_map and mind_map.generated_at %}
+                    Dijital kimliğinin {{ mind_map.version }}. haritası
+                    · Son güncelleme: {{ mind_map.generated_at.strftime('%d %b %Y') }}
+                {% else %}
+                    Henüz harita oluşturulmamış.
+                {% endif %}
+            </p>
+        </div>
+        <div class="mm-header-right">
+            {% if is_own %}
+            <button class="btn btn-secondary" id="generateBtn" onclick="generateMap()">
+                <span id="generateBtnIcon">✦</span>
+                <span id="generateBtnText">
+                    {{ 'Yeniden Üret' if mind_map else 'Haritamı Oluştur' }}
+                </span>
+            </button>
+            {% endif %}
+            {% if show_aura_btn %}
+            <button class="btn btn-aura" id="auraBtn" onclick="openAura()">
+                <span class="aura-icon">✦</span>
+                Aura
+            </button>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Canvas -->
+    <div class="mm-canvas-wrap">
+        <!-- Yükleniyor -->
+        <div class="mm-loading" id="mmLoading">
+            <div class="mm-spinner"></div>
+            <p class="mm-loading-text">AI zihin haritanı analiz ediyor…</p>
+        </div>
+
+        <!-- Boş durum -->
+        {% if not mind_map or not mind_map.map_data %}
+        <div class="mm-empty" id="mmEmpty">
+            <div class="mm-empty-icon">🧠</div>
+            <p class="mm-empty-title">Zihin haritanız henüz hazır değil</p>
+            <p class="mm-empty-sub">
+                {% if is_own %}
+                    "Haritamı Oluştur" butonuna tıklayarak AI'nın seni nasıl gördüğünü keşfet.
+                {% else %}
+                    {{ target.full_name }} henüz zihin haritasını oluşturmamış.
+                {% endif %}
+            </p>
+        </div>
+        {% endif %}
+
+        <!-- D3 SVG -->
+        <svg id="mm-svg" {% if not mind_map or not mind_map.map_data %}style="display:none"{% endif %}></svg>
+
+        <!-- Zoom kontrolleri -->
+        <div class="mm-controls" id="mmControls" {% if not mind_map or not mind_map.map_data %}style="display:none"{% endif %}>
+            <button class="mm-ctrl-btn" onclick="zoomIn()"    title="Yaklaştır">+</button>
+            <button class="mm-ctrl-btn" onclick="zoomOut()"   title="Uzaklaştır">−</button>
+            <button class="mm-ctrl-btn" onclick="resetZoom()" title="Sıfırla">⊙</button>
+        </div>
+
+        {% if mind_map and mind_map.map_data %}
+        <div class="mm-meta" id="mmMeta">v{{ mind_map.version }}</div>
+        {% else %}
+        <div class="mm-meta" id="mmMeta" style="display:none"></div>
+        {% endif %}
+    </div>
+
+    <!-- Alt: Lejant + İstatistikler -->
+    <div class="mm-bottom"
+         id="mmBottom"
+         {% if not mind_map or not mind_map.map_data %}style="display:none"{% endif %}>
+
+        <div class="mm-legend">
+            <span class="mm-legend-label">Kategori:</span>
+            <div class="mm-legend-item"><div class="mm-legend-dot" style="background:var(--c-identity)"></div>Kimlik</div>
+            <div class="mm-legend-item"><div class="mm-legend-dot" style="background:var(--c-expertise)"></div>Uzmanlık</div>
+            <div class="mm-legend-item"><div class="mm-legend-dot" style="background:var(--c-value)"></div>Değer</div>
+            <div class="mm-legend-item"><div class="mm-legend-dot" style="background:var(--c-goal)"></div>Hedef</div>
+            <div class="mm-legend-item"><div class="mm-legend-dot" style="background:var(--c-interest)"></div>İlgi Alanı</div>
+        </div>
+
+        <div class="mm-stats">
+            <div class="mm-stat-chip">
+                <span class="mm-stat-num" id="statNodes">—</span>
+                <span class="mm-stat-label">Düğüm</span>
+            </div>
+            <div class="mm-stat-chip">
+                <span class="mm-stat-num" id="statEdges">—</span>
+                <span class="mm-stat-label">Bağlantı</span>
+            </div>
+            <div class="mm-stat-chip">
+                <span class="mm-stat-num" id="statCentral">—</span>
+                <span class="mm-stat-label">Merkez</span>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+{% if show_aura_btn %}
+{% include '_aura_overlay.html' %}
+{% endif %}
+
+<!-- Tooltip -->
+<div id="mm-tooltip">
+    <div class="tt-label"    id="ttLabel"></div>
+    <div class="tt-category" id="ttCategory"></div>
+    <div class="tt-desc"     id="ttDesc"></div>
+</div>
+
+<!-- Toast -->
+<div id="mm-toast"></div>
+
+<!-- D3.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+
+<script>
+/* ═══════════════════════════════════════════════════════
+   Alvera Zihin Haritası — Pill Node Design
+   Dolu renkli daireler → beyaz kart node + küçük kategori noktası
+═══════════════════════════════════════════════════════ */
+
+const CAT_COLORS = {
+    identity:  '#0A0A0A',
+    expertise: '#7C3AED',
+    value:     '#2563EB',
+    goal:      '#16A34A',
+    interest:  '#D97706',
+};
+
+const CAT_LABELS_TR = {
+    identity:  'Kimlik',
+    expertise: 'Uzmanlık',
+    value:     'Değer',
+    goal:      'Hedef',
+    interest:  'İlgi Alanı',
+};
+
+// ── Node boyut hesaplama ──────────────────────────────────────────────────
+const CHAR_W  = 6.8;   // approximate px/char for Inter 11px
+const H_PAD   = 14;    // yatay iç boşluk
+const NODE_H  = 30;    // normal node yüksekliği
+const CENT_H  = 36;    // merkez node yüksekliği
+
+function nodeWidth(label, isCentral) {
+    const base = label.length * CHAR_W + H_PAD * 2;
+    return Math.max(isCentral ? 90 : 70, base);
+}
+
+// ── Mevcut veri (Flask'tan) ────────────────────────────────────────────────
+let MAP_DATA = {{ (mind_map.data | tojson) if (mind_map and mind_map.map_data) else 'null' }};
+let simulation   = null;
+let zoomBehavior = null;
+let svgZoomG     = null;
+
+// ── Toast ──────────────────────────────────────────────────────────────────
+function showToast(msg) {
+    const el = document.getElementById('mm-toast');
+    el.textContent = msg;
+    el.classList.add('show');
+    setTimeout(() => el.classList.remove('show'), 2600);
+}
+
+// ── Harita Üretme ─────────────────────────────────────────────────────────
+async function generateMap() {
+    const btn  = document.getElementById('generateBtn');
+    const icon = document.getElementById('generateBtnIcon');
+    const txt  = document.getElementById('generateBtnText');
+
+    btn.disabled     = true;
+    icon.textContent = '⟳';
+    txt.textContent  = 'Analiz ediliyor…';
+
+    const hide = id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; };
+    const show = id => { const el = document.getElementById(id); if (el) el.style.display = '';    };
+
+    hide('mmEmpty');
+    hide('mm-svg');
+    hide('mmControls');
+    hide('mmMeta');
+    hide('mmBottom');
+    document.getElementById('mmLoading').classList.add('active');
+
+    try {
+        const res  = await fetch('{{ url_for("mindmap.generate") }}', { method: 'POST' });
+        const json = await res.json();
+        if (!json.ok) throw new Error(json.error || 'Bilinmeyen hata');
+
+        MAP_DATA = json.data;
+
+        document.getElementById('mmLoading').classList.remove('active');
+        document.getElementById('mmMeta').textContent = `v${json.version}`;
+
+        show('mm-svg'); show('mmControls'); show('mmMeta'); show('mmBottom');
+        renderGraph(MAP_DATA);
+
+        txt.textContent = 'Yeniden Üret';
+        showToast('✦ Zihin haritanız güncellendi');
+
+    } catch (err) {
+        document.getElementById('mmLoading').classList.remove('active');
+        if (MAP_DATA) show('mm-svg'); else show('mmEmpty');
+        showToast('⚠ ' + err.message);
+    } finally {
+        btn.disabled     = false;
+        icon.textContent = '✦';
+    }
+}
+
+// ── D3 Graph Render ───────────────────────────────────────────────────────
+function renderGraph(data) {
+    if (!data || !data.nodes || !data.edges) return;
+
+    const svg = d3.select('#mm-svg');
+    svg.selectAll('*').remove();
+
+    const W = document.getElementById('mm-svg').clientWidth  || 900;
+    const H = document.getElementById('mm-svg').clientHeight || 560;
+
+    // İstatistikler
+    const central = data.nodes.find(n => n.id === data.central_node);
+    document.getElementById('statNodes').textContent   = data.nodes.length;
+    document.getElementById('statEdges').textContent   = data.edges.length;
+    document.getElementById('statCentral').textContent = central ? central.label : '—';
+
+    // Filtre — node gölgesi
+    const defs = svg.append('defs');
+    const filt = defs.append('filter')
+        .attr('id', 'node-shadow')
+        .attr('x', '-20%').attr('y', '-50%')
+        .attr('width', '140%').attr('height', '200%');
+    filt.append('feDropShadow')
+        .attr('dx', 0).attr('dy', 1)
+        .attr('stdDeviation', 2)
+        .attr('flood-color', '#0A0A0A')
+        .attr('flood-opacity', 0.07);
+
+    // Zoom
+    zoomBehavior = d3.zoom()
+        .scaleExtent([0.3, 3])
+        .on('zoom', e => svgZoomG.attr('transform', e.transform));
+    svg.call(zoomBehavior);
+
+    svgZoomG = svg.append('g').attr('class', 'zoom-g');
+
+    // Weight'e göre font boyutu (11–13)
+    const fontScale = d3.scaleLinear().domain([1, 10]).range([10.5, 13]);
+
+    // Simülasyon
+    simulation = d3.forceSimulation(data.nodes)
+        .force('link', d3.forceLink(data.edges)
+            .id(d => d.id)
+            .distance(d => 140 - (d.strength || 0.5) * 50)
+            .strength(d => (d.strength || 0.5) * 0.5)
+        )
+        .force('charge', d3.forceManyBody().strength(-380))
+        .force('center', d3.forceCenter(W / 2, H / 2))
+        .force('collision', d3.forceCollide(d => {
+            const isCentral = d.id === data.central_node;
+            return nodeWidth(d.label, isCentral) / 2 + 14;
+        }));
+
+    // Kenarlar
+    const linkLayer = svgZoomG.append('g').attr('class', 'link-layer');
+    const linkLine  = linkLayer.selectAll('.link-line')
+        .data(data.edges)
+        .enter().append('line')
+        .attr('class', 'link-line')
+        .attr('stroke-width', d => Math.max(1, (d.strength || 0.5) * 1.8))
+        .attr('opacity', d => 0.25 + (d.strength || 0.5) * 0.35);
+
+    // Düğümler
+    const nodeLayer = svgZoomG.append('g').attr('class', 'node-layer');
+    const nodeWrap  = nodeLayer.selectAll('.node-card')
+        .data(data.nodes)
+        .enter().append('g')
+        .attr('class', 'node-card')
+        .call(d3.drag()
+            .on('start', dragStart)
+            .on('drag',  dragged)
+            .on('end',   dragEnd)
+        )
+        .on('mouseover', showTooltip)
+        .on('mousemove', moveTooltip)
+        .on('mouseout',  hideTooltip);
+
+    // Kart rect
+    nodeWrap.append('rect')
+        .attr('class', 'node-rect')
+        .attr('width',  d => nodeWidth(d.label, d.id === data.central_node))
+        .attr('height', d => d.id === data.central_node ? CENT_H : NODE_H)
+        .attr('x', d => -nodeWidth(d.label, d.id === data.central_node) / 2)
+        .attr('y', d => d.id === data.central_node ? -CENT_H / 2 : -NODE_H / 2)
+        .attr('rx', 8)
+        .attr('fill',   d => d.id === data.central_node ? '#0A0A0A' : '#FFFFFF')
+        .attr('stroke', d => d.id === data.central_node ? '#0A0A0A' : '#E0E0E0')
+        .attr('stroke-width', 1)
+        .attr('filter', 'url(#node-shadow)')
+        .attr('opacity', 0)
+        .transition()
+        .delay((_, i) => i * 30)
+        .duration(400)
+        .attr('opacity', 1);
+
+    // Label (kart içinde ortalı)
+    nodeWrap.append('text')
+        .attr('class', 'node-text')
+        .attr('x', 0).attr('y', 0)
+        .attr('fill', d => d.id === data.central_node ? '#FFFFFF' : '#0A0A0A')
+        .attr('font-size', d => fontScale(d.weight || 5) + 'px')
+        .attr('font-weight', d => {
+            if (d.id === data.central_node) return 600;
+            return (d.weight || 5) >= 7 ? 550 : 450;
+        })
+        .text(d => d.label)
+        .attr('opacity', 0)
+        .transition()
+        .delay((_, i) => i * 30 + 180)
+        .duration(300)
+        .attr('opacity', 1);
+
+    // Kategori noktası — node'un sağ üst köşesinde
+    nodeWrap.filter(d => d.id !== data.central_node)
+        .append('circle')
+        .attr('class', 'node-cat-dot')
+        .attr('r', 3.5)
+        .attr('cx', d =>  nodeWidth(d.label, false) / 2 - 6)
+        .attr('cy', d => -NODE_H / 2 + 6)
+        .attr('fill', d => CAT_COLORS[d.category] || '#999')
+        .attr('opacity', 0)
+        .transition()
+        .delay((_, i) => i * 30 + 250)
+        .duration(250)
+        .attr('opacity', 0.85);
+
+    // Simülasyon tick
+    simulation.on('tick', () => {
+        linkLine
+            .attr('x1', d => d.source.x).attr('y1', d => d.source.y)
+            .attr('x2', d => d.target.x).attr('y2', d => d.target.y);
+        nodeWrap
+            .attr('transform', d => `translate(${d.x},${d.y})`);
+    });
+
+    svg.call(zoomBehavior.transform, d3.zoomIdentity.scale(0.95)
+        .translate(W * 0.025, H * 0.025));
+}
+
+// ── Drag ──────────────────────────────────────────────────────────────────
+function dragStart(event, d) {
+    if (!event.active) simulation.alphaTarget(0.3).restart();
+    d.fx = d.x; d.fy = d.y;
+}
+function dragged(event, d) { d.fx = event.x; d.fy = event.y; }
+function dragEnd(event, d) {
+    if (!event.active) simulation.alphaTarget(0);
+    d.fx = null; d.fy = null;
+}
+
+// ── Tooltip ───────────────────────────────────────────────────────────────
+function showTooltip(event, d) {
+    const tt   = document.getElementById('mm-tooltip');
+    const cat  = d.category;
+    const color = CAT_COLORS[cat] || '#9A9A9A';
+
+    document.getElementById('ttLabel').textContent = d.label;
+
+    const catEl = document.getElementById('ttCategory');
+    catEl.innerHTML = `<span class="tt-cat-dot" style="background:${color}"></span>${CAT_LABELS_TR[cat] || cat}`;
+
+    document.getElementById('ttDesc').textContent = d.description || '';
+    tt.classList.add('visible');
+    moveTooltip(event);
+}
+function moveTooltip(event) {
+    const tt = document.getElementById('mm-tooltip');
+    tt.style.left = (event.clientX + 14) + 'px';
+    tt.style.top  = (event.clientY - 10) + 'px';
+}
+function hideTooltip() {
+    document.getElementById('mm-tooltip').classList.remove('visible');
+}
+
+// ── Zoom ──────────────────────────────────────────────────────────────────
+function zoomIn()    { d3.select('#mm-svg').transition().call(zoomBehavior.scaleBy, 1.3); }
+function zoomOut()   { d3.select('#mm-svg').transition().call(zoomBehavior.scaleBy, 0.77); }
+function resetZoom() { d3.select('#mm-svg').transition().call(zoomBehavior.transform, d3.zoomIdentity); }
+
+// ── İlk yükleme ───────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+    if (MAP_DATA && MAP_DATA.nodes) {
+        renderGraph(MAP_DATA);
+        document.getElementById('mmBottom').style.display = '';
+    }
+
+    // ?aura=1 parametresi varsa Aura overlay'i otomatik aç (DM raporu için)
+    {% if show_aura_btn %}
+    if (new URLSearchParams(location.search).get('aura') === '1') {
+        // Kısa gecikme: overlay JS'nin hazır olmasını bekle
+        setTimeout(() => {
+            if (typeof openAura === 'function') openAura();
+        }, 350);
+    }
+    {% endif %}
+});
+
+
+// ESC zaten _aura_overlay.html içinde handle ediliyor.
+</script>
+</body>
+</html>

@@ -1,0 +1,1145 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alvera Social — Profilinizi Oluşturun</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg:          #09090b;
+            --bg-subtle:   rgba(255,255,255,0.025);
+            --border:      rgba(255,255,255,0.08);
+            --border-h:    rgba(255,255,255,0.14);
+            --text-h:      #f4f4f5;
+            --text-body:   #d4d4d8;
+            --text-muted:  #a1a1aa;
+            --purple:      rgba(124,58,237,0.07);
+            --purple-acc:  #7c3aed;
+            --radius:      14px;
+            --ease:        cubic-bezier(0.4,0,0.2,1);
+            --spring:      cubic-bezier(0.22,1,0.36,1);
+        }
+
+        html, body { height: 100%; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg);
+            color: var(--text-body);
+            -webkit-font-smoothing: antialiased;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* ── Grain texture (same as feed) ── */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
+            opacity: 0.025;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+            background-size: 256px 256px;
+        }
+
+        /* ── Static purple orb (top-left) ── */
+        .orb-static {
+            position: fixed;
+            top: -120px;
+            left: -80px;
+            width: 520px;
+            height: 520px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(124,58,237,0.09) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* ── Moving white orb ── */
+        .orb-moving {
+            position: fixed;
+            width: 600px;
+            height: 600px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255,255,255,0.018) 0%, rgba(9,9,11,0) 70%);
+            pointer-events: none;
+            z-index: 0;
+            animation: moveOrb 28s infinite alternate ease-in-out;
+        }
+
+        @keyframes moveOrb {
+            0%   { transform: translate(-10%, 10%); }
+            25%  { transform: translate(60%, -5%); }
+            50%  { transform: translate(40%, 55%); }
+            75%  { transform: translate(-5%, 70%); }
+            100% { transform: translate(70%, 30%); }
+        }
+
+        /* ── Layout ── */
+        .wrap {
+            position: relative;
+            z-index: 1;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 24px 16px;
+        }
+
+        /* ── Progress header ── */
+        .progress-header {
+            width: 100%;
+            max-width: 520px;
+            margin-bottom: 32px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .progress-meta {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .progress-label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .progress-logo {
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            color: var(--text-h);
+            text-transform: uppercase;
+        }
+
+        .progress-badge {
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            padding: 3px 8px;
+            border: 1px solid var(--border);
+            border-radius: 100px;
+        }
+
+        .step-counter {
+            font-size: 12px;
+            color: var(--text-muted);
+            font-variant-numeric: tabular-nums;
+        }
+
+        .step-counter span {
+            color: var(--text-h);
+            font-weight: 600;
+            display: inline-block;
+            transition: opacity 0.15s var(--ease);
+        }
+
+        /* Progress bar */
+        .progress-bar-wrap {
+            width: 100%;
+            height: 2px;
+            background: var(--border);
+            border-radius: 2px;
+            overflow: visible;
+            position: relative;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: rgba(255,255,255,0.75);
+            border-radius: 2px;
+            transition: width 0.5s var(--spring);
+            position: relative;
+        }
+
+        .progress-bar-fill::after {
+            content: '';
+            position: absolute;
+            right: -2px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #fff;
+            box-shadow: 0 0 8px 3px rgba(255,255,255,0.35);
+        }
+
+        /* Dot indicators */
+        .progress-dots {
+            display: flex;
+            gap: 5px;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .pdot {
+            height: 5px;
+            width: 5px;
+            border-radius: 3px;
+            background: rgba(255,255,255,0.15);
+            transition: all 0.35s var(--spring);
+            cursor: pointer;
+        }
+
+        .pdot.active {
+            width: 20px;
+            background: rgba(255,255,255,0.85);
+        }
+
+        .pdot.done {
+            background: rgba(255,255,255,0.4);
+        }
+
+        /* ── Main card ── */
+        .panels-card {
+            width: 100%;
+            max-width: 520px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            overflow: hidden;
+            position: relative;
+            transition: border-color 0.3s var(--ease);
+        }
+
+        .panels-card:hover {
+            border-color: var(--border-h);
+        }
+
+        /* Mouse-tracking shine */
+        .panels-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            background: radial-gradient(
+                480px circle at var(--mx, 50%) var(--my, 30%),
+                rgba(255,255,255,0.055),
+                transparent 45%
+            );
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.4s var(--ease);
+            z-index: 0;
+        }
+
+        .panels-card:hover::before {
+            opacity: 1;
+        }
+
+        /* ── Step panels ── */
+        .panel {
+            display: none;
+            flex-direction: column;
+            gap: 24px;
+            padding: 40px 40px 32px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .panel.active {
+            display: flex;
+        }
+
+        /* ── Step header ── */
+        .step-head {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .step-eyebrow {
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            opacity: 0;
+            transform: translateY(6px);
+        }
+
+        .step-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--text-h);
+            letter-spacing: -0.02em;
+            line-height: 1.25;
+            opacity: 0;
+            transform: translateY(8px);
+        }
+
+        .step-sub {
+            font-size: 13px;
+            color: var(--text-muted);
+            line-height: 1.5;
+            margin-top: 2px;
+            opacity: 0;
+            transform: translateY(8px);
+        }
+
+        /* ── Field groups ── */
+        .field-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        .field-label {
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-muted);
+            letter-spacing: 0.02em;
+        }
+
+        .field-row {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        input[type="text"],
+        textarea,
+        select {
+            width: 100%;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--text-h);
+            font-family: inherit;
+            font-size: 14px;
+            padding: 11px 14px;
+            outline: none;
+            transition: border-color 0.2s var(--ease), background 0.2s var(--ease), box-shadow 0.2s var(--ease);
+            resize: none;
+            -webkit-appearance: none;
+        }
+
+        input[type="text"]:focus,
+        textarea:focus,
+        select:focus {
+            border-color: rgba(255,255,255,0.3);
+            background: rgba(255,255,255,0.06);
+            box-shadow: 0 0 0 3px rgba(255,255,255,0.05);
+        }
+
+        input::placeholder,
+        textarea::placeholder {
+            color: rgba(255,255,255,0.2);
+        }
+
+        .char-count {
+            font-size: 11px;
+            color: var(--text-muted);
+            text-align: right;
+            opacity: 0.7;
+        }
+
+        /* ── Category cards (step 4) ── */
+        .category-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+        }
+
+        .cat-card {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 12px 10px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s var(--ease);
+            opacity: 0;
+            transform: translateY(8px) scale(0.97);
+        }
+
+        .cat-card:hover {
+            background: rgba(255,255,255,0.06);
+            border-color: var(--border-h);
+        }
+
+        .cat-card.selected {
+            background: rgba(255,255,255,0.08);
+            border-color: rgba(255,255,255,0.3);
+        }
+
+        .cat-icon {
+            font-size: 20px;
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        .cat-label {
+            font-size: 11px;
+            font-weight: 500;
+            color: var(--text-body);
+            line-height: 1.3;
+        }
+
+        .skills-input-wrap {
+            position: relative;
+        }
+
+        /* ── Link rows ── */
+        .link-rows {
+            display: flex;
+            flex-direction: column;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .link-row {
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+            transition: background 0.15s var(--ease);
+        }
+
+        .link-row:last-child {
+            border-bottom: none;
+        }
+
+        .link-row:focus-within {
+            background: rgba(255,255,255,0.03);
+        }
+
+        .link-prefix {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-muted);
+            padding: 0 12px;
+            white-space: nowrap;
+            letter-spacing: 0.03em;
+            border-right: 1px solid var(--border);
+            line-height: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            min-width: 50px;
+            justify-content: center;
+        }
+
+        .link-row input {
+            flex: 1;
+            border: none;
+            border-radius: 0;
+            background: transparent;
+            padding: 11px 14px;
+            box-shadow: none !important;
+        }
+
+        .link-row input:focus {
+            border: none;
+            box-shadow: none !important;
+            background: transparent;
+        }
+
+        /* ── Action row ── */
+        .action-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            opacity: 0;
+            transform: translateY(6px);
+        }
+
+        .btn-back {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            font-family: inherit;
+            font-size: 13px;
+            font-weight: 500;
+            padding: 10px 18px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s var(--ease);
+        }
+
+        .btn-back:hover {
+            border-color: var(--border-h);
+            color: var(--text-body);
+        }
+
+        .btn-next {
+            flex: 1;
+            background: var(--text-h);
+            color: var(--bg);
+            border: none;
+            font-family: inherit;
+            font-size: 14px;
+            font-weight: 600;
+            padding: 12px 24px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s var(--ease);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-next::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: rgba(0,0,0,0);
+            transition: background 0.2s var(--ease);
+        }
+
+        .btn-next:hover::after {
+            background: rgba(0,0,0,0.07);
+        }
+
+        .btn-next:active {
+            transform: scale(0.98);
+        }
+
+        .btn-next:disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
+        }
+
+        /* Spinner */
+        .btn-next .spinner {
+            display: none;
+            width: 14px;
+            height: 14px;
+            border: 2px solid rgba(9,9,11,0.2);
+            border-top-color: var(--bg);
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+            margin: 0 auto;
+        }
+
+        .btn-next.loading .btn-text { display: none; }
+        .btn-next.loading .spinner { display: block; }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ── Error toast ── */
+        .err-toast {
+            display: none;
+            align-items: center;
+            gap: 8px;
+            background: rgba(239,68,68,0.12);
+            border: 1px solid rgba(239,68,68,0.25);
+            color: #fca5a5;
+            font-size: 12px;
+            padding: 9px 13px;
+            border-radius: 8px;
+        }
+
+        .err-toast.show { display: flex; }
+
+        /* ── Completion flash ── */
+        #flash {
+            position: fixed;
+            inset: 0;
+            background: rgba(255,255,255,0);
+            pointer-events: none;
+            z-index: 999;
+            transition: background 0.5s var(--ease);
+        }
+
+        #flash.go {
+            background: rgba(255,255,255,0.06);
+        }
+
+        /* ── Panel enter animations ── */
+        .stagger {
+            animation: fadeUp 0.45s var(--spring) both;
+        }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(12px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .cat-card.do-stagger {
+            animation: cardPop 0.4s var(--spring) both;
+        }
+
+        @keyframes cardPop {
+            from { opacity: 0; transform: translateY(8px) scale(0.95); }
+            to   { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        /* ── Completion panel ── */
+        .completion-panel {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            padding: 60px 40px;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .completion-panel.active { display: flex; }
+
+        .completion-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.06);
+            border: 1px solid var(--border-h);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            animation: popIn 0.5s var(--spring) both;
+        }
+
+        @keyframes popIn {
+            from { transform: scale(0.5); opacity: 0; }
+            to   { transform: scale(1); opacity: 1; }
+        }
+
+        .completion-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text-h);
+            letter-spacing: -0.02em;
+        }
+
+        .completion-sub {
+            font-size: 13px;
+            color: var(--text-muted);
+            max-width: 280px;
+            line-height: 1.6;
+        }
+
+        .completion-bar {
+            width: 140px;
+            height: 2px;
+            background: var(--border);
+            border-radius: 2px;
+            overflow: hidden;
+            margin-top: 8px;
+        }
+
+        .completion-bar-fill {
+            height: 100%;
+            background: rgba(255,255,255,0.6);
+            border-radius: 2px;
+            animation: fillBar 2s var(--ease) forwards;
+        }
+
+        @keyframes fillBar {
+            from { width: 0; }
+            to   { width: 100%; }
+        }
+
+        /* ── Select wrapper ── */
+        .select-wrap {
+            position: relative;
+        }
+
+        .select-wrap::after {
+            content: '↓';
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            pointer-events: none;
+            color: var(--text-muted);
+            font-size: 12px;
+        }
+
+        select option {
+            background: #1a1a1e;
+            color: var(--text-h);
+        }
+
+        /* ── Responsive ── */
+        @media (max-width: 560px) {
+            .panel { padding: 28px 20px 24px; }
+            .step-title { font-size: 18px; }
+            .category-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
+</head>
+<body>
+
+<div class="orb-static"></div>
+<div class="orb-moving"></div>
+<div id="flash"></div>
+
+<div class="wrap">
+
+    <!-- Progress header -->
+    <div class="progress-header">
+        <div class="progress-meta">
+            <div class="progress-label">
+                <span class="progress-logo">Alvera</span>
+                <span class="progress-badge">Social</span>
+            </div>
+            <div class="step-counter">
+                Adım <span id="stepNumDisp">1</span> / 5
+            </div>
+        </div>
+
+        <div class="progress-bar-wrap">
+            <div class="progress-bar-fill" id="progressFill" style="width: 20%"></div>
+        </div>
+
+        <div class="progress-dots" id="progressDots">
+            <div class="pdot active" data-i="0"></div>
+            <div class="pdot" data-i="1"></div>
+            <div class="pdot" data-i="2"></div>
+            <div class="pdot" data-i="3"></div>
+            <div class="pdot" data-i="4"></div>
+        </div>
+    </div>
+
+    <!-- Main card -->
+    <div class="panels-card" id="mainCard">
+
+        <!-- ─ Step 1: Kimlik ─ -->
+        <div class="panel active" id="panel-0">
+            <div class="step-head">
+                <div class="step-eyebrow stagger">Kim olduğunuz</div>
+                <div class="step-title stagger">Kendinizi tanıtın</div>
+                <div class="step-sub stagger">Profilinizin temel bilgilerini ekleyelim.</div>
+            </div>
+            <div class="field-group stagger">
+                <div class="field-label">Meslek kategorisi</div>
+                <div class="select-wrap">
+                    <select id="profession_category">
+                        <option value="">Seçin…</option>
+                        <option value="Yazılım & Teknoloji">Yazılım & Teknoloji</option>
+                        <option value="Tasarım & Yaratıcı">Tasarım & Yaratıcı</option>
+                        <option value="İş Geliştirme & Satış">İş Geliştirme & Satış</option>
+                        <option value="Pazarlama & İçerik">Pazarlama & İçerik</option>
+                        <option value="Finans & Yatırım">Finans & Yatırım</option>
+                        <option value="Sağlık & Bilim">Sağlık & Bilim</option>
+                        <option value="Hukuk & Danışmanlık">Hukuk & Danışmanlık</option>
+                        <option value="Akademi & Araştırma">Akademi & Araştırma</option>
+                        <option value="Girişim & Yönetim">Girişim & Yönetim</option>
+                        <option value="Diğer">Diğer</option>
+                    </select>
+                </div>
+            </div>
+            <div class="field-group stagger">
+                <div class="field-label">Unvan / Başlık <span style="color:#ef4444">*</span></div>
+                <input type="text" id="job_title" maxlength="120" placeholder="Ör: Full-Stack Developer, UX Designer…">
+                <div class="char-count"><span id="jt_count">0</span>/120</div>
+            </div>
+            <div class="field-group stagger">
+                <div class="field-label">Şirket / Kurum <span style="color:var(--text-muted);font-weight:400">(opsiyonel)</span></div>
+                <input type="text" id="company" maxlength="120" placeholder="Nerede çalışıyorsunuz?">
+            </div>
+            <div class="err-toast" id="err-0">
+                <span>⚠</span><span id="err-0-msg"></span>
+            </div>
+            <div class="action-row stagger">
+                <button class="btn-next" onclick="goNext()">
+                    <span class="btn-text">Devam Et →</span>
+                    <span class="spinner"></span>
+                </button>
+            </div>
+        </div>
+
+        <!-- ─ Step 2: Bio ─ -->
+        <div class="panel" id="panel-1">
+            <div class="step-head">
+                <div class="step-eyebrow stagger">Hikayeniz</div>
+                <div class="step-title stagger">Kendinizden bahsedin</div>
+                <div class="step-sub stagger">Kısa ve etkili bir biyografi — bu sizin dijital el sıkışmanız.</div>
+            </div>
+            <div class="field-group stagger">
+                <div class="field-label">Biyografi <span style="color:#ef4444">*</span></div>
+                <textarea id="bio" rows="5" maxlength="600" placeholder="Ne yapıyorsunuz, neyi önemsiyorsunuz, sizi farklı kılan ne?"></textarea>
+                <div class="char-count"><span id="bio_count">0</span>/600</div>
+            </div>
+            <div class="err-toast" id="err-1">
+                <span>⚠</span><span id="err-1-msg"></span>
+            </div>
+            <div class="action-row stagger">
+                <button class="btn-back" onclick="goBack()">← Geri</button>
+                <button class="btn-next" onclick="goNext()">
+                    <span class="btn-text">Devam Et →</span>
+                    <span class="spinner"></span>
+                </button>
+            </div>
+        </div>
+
+        <!-- ─ Step 3: Sinyaller ─ -->
+        <div class="panel" id="panel-2">
+            <div class="step-head">
+                <div class="step-eyebrow stagger">Derinlik katmanı</div>
+                <div class="step-title stagger">Sizi öne çıkaran nedir?</div>
+                <div class="step-sub stagger">Bu bilgiler profilinizi zenginleştirir — hepsi opsiyonel.</div>
+            </div>
+            <div class="field-group stagger">
+                <div class="field-label">En büyük başarınız</div>
+                <textarea id="achievement" rows="2" maxlength="250" placeholder="Rakamlarla desteklenen bir başarı…"></textarea>
+                <div class="char-count"><span id="ach_count">0</span>/250</div>
+            </div>
+            <div class="field-group stagger">
+                <div class="field-label">Sizi farklı kılan</div>
+                <input type="text" id="differentiator" maxlength="200" placeholder="Benzersiz bakış açınız, yaklaşımınız…">
+            </div>
+            <div class="field-group stagger">
+                <div class="field-label">Hedef kitleniz</div>
+                <input type="text" id="target_audience" maxlength="120" placeholder="Kimlerle bağlantı kurmak istiyorsunuz?">
+            </div>
+            <div class="action-row stagger">
+                <button class="btn-back" onclick="goBack()">← Geri</button>
+                <button class="btn-next" onclick="goNext()">
+                    <span class="btn-text">Devam Et →</span>
+                    <span class="spinner"></span>
+                </button>
+            </div>
+        </div>
+
+        <!-- ─ Step 4: Uzmanlık ─ -->
+        <div class="panel" id="panel-3">
+            <div class="step-head">
+                <div class="step-eyebrow stagger">Uzmanlık alanları</div>
+                <div class="step-title stagger">Ne konusunda iyisiniz?</div>
+                <div class="step-sub stagger">Öne çıkan kategorileri seçin ya da aşağıya yazın.</div>
+            </div>
+            <div class="category-grid stagger" id="catGrid">
+                <div class="cat-card do-stagger" data-val="React & Next.js">
+                    <span class="cat-icon">⚛️</span><span class="cat-label">React & Next.js</span>
+                </div>
+                <div class="cat-card do-stagger" data-val="Python & AI">
+                    <span class="cat-icon">🤖</span><span class="cat-label">Python & AI</span>
+                </div>
+                <div class="cat-card do-stagger" data-val="UI/UX Tasarım">
+                    <span class="cat-icon">🎨</span><span class="cat-label">UI/UX Tasarım</span>
+                </div>
+                <div class="cat-card do-stagger" data-val="Büyüme & Pazarlama">
+                    <span class="cat-icon">📈</span><span class="cat-label">Büyüme & Pazarlama</span>
+                </div>
+                <div class="cat-card do-stagger" data-val="Ürün Yönetimi">
+                    <span class="cat-icon">🗂</span><span class="cat-label">Ürün Yönetimi</span>
+                </div>
+                <div class="cat-card do-stagger" data-val="Finans & Analiz">
+                    <span class="cat-icon">💹</span><span class="cat-label">Finans & Analiz</span>
+                </div>
+                <div class="cat-card do-stagger" data-val="İçerik & Yazarlık">
+                    <span class="cat-icon">✍️</span><span class="cat-label">İçerik & Yazarlık</span>
+                </div>
+                <div class="cat-card do-stagger" data-val="Liderlik & Strateji">
+                    <span class="cat-icon">🧭</span><span class="cat-label">Liderlik & Strateji</span>
+                </div>
+                <div class="cat-card do-stagger" data-val="Girişimcilik">
+                    <span class="cat-icon">🚀</span><span class="cat-label">Girişimcilik</span>
+                </div>
+            </div>
+            <div class="field-group stagger">
+                <div class="skills-input-wrap">
+                    <input type="text" id="skills_text" maxlength="500" placeholder="Ek beceriler ekleyin (virgülle ayırın)…">
+                </div>
+                <div class="char-count"><span id="skills_count">0</span>/500</div>
+            </div>
+            <div class="err-toast" id="err-3">
+                <span>⚠</span><span id="err-3-msg"></span>
+            </div>
+            <div class="action-row stagger">
+                <button class="btn-back" onclick="goBack()">← Geri</button>
+                <button class="btn-next" onclick="goNext()">
+                    <span class="btn-text">Devam Et →</span>
+                    <span class="spinner"></span>
+                </button>
+            </div>
+        </div>
+
+        <!-- ─ Step 5: Linkler ─ -->
+        <div class="panel" id="panel-4">
+            <div class="step-head">
+                <div class="step-eyebrow stagger">Dijital izler</div>
+                <div class="step-title stagger">Bağlantılarınızı ekleyin</div>
+                <div class="step-sub stagger">Profilinizi linklerle tamamlayın — hepsi opsiyonel.</div>
+            </div>
+            <div class="field-group stagger">
+                <div class="link-rows">
+                    <div class="link-row">
+                        <span class="link-prefix">in</span>
+                        <input type="text" id="linkedin" placeholder="linkedin.com/in/kullanici">
+                    </div>
+                    <div class="link-row">
+                        <span class="link-prefix">GH</span>
+                        <input type="text" id="github" placeholder="github.com/kullanici">
+                    </div>
+                    <div class="link-row">
+                        <span class="link-prefix">𝕏</span>
+                        <input type="text" id="twitter" placeholder="x.com/kullanici">
+                    </div>
+                    <div class="link-row">
+                        <span class="link-prefix">🌐</span>
+                        <input type="text" id="website" placeholder="sizin-siteniz.com">
+                    </div>
+                </div>
+            </div>
+            <div class="action-row stagger">
+                <button class="btn-back" onclick="goBack()">← Geri</button>
+                <button class="btn-next" id="finalBtn" onclick="goNext()">
+                    <span class="btn-text">Social'a Başla →</span>
+                    <span class="spinner"></span>
+                </button>
+            </div>
+        </div>
+
+        <!-- ─ Tamamlandı ─ -->
+        <div class="completion-panel" id="panel-done">
+            <div class="completion-icon">✦</div>
+            <div class="completion-title">Profiliniz hazır.</div>
+            <div class="completion-sub">Alvera Social'a hoş geldiniz. Akışa yönlendiriliyorsunuz…</div>
+            <div class="completion-bar">
+                <div class="completion-bar-fill"></div>
+            </div>
+        </div>
+
+    </div><!-- /panels-card -->
+</div><!-- /wrap -->
+
+<script>
+    // ── Server step mapping (Social skips vibe/step 5) ──
+    const SERVER_STEPS = [1, 2, 3, 4, 6];  // UI index → server step number
+    const TOTAL = 5;
+
+    function serverToUI(sc) {
+        for (let i = 0; i < SERVER_STEPS.length; i++) {
+            if (SERVER_STEPS[i] >= sc) return i;
+        }
+        return TOTAL - 1;
+    }
+
+    let uiStep = serverToUI({{ current_step }});
+    let isSubmitting = false;
+
+    // ── Mouse-tracking shine ──
+    const card = document.getElementById('mainCard');
+    card.addEventListener('mousemove', e => {
+        const r = card.getBoundingClientRect();
+        const x = ((e.clientX - r.left) / r.width  * 100).toFixed(1) + '%';
+        const y = ((e.clientY - r.top)  / r.height * 100).toFixed(1) + '%';
+        card.style.setProperty('--mx', x);
+        card.style.setProperty('--my', y);
+    });
+
+    // ── Stagger animations ──
+    function applyStagger(panelEl) {
+        const items = panelEl.querySelectorAll('.stagger');
+        items.forEach((el, i) => {
+            el.style.animationDelay = (i * 0.065) + 's';
+            el.style.animationName  = 'none';
+            void el.offsetWidth; // reflow
+            el.style.animationName = '';
+        });
+        const cats = panelEl.querySelectorAll('.do-stagger');
+        cats.forEach((el, i) => {
+            el.style.animationDelay = (0.15 + i * 0.045) + 's';
+            el.style.animationName  = 'none';
+            void el.offsetWidth;
+            el.style.animationName  = '';
+        });
+    }
+
+    // ── Step number flip ──
+    function flipStepNum(n) {
+        const el = document.getElementById('stepNumDisp');
+        el.style.opacity = '0';
+        setTimeout(() => {
+            el.textContent = n + 1;
+            el.style.opacity = '1';
+        }, 150);
+    }
+
+    // ── UI update ──
+    function updateUI(step) {
+        // Panels
+        document.querySelectorAll('.panel').forEach((p, i) => {
+            p.classList.toggle('active', i === step);
+        });
+
+        // Run stagger on new panel
+        const active = document.getElementById('panel-' + step);
+        if (active) applyStagger(active);
+
+        // Progress bar
+        const pct = ((step + 1) / TOTAL * 100).toFixed(1);
+        document.getElementById('progressFill').style.width = pct + '%';
+
+        // Dots
+        document.querySelectorAll('.pdot').forEach((d, i) => {
+            d.classList.toggle('active', i === step);
+            d.classList.toggle('done', i < step);
+        });
+
+        // Counter
+        flipStepNum(step);
+    }
+
+    // ── Category card selection ──
+    document.querySelectorAll('.cat-card').forEach(c => {
+        c.addEventListener('click', () => c.classList.toggle('selected'));
+    });
+
+    // ── Char counters ──
+    function bindCounter(fieldId, countId) {
+        const f = document.getElementById(fieldId);
+        const c = document.getElementById(countId);
+        if (!f || !c) return;
+        f.addEventListener('input', () => c.textContent = f.value.length);
+    }
+    bindCounter('job_title',     'jt_count');
+    bindCounter('bio',           'bio_count');
+    bindCounter('achievement',   'ach_count');
+    bindCounter('skills_text',   'skills_count');
+
+    // ── Error display ──
+    function showErr(panelIdx, msg) {
+        const t = document.getElementById('err-' + panelIdx);
+        const m = document.getElementById('err-' + panelIdx + '-msg');
+        if (!t) return;
+        m.textContent = msg;
+        t.classList.add('show');
+        setTimeout(() => t.classList.remove('show'), 4000);
+    }
+
+    // ── Collect step data ──
+    function collectData(step) {
+        if (step === 0) {
+            return {
+                profession_category: document.getElementById('profession_category').value.trim(),
+                job_title:           document.getElementById('job_title').value.trim(),
+                company:             document.getElementById('company').value.trim(),
+            };
+        }
+        if (step === 1) return { bio: document.getElementById('bio').value.trim() };
+        if (step === 2) return {
+            achievement:     document.getElementById('achievement').value.trim(),
+            differentiator:  document.getElementById('differentiator').value.trim(),
+            target_audience: document.getElementById('target_audience').value.trim(),
+        };
+        if (step === 3) {
+            const selected = [...document.querySelectorAll('.cat-card.selected')].map(c => c.dataset.val);
+            const typed    = document.getElementById('skills_text').value.trim();
+            const all      = [...selected];
+            if (typed) all.push(typed);
+            return { skills: all.join(', ') };
+        }
+        if (step === 4) return {
+            linkedin: document.getElementById('linkedin').value.trim(),
+            github:   document.getElementById('github').value.trim(),
+            twitter:  document.getElementById('twitter').value.trim(),
+            website:  document.getElementById('website').value.trim(),
+        };
+        return {};
+    }
+
+    // ── Save to server ──
+    async function saveStep(uiIdx) {
+        const serverStep = SERVER_STEPS[uiIdx];
+        const data       = collectData(uiIdx);
+
+        const res = await fetch('/onboarding/save', {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body:    JSON.stringify({ step: serverStep, data }),
+        });
+
+        return res.json();
+    }
+
+    // ── Go forward ──
+    async function goNext() {
+        if (isSubmitting) return;
+
+        // Client-side validation
+        if (uiStep === 0 && !document.getElementById('job_title').value.trim()) {
+            showErr(0, 'Lütfen kendinizi tanımlayan bir unvan/başlık girin.');
+            return;
+        }
+        if (uiStep === 1 && !document.getElementById('bio').value.trim()) {
+            showErr(1, 'Lütfen kendinizden bahsedin.');
+            return;
+        }
+        if (uiStep === 3) {
+            const sel   = document.querySelectorAll('.cat-card.selected').length;
+            const typed = document.getElementById('skills_text').value.trim();
+            if (!sel && !typed) {
+                showErr(3, 'En az bir uzmanlık alanı seçin veya yazın.');
+                return;
+            }
+        }
+
+        isSubmitting = true;
+        const btn = document.querySelector('#panel-' + uiStep + ' .btn-next');
+        if (btn) btn.classList.add('loading');
+
+        try {
+            const json = await saveStep(uiStep);
+            if (!json.ok) {
+                showErr(uiStep, json.error || 'Bir hata oluştu.');
+                return;
+            }
+
+            if (json.next_url) {
+                // Final step → completion then redirect
+                showCompletion(json.next_url);
+            } else {
+                uiStep++;
+                updateUI(uiStep);
+            }
+        } catch (e) {
+            showErr(uiStep, 'Bağlantı hatası. Lütfen tekrar deneyin.');
+        } finally {
+            isSubmitting = false;
+            if (btn) btn.classList.remove('loading');
+        }
+    }
+
+    // ── Go back ──
+    function goBack() {
+        if (uiStep <= 0) return;
+        uiStep--;
+        updateUI(uiStep);
+    }
+
+    // ── Completion sequence ──
+    function showCompletion(url) {
+        document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+        document.getElementById('progressFill').style.width = '100%';
+        document.querySelectorAll('.pdot').forEach(d => {
+            d.classList.remove('active');
+            d.classList.add('done');
+        });
+        document.getElementById('panel-done').classList.add('active');
+
+        setTimeout(() => {
+            const f = document.getElementById('flash');
+            f.classList.add('go');
+            setTimeout(() => { window.location.href = url; }, 500);
+        }, 2000);
+    }
+
+    // ── Init ──
+    updateUI(uiStep);
+</script>
+</body>
+</html>

@@ -1,0 +1,2071 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ target.full_name }} — Alvera Social</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg:         #09090b;
+            --bg-subtle:  rgba(255, 255, 255, 0.025);
+            --border:     rgba(255, 255, 255, 0.08);
+            --text-h:     #f4f4f5;
+            --text-body:  #d4d4d8;
+            --text-muted: #a1a1aa;
+            --accent:     #ffffff;
+            --accent-fg:  #09090b;
+            --green:      #4ade80;
+            --ease:       cubic-bezier(0.4, 0, 0.2, 1);
+            --r:          14px;
+        }
+
+        html, body { min-height: 100%; background: var(--bg); }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            color: var(--text-body);
+            -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* ── Grain Dokusu ── */
+        body::before {
+            content: "";
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+            opacity: 0.025; z-index: -2; pointer-events: none;
+        }
+
+        /* ── Ambient Orb'lar ── */
+        .bg-gradient-orb {
+            position: fixed; top: -25%; left: 50%;
+            transform: translateX(-50%);
+            width: 80vw; height: 80vh;
+            background: radial-gradient(circle, rgba(124, 58, 237, 0.07) 0%, rgba(9, 9, 11, 0) 70%);
+            z-index: -1; filter: blur(100px); pointer-events: none;
+        }
+
+        .bg-moving-orb {
+            position: fixed; width: 40vw; height: 40vh;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.018) 0%, rgba(9, 9, 11, 0) 70%);
+            z-index: -1; filter: blur(120px);
+            animation: moveOrb 25s infinite alternate ease-in-out; pointer-events: none;
+        }
+
+        @keyframes moveOrb {
+            0%   { top: 20%; left: 10%; }
+            100% { top: 70%; left: 80%; }
+        }
+
+        /* ════ NAV ════ */
+        @keyframes navReveal {
+            0%   { opacity: 0; transform: translateY(-10px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        .topnav {
+            position: sticky; top: 0; z-index: 200;
+            height: 64px;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 28px;
+            background: rgba(9, 9, 11, 0.60);
+            backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            animation: navReveal 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+
+        .nav-left  { display: flex; align-items: center; gap: 24px; animation: navReveal 0.52s cubic-bezier(0.16,1,0.3,1) 0.06s both; }
+        .nav-right { display: flex; align-items: center; gap: 6px; animation: navReveal 0.52s cubic-bezier(0.16,1,0.3,1) 0.14s both; }
+
+        .nav-brand { display: flex; align-items: center; gap: 6px; text-decoration: none; }
+        .nav-brand-word { font-size: 14px; font-weight: 650; letter-spacing: -0.3px; color: var(--text-h); }
+        .nav-brand-social {
+            font-size: 10.5px; font-weight: 600; letter-spacing: 1px;
+            text-transform: uppercase; color: var(--text-muted);
+            padding: 2px 7px; border-radius: 100px; border: 1px solid rgba(255,255,255,0.12);
+        }
+
+        .nav-links { display: flex; align-items: center; gap: 2px; }
+        .nav-link {
+            padding: 6px 14px; border-radius: 100px;
+            font-size: 13px; font-weight: 500; color: var(--text-muted);
+            text-decoration: none;
+            transition: color 0.2s ease, background 0.2s ease, transform 0.18s cubic-bezier(0.16,1,0.3,1);
+            display: flex; align-items: center; gap: 5px;
+        }
+        .nav-link:hover { color: var(--text-h); background: rgba(255,255,255,0.07); transform: scale(1.02); }
+        .nav-link.active { color: var(--text-h); background: rgba(255,255,255,0.10); }
+
+        .nav-dm-badge {
+            background: #ef4444; color: #fff; font-size: 10px; font-weight: 700;
+            border-radius: 8px; padding: 1px 5px; line-height: 14px;
+            min-width: 16px; text-align: center;
+            transition: transform 0.2s cubic-bezier(0.16,1,0.3,1);
+        }
+        .nav-link:hover .nav-dm-badge { transform: scale(1.1); }
+
+        /* ── Bildirim Zili ── */
+        .notif-bell-wrap { position: relative; }
+        .notif-bell-btn {
+            width: 36px; height: 36px; border-radius: 50%;
+            border: none; background: transparent; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            color: var(--text-muted); position: relative;
+            transition: background 0.2s ease, color 0.2s ease, transform 0.3s cubic-bezier(0.16,1,0.3,1);
+        }
+        .notif-bell-btn:hover { background: rgba(255,255,255,0.08); color: var(--text-h); transform: scale(1.08); }
+        .notif-bell-btn:active { transform: scale(0.94); }
+
+        @keyframes bellSwing {
+            0%,100% { transform: rotate(0deg) scale(1); }
+            15%  { transform: rotate(14deg) scale(1.05); }
+            30%  { transform: rotate(-10deg) scale(1.05); }
+            45%  { transform: rotate(7deg); }
+            60%  { transform: rotate(-4deg); }
+            75%  { transform: rotate(2deg); }
+        }
+        .notif-bell-btn.ring svg { animation: bellSwing 0.65s cubic-bezier(0.16,1,0.3,1) both; }
+
+        .notif-bell-count {
+            position: absolute; top: 3px; right: 3px;
+            min-width: 16px; height: 16px;
+            background: #ef4444; color: white; font-size: 9px; font-weight: 700;
+            border-radius: 8px; padding: 0 3px; display: none;
+            align-items: center; justify-content: center; line-height: 1;
+            animation: badgePop 0.4s cubic-bezier(0.16,1,0.3,1) both;
+        }
+        @keyframes badgePop { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+        .notif-dropdown-panel {
+            position: absolute; top: calc(100% + 10px); right: -8px;
+            width: 320px; background: #141416;
+            border: 1px solid rgba(255,255,255,0.1); border-radius: 14px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5); z-index: 500;
+            overflow: hidden; display: none; backdrop-filter: blur(20px);
+        }
+        .notif-dropdown-panel.open { display: block; }
+        .notif-drop-header {
+            padding: 13px 16px 10px; border-bottom: 1px solid rgba(255,255,255,0.06);
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .notif-drop-title { font-size: 13px; font-weight: 600; color: var(--text-h); }
+        .notif-drop-all   { font-size: 12px; color: var(--text-muted); text-decoration: none; }
+        .notif-drop-all:hover { color: var(--text-h); }
+        .notif-drop-body  { max-height: 360px; overflow-y: auto; }
+        .notif-drop-body::-webkit-scrollbar { width: 3px; }
+        .notif-drop-body::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 3px; }
+        .notif-item {
+            display: flex; align-items: flex-start; gap: 10px;
+            padding: 11px 16px; text-decoration: none; color: var(--text-body);
+            transition: background 0.12s; border-bottom: 1px solid rgba(255,255,255,0.04);
+        }
+        .notif-item:last-child { border-bottom: none; }
+        .notif-item:hover { background: rgba(255,255,255,0.04); }
+        .notif-avatar {
+            width: 36px; height: 36px; border-radius: 50%;
+            background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 13px; font-weight: 600; flex-shrink: 0;
+            overflow: hidden; position: relative; color: var(--text-h);
+        }
+        .notif-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .notif-type-dot {
+            position: absolute; bottom: -1px; right: -1px;
+            width: 16px; height: 16px; border-radius: 50%;
+            background: #141416; border: 1px solid rgba(255,255,255,0.1);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 8px; line-height: 1;
+        }
+        .notif-body      { flex: 1; min-width: 0; }
+        .notif-actor     { font-size: 13px; font-weight: 600; color: var(--text-h); }
+        .notif-text      { font-size: 13px; color: var(--text-muted); }
+        .notif-time      { font-size: 11px; color: var(--text-muted); opacity: 0.6; margin-top: 2px; }
+        .notif-see-all {
+            display: block; text-align: center; padding: 11px;
+            font-size: 12.5px; color: var(--text-muted);
+            border-top: 1px solid rgba(255,255,255,0.06);
+            transition: background 0.12s; text-decoration: none;
+        }
+        .notif-see-all:hover { background: rgba(255,255,255,0.04); color: var(--text-h); }
+        .notif-empty {
+            display: flex; flex-direction: column; align-items: center;
+            gap: 8px; padding: 32px 16px; color: var(--text-muted); font-size: 13px;
+        }
+
+        /* ── Nav Avatar ── */
+        .nav-avatar {
+            width: 32px; height: 32px; border-radius: 50%;
+            background: rgba(255,255,255,0.1); color: var(--text-h);
+            border: 1px solid rgba(255,255,255,0.15);
+            box-shadow: 0 0 0 2px rgba(0,0,0,0.4);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 11px; font-weight: 700; text-decoration: none;
+            flex-shrink: 0; overflow: hidden;
+            transition: opacity 0.15s, border-color 0.2s, transform 0.2s cubic-bezier(0.16,1,0.3,1);
+        }
+        .nav-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .nav-avatar:hover { opacity: 0.9; border-color: rgba(255,255,255,0.3); transform: scale(1.05); }
+
+        /* ════ SAYFA ANİMASYONLARI ════ */
+        @keyframes feedFadeUp {
+            from { opacity: 0; transform: translateY(18px) scale(0.99); }
+            to   { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        /* ════ KAPAK (COVER) ════ */
+        .sp-cover {
+            width: 100%; height: 220px; overflow: hidden;
+            position: relative;
+            background: linear-gradient(135deg, #18181b 0%, #141416 100%);
+        }
+
+        .sp-cover img { width: 100%; height: 100%; object-fit: cover; }
+
+        .sp-cover-identity {
+            width: 100%; height: 100%; position: relative; overflow: hidden;
+            background: linear-gradient(145deg, #18181b 0%, #141416 50%, #0f0f11 100%);
+        }
+        .sp-cover-identity::before {
+            content: '';
+            position: absolute; inset: 0;
+            background-image:
+                radial-gradient(ellipse at 25% 60%, rgba(124,58,237,0.06) 0%, transparent 55%),
+                radial-gradient(ellipse at 80% 20%, rgba(255,255,255,0.02) 0%, transparent 45%);
+            pointer-events: none;
+        }
+        .sp-cover-letter {
+            position: absolute; right: 24px; bottom: -20px;
+            font-size: 220px; font-weight: 800; letter-spacing: -14px; line-height: 1;
+            color: #ffffff; opacity: 0.03; user-select: none; pointer-events: none;
+            font-family: 'Inter', -apple-system, sans-serif; -webkit-font-smoothing: antialiased;
+        }
+
+        /* ── Cover gradient overlay (alta doğru solar) ── */
+        .sp-cover::after {
+            content: ''; position: absolute; bottom: 0; left: 0; right: 0;
+            height: 80px;
+            background: linear-gradient(to bottom, transparent, var(--bg));
+            pointer-events: none;
+        }
+
+        /* ════ SAYFA LAYOUT ════ */
+        .sp-layout {
+            max-width: 1280px; margin: 0 auto;
+            padding: 0 24px 80px;
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 28px; align-items: start;
+        }
+
+        /* ════ SOL PANEL (Profil Kartı) ════ */
+        .sp-sidebar {
+            position: sticky; top: 80px;
+            display: flex; flex-direction: column; gap: 16px;
+            animation: feedFadeUp 0.65s cubic-bezier(0.16, 1, 0.3, 1) 0.08s both;
+            margin-top: -60px;
+        }
+
+        .sp-profile-card {
+            background: rgba(255,255,255,0.015);
+            border: 1px solid rgba(255,255,255,0.07);
+            border-radius: 14px; overflow: hidden;
+            backdrop-filter: blur(10px);
+            transition: border-color 0.4s ease;
+        }
+        .sp-profile-card:hover { border-color: rgba(255,255,255,0.11); }
+
+        .sp-profile-inner { padding: 20px; }
+
+        /* Avatar büyük, üst kısma çıkıyor */
+        .sp-avatar-wrap {
+            position: relative; display: inline-block;
+            margin-bottom: 14px;
+        }
+
+        .sp-avatar {
+            width: 80px; height: 80px; border-radius: 50%;
+            background: rgba(255,255,255,0.12); color: var(--text-h);
+            border: 3px solid #09090b;
+            box-shadow: 0 0 0 1px rgba(255,255,255,0.1), 0 8px 24px rgba(0,0,0,0.5);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 26px; font-weight: 700; overflow: hidden;
+        }
+        .sp-avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+        /* Online nokta */
+        .sp-avatar-online {
+            position: absolute; bottom: 4px; right: 4px;
+            width: 14px; height: 14px; border-radius: 50%;
+            background: var(--green); border: 2px solid #09090b;
+        }
+
+        .sp-name {
+            font-size: 18px; font-weight: 700; color: var(--text-h);
+            letter-spacing: -0.4px; line-height: 1.2;
+        }
+
+        .sp-role {
+            font-size: 12px; color: var(--text-muted);
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+            margin-top: 4px; line-height: 1.4;
+        }
+
+        /* ── Status ── */
+        .sp-status {
+            display: flex; align-items: center; gap: 6px;
+            margin-top: 10px; font-size: 12.5px; color: var(--text-muted);
+            background: rgba(74,222,128,0.06);
+            border: 1px solid rgba(74,222,128,0.12);
+            border-radius: 8px; padding: 6px 10px;
+        }
+        .sp-status-dot {
+            width: 6px; height: 6px; border-radius: 50%;
+            background: var(--green); flex-shrink: 0;
+            animation: statusPulse 2.4s ease-out infinite;
+        }
+        @keyframes statusPulse { 0%,100% { opacity:1; } 50% { opacity:0.4; } }
+
+        /* ── Bio ── */
+        .sp-bio {
+            font-size: 13.5px; color: var(--text-body); line-height: 1.7;
+            margin-top: 14px;
+        }
+
+        /* ── Rozetler ── */
+        .sp-badges {
+            display: flex; flex-wrap: wrap; gap: 5px; margin-top: 12px;
+        }
+        .sp-badge {
+            display: inline-flex; align-items: center; gap: 4px;
+            font-size: 11px; font-weight: 500;
+            padding: 3px 9px; border-radius: 100px;
+            border: 1px solid var(--border);
+            background: var(--bg-subtle); color: var(--text-muted);
+        }
+        .sp-badge-avail {
+            color: var(--green); background: rgba(74,222,128,0.06);
+            border-color: rgba(74,222,128,0.2);
+        }
+        .sp-badge-pkg {
+            color: #a78bfa; background: rgba(167,139,250,0.08);
+            border-color: rgba(167,139,250,0.2);
+        }
+
+        /* ── İstatistikler ── */
+        .sp-stats {
+            display: flex; align-items: center; gap: 0;
+            margin-top: 16px; padding-top: 16px;
+            border-top: 1px solid var(--border);
+        }
+        .sp-stat {
+            display: flex; flex-direction: column; align-items: center;
+            flex: 1; padding: 4px 0; cursor: pointer;
+            transition: opacity 0.15s;
+        }
+        .sp-stat:hover { opacity: 0.8; }
+        .sp-stat + .sp-stat { border-left: 1px solid var(--border); }
+        .sp-stat-num  { font-size: 16px; font-weight: 700; color: var(--text-h); letter-spacing: -0.4px; }
+        .sp-stat-label { font-size: 10px; color: var(--text-muted); margin-top: 2px; font-weight: 500; letter-spacing: 0.8px; text-transform: uppercase; }
+
+        /* ── Aksiyonlar ── */
+        .sp-actions { display: flex; flex-direction: column; gap: 8px; margin-top: 14px; }
+
+        .sp-btn {
+            display: flex; align-items: center; justify-content: center; gap: 6px;
+            padding: 9px 16px; border-radius: 9px;
+            font-size: 13px; font-weight: 600; font-family: inherit;
+            cursor: pointer; transition: all 0.2s var(--ease);
+            text-decoration: none; white-space: nowrap; letter-spacing: -0.1px;
+        }
+        .sp-btn-primary {
+            background: var(--accent); color: var(--accent-fg); border: none;
+        }
+        .sp-btn-primary:hover { opacity: 0.88; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(255,255,255,0.12); }
+
+        .sp-btn-secondary {
+            background: rgba(255,255,255,0.06); color: var(--text-h);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .sp-btn-secondary:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.18); }
+
+        .sp-btn-following {
+            background: rgba(255,255,255,0.04); color: var(--text-muted);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .sp-btn-following:hover { color: #f87171; border-color: rgba(248,113,113,0.3); background: rgba(248,113,113,0.06); }
+        .sp-btn-following:hover .btn-following-text { display: none; }
+        .sp-btn-following:hover::before { content: 'Takibi Bırak'; }
+
+        .sp-btn-message {
+            background: rgba(255,255,255,0.04); color: var(--text-muted);
+            border: 1px solid rgba(255,255,255,0.08);
+            font-size: 12.5px; font-weight: 500;
+        }
+        .sp-btn-message:hover { background: rgba(255,255,255,0.08); color: var(--text-h); }
+
+        .sp-btn-edit {
+            background: rgba(255,255,255,0.04); color: var(--text-muted);
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+        .sp-btn-edit:hover { background: rgba(255,255,255,0.08); color: var(--text-h); }
+
+        .sp-btn-landing {
+            background: rgba(255,255,255,0.04); color: var(--text-muted);
+            border: 1px solid rgba(255,255,255,0.08); font-size: 12px;
+        }
+        .sp-btn-landing:hover { background: rgba(255,255,255,0.08); color: var(--text-h); }
+
+        /* ── Aura Butonu ── */
+        .sp-btn-aura {
+            background: linear-gradient(135deg, rgba(167,139,250,0.15) 0%, rgba(96,165,250,0.15) 100%);
+            color: #c4b5fd;
+            border: 1px solid rgba(167,139,250,0.25);
+            position: relative; overflow: hidden;
+        }
+        .sp-btn-aura::before {
+            content: ''; position: absolute; inset: 0;
+            background: linear-gradient(135deg, rgba(167,139,250,0.1), rgba(96,165,250,0.1));
+            opacity: 0; transition: opacity 0.3s;
+        }
+        .sp-btn-aura:hover::before { opacity: 1; }
+        .sp-btn-aura:hover { border-color: rgba(167,139,250,0.4); transform: translateY(-1px); }
+
+        /* ── Beceriler ── */
+        .sp-skills { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border); }
+        .sp-skills-title {
+            font-size: 10px; font-weight: 600; letter-spacing: 1.2px;
+            text-transform: uppercase; color: var(--text-muted); margin-bottom: 8px;
+        }
+        .sp-skills-list { display: flex; flex-wrap: wrap; gap: 5px; }
+        .sp-skill-tag {
+            font-size: 11px; font-weight: 500; color: var(--text-muted);
+            padding: 3px 8px; border-radius: 5px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.07);
+        }
+
+        /* ── Profil Landing Linki ── */
+        .sp-landing-row {
+            display: flex; align-items: center; gap: 6px;
+            margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border);
+            font-size: 12px; color: var(--text-muted); text-decoration: none;
+            transition: color 0.15s;
+        }
+        .sp-landing-row:hover { color: var(--text-h); }
+
+        /* ════ PROFİL DÜZENLEME — MODAL OVERLAY ════ */
+
+        /* Tetikleyici buton (sidebar'da) */
+        .sp-edit-trigger-bar {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 11px 16px; border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.08);
+            background: rgba(255,255,255,0.03);
+            cursor: pointer; user-select: none;
+            transition: background 0.18s, border-color 0.18s;
+        }
+        .sp-edit-trigger-bar:hover {
+            background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.14);
+        }
+        .sp-edit-trigger-label {
+            display: flex; align-items: center; gap: 8px;
+            font-size: 13px; font-weight: 500; color: var(--text-muted);
+        }
+        .sp-edit-trigger-label svg { opacity: 0.6; flex-shrink: 0; }
+        .sp-edit-trigger-bar:hover .sp-edit-trigger-label { color: var(--text-h); }
+        .sp-edit-trigger-bar:hover .sp-edit-trigger-label svg { opacity: 1; }
+        .sp-edit-trigger-arrow {
+            color: var(--text-muted); opacity: 0.4;
+            transition: opacity 0.15s, transform 0.18s;
+        }
+        .sp-edit-trigger-bar:hover .sp-edit-trigger-arrow { opacity: 0.8; transform: translateX(2px); }
+
+        /* Backdrop */
+        .sp-edit-modal-backdrop {
+            position: fixed; inset: 0; z-index: 600;
+            background: rgba(0,0,0,0.65);
+            backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+            display: flex; align-items: center; justify-content: center;
+            padding: 20px;
+            opacity: 0; pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        .sp-edit-modal-backdrop.is-open {
+            opacity: 1; pointer-events: auto;
+        }
+
+        /* Modal kutusu */
+        .sp-edit-modal {
+            width: 100%; max-width: 480px;
+            background: #141416;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 18px;
+            box-shadow: 0 32px 80px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.04);
+            overflow: hidden;
+            transform: translateY(16px) scale(0.98);
+            transition: transform 0.35s cubic-bezier(0.16,1,0.3,1);
+            max-height: calc(100vh - 40px);
+            overflow-y: auto;
+        }
+        .sp-edit-modal::-webkit-scrollbar { width: 3px; }
+        .sp-edit-modal::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
+        .sp-edit-modal-backdrop.is-open .sp-edit-modal {
+            transform: translateY(0) scale(1);
+        }
+
+        /* Modal header */
+        .sp-edit-modal-header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 18px 20px 14px;
+            border-bottom: 1px solid rgba(255,255,255,0.07);
+        }
+        .sp-edit-modal-title {
+            font-size: 14px; font-weight: 700; color: var(--text-h); letter-spacing: -0.2px;
+        }
+        .sp-edit-modal-close {
+            width: 28px; height: 28px; border-radius: 50%;
+            background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+            color: var(--text-muted); cursor: pointer; font-family: inherit;
+            display: flex; align-items: center; justify-content: center;
+            transition: background 0.15s, color 0.15s, transform 0.2s cubic-bezier(0.16,1,0.3,1);
+        }
+        .sp-edit-modal-close:hover { background: rgba(255,255,255,0.12); color: var(--text-h); transform: scale(1.08); }
+
+        /* Cover upload alanı */
+        .sp-edit-cover-zone {
+            position: relative; height: 120px; overflow: hidden;
+            background: linear-gradient(135deg, #18181b 0%, #141416 100%);
+            cursor: pointer;
+        }
+        .sp-edit-cover-img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .sp-edit-cover-overlay {
+            position: absolute; inset: 0;
+            display: flex; align-items: center; justify-content: center; gap: 7px;
+            background: rgba(0,0,0,0.45);
+            opacity: 0; transition: opacity 0.22s;
+            font-size: 12px; font-weight: 600; color: #fff; letter-spacing: 0.1px;
+        }
+        .sp-edit-cover-zone:hover .sp-edit-cover-overlay { opacity: 1; }
+
+        /* Avatar upload alanı */
+        .sp-edit-avatar-zone {
+            position: absolute; bottom: -30px; left: 20px;
+            width: 64px; height: 64px; border-radius: 50%;
+            border: 3px solid #141416;
+            box-shadow: 0 0 0 1px rgba(255,255,255,0.12);
+            overflow: hidden; cursor: pointer;
+            background: #09090b;
+        }
+        .sp-edit-avatar-zone img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .sp-edit-avatar-letter {
+            width: 100%; height: 100%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 22px; font-weight: 700; color: var(--text-h);
+        }
+        .sp-edit-avatar-overlay {
+            position: absolute; inset: 0;
+            display: flex; align-items: center; justify-content: center;
+            background: rgba(0,0,0,0.58); border-radius: 50%;
+            opacity: 0; transition: opacity 0.2s;
+        }
+        .sp-edit-avatar-zone:hover .sp-edit-avatar-overlay { opacity: 1; }
+        .sp-edit-avatar-overlay svg { color: #fff; }
+
+        /* Upload etiketleri (cover + avatar altı) */
+        .sp-edit-img-row {
+            position: relative; height: 44px; /* avatar taşma offseti */
+            display: flex; align-items: flex-end; padding: 0 20px 2px;
+        }
+        .sp-edit-img-labels {
+            margin-left: 84px; /* avatar genişliği + gap */
+            display: flex; align-items: center; gap: 8px;
+        }
+        .sp-edit-img-label {
+            font-size: 11px; color: var(--text-muted);
+            padding: 3px 9px; border-radius: 6px;
+            background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.07);
+            cursor: pointer; transition: background 0.15s, color 0.15s;
+        }
+        .sp-edit-img-label:hover { background: rgba(255,255,255,0.08); color: var(--text-h); }
+
+        /* Hata / upload feedback */
+        .sp-edit-upload-feedback {
+            font-size: 11.5px; min-height: 18px; padding: 0 20px;
+            color: var(--text-muted); margin-top: 6px;
+        }
+        .sp-edit-upload-feedback.error { color: #f87171; }
+        .sp-edit-upload-feedback.ok    { color: var(--green); }
+
+        /* Form alanları */
+        .sp-edit-fields { padding: 14px 20px 0; display: flex; flex-direction: column; gap: 11px; }
+        .sp-field label {
+            display: block; font-size: 10px; font-weight: 600;
+            color: var(--text-muted); letter-spacing: 0.8px;
+            text-transform: uppercase; margin-bottom: 4px;
+        }
+        .sp-field input, .sp-field textarea {
+            width: 100%; padding: 9px 12px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08); border-radius: 8px;
+            font-size: 13px; font-family: inherit; color: var(--text-h);
+            transition: border-color 0.16s var(--ease), background 0.16s; resize: none;
+        }
+        .sp-field input:focus, .sp-field textarea:focus {
+            outline: none; border-color: rgba(255,255,255,0.28);
+            background: rgba(255,255,255,0.07);
+        }
+        .sp-field-row { display: grid; grid-template-columns: 1fr 2.2fr; gap: 10px; }
+
+        /* Modal footer */
+        .sp-edit-modal-footer {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 16px 20px 20px; margin-top: 14px;
+            border-top: 1px solid rgba(255,255,255,0.07);
+        }
+        .sp-edit-success {
+            display: flex; align-items: center; gap: 6px;
+            font-size: 11.5px; color: var(--green);
+            opacity: 0; transform: translateY(-4px);
+            transition: opacity 0.25s, transform 0.25s;
+        }
+        .sp-edit-success.visible { opacity: 1; transform: none; }
+        .sp-edit-footer-btns { display: flex; gap: 8px; }
+        .sp-edit-cancel {
+            padding: 8px 16px; border-radius: 9px;
+            background: none; border: 1px solid rgba(255,255,255,0.1);
+            font-size: 13px; font-weight: 500; color: var(--text-muted);
+            cursor: pointer; font-family: inherit; transition: all 0.15s;
+        }
+        .sp-edit-cancel:hover { color: var(--text-h); border-color: rgba(255,255,255,0.2); }
+        .sp-edit-save {
+            padding: 8px 20px; border-radius: 9px;
+            background: var(--accent); color: var(--accent-fg); border: none;
+            font-size: 13px; font-weight: 600; cursor: pointer;
+            font-family: inherit;
+            transition: opacity 0.2s, transform 0.2s cubic-bezier(0.16,1,0.3,1);
+        }
+        .sp-edit-save:hover { opacity: 0.88; transform: translateY(-1px); }
+        .sp-edit-save:active { transform: translateY(0); }
+        .sp-edit-save:disabled { opacity: 0.4; cursor: default; transform: none; }
+
+        /* ════ SAĞ KOLON (Gönderiler) ════ */
+        .sp-content {
+            min-width: 0; overflow: hidden;
+            animation: feedFadeUp 0.65s cubic-bezier(0.16, 1, 0.3, 1) 0.16s both;
+            padding-top: 0;
+            display: flex; flex-direction: column; gap: 0;
+        }
+
+        /* Mindmap section ile tab bar arasında mesafe */
+        .sp-mindmap-section + .sp-tab-bar,
+        .sp-content > .sp-tab-bar:first-child {
+            margin-top: 0;
+        }
+        .sp-mindmap-section {
+            margin-bottom: 16px;
+        }
+
+        /* ── Tab Bar ── */
+        .sp-tab-bar {
+            display: flex; align-items: center; gap: 0;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            margin-bottom: 0;           /* boşluğu #spPostList padding ile vereceğiz */
+            position: sticky; top: 64px; z-index: 80;
+            background: rgba(9,9,11,0.92);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            padding: 0 4px;
+            /* Alt gölge — içerik tab bar'ın arkasına geçince net ayrışsın */
+            box-shadow: 0 1px 0 rgba(255,255,255,0.06),
+                        0 4px 16px rgba(9,9,11,0.6);
+        }
+        .sp-tab {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 11px 16px 13px;
+            font-size: 13px; font-weight: 500; color: var(--text-muted);
+            background: none; border: none; cursor: pointer; font-family: inherit;
+            white-space: nowrap; position: relative;
+            transition: color 0.2s ease;
+            border-bottom: 2px solid transparent; margin-bottom: -1px;
+        }
+        .sp-tab:hover { color: var(--text-body); }
+        .sp-tab.active { color: var(--text-h); border-bottom-color: rgba(255,255,255,0.75); }
+        .sp-tab.active::after {
+            content: ''; position: absolute; bottom: -2px; left: 0; right: 0; height: 2px;
+            background: rgba(255,255,255,0.85); border-radius: 2px 2px 0 0;
+            box-shadow: 0 0 5px 1px rgba(255,255,255,0.10);
+        }
+        .sp-tab-count {
+            font-size: 10px; font-weight: 600;
+            min-width: 16px; height: 16px; padding: 0 4px;
+            background: rgba(255,255,255,0.08); border-radius: 100px;
+            display: inline-flex; align-items: center; justify-content: center;
+            color: var(--text-muted); transition: background 0.18s;
+        }
+        .sp-tab.active .sp-tab-count {
+            background: rgba(255,255,255,0.15); color: rgba(255,255,255,0.8);
+        }
+
+        /* ── Post Listesi ── */
+        #spPostList {
+            display: flex; flex-direction: column; gap: 14px;
+            min-width: 0;
+            padding-top: 20px;   /* tab bar ile ilk kart arasına boşluk */
+            isolation: isolate;  /* post kartlarının stacking context'ini kontrol altına al */
+        }
+
+        /* Her post wrapper'ına scroll-margin ekle: navbar(64) + tab-bar(~46) + buffer(8) */
+        .sp-post-wrapper {
+            scroll-margin-top: 130px;
+        }
+
+        /* Tab aktif animasyonu */
+        @keyframes spTabIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to   { opacity: 1; transform: none; }
+        }
+        .sp-post-wrapper-animate {
+            animation: spTabIn 0.22s var(--ease) both;
+        }
+
+        /* ── Boş Durum ── */
+        .sp-empty {
+            text-align: center; padding: 60px 24px;
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.07);
+            border-radius: 14px;
+        }
+        .sp-empty-icon { font-size: 28px; margin-bottom: 10px; opacity: 0.3; }
+        .sp-empty-text { font-size: 14px; color: var(--text-muted); }
+
+        /* ════ GÖNDERI KARTLARI (feed.html'den kopyalandı) ════ */
+        .post-card {
+            position: relative; z-index: 0;
+            background: rgba(255,255,255,0.015);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 12px; overflow: hidden;
+            min-width: 0; max-width: 100%;
+            backdrop-filter: blur(10px);
+            transition: transform 0.4s cubic-bezier(0.16,1,0.3,1),
+                        border-color 0.4s ease, box-shadow 0.4s ease, opacity 1.2s ease;
+        }
+        .post-card::before {
+            content: ""; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            border-radius: inherit;
+            background: radial-gradient(450px circle at var(--mouse-x,0) var(--mouse-y,0), rgba(255,255,255,0.07), transparent 45%);
+            z-index: 0; opacity: 0; transition: opacity 0.6s ease; pointer-events: none;
+        }
+        .post-card:hover::before { opacity: 1; }
+        .post-card > * { position: relative; z-index: 1; }
+        .post-card:hover { border-color: rgba(255,255,255,0.11); box-shadow: 0 8px 32px -8px rgba(0,0,0,0.5); transform: translateY(-1px); }
+
+        /* Proje kartı — iridesant border */
+        .post-card.post-project {
+            border-color: transparent;
+            background-image:
+                linear-gradient(rgba(9,9,11,0.98), rgba(9,9,11,0.98)),
+                linear-gradient(135deg, rgba(200,182,255,0.75) 0%, rgba(147,210,230,0.75) 18%, rgba(167,234,195,0.75) 36%, rgba(255,214,165,0.75) 54%, rgba(255,183,183,0.75) 72%, rgba(200,182,255,0.75) 90%);
+            background-origin: border-box; background-clip: padding-box, border-box;
+            background-size: 100%, 300% 300%; background-position: 0 0, 0% 50%;
+            animation: projIridescent 7s ease infinite;
+        }
+        .post-card.post-project:hover { border-color: transparent; box-shadow: 0 4px 24px rgba(160,140,220,0.12); }
+        @keyframes projIridescent {
+            0%   { background-position: 0 0, 0% 50%; }
+            50%  { background-position: 0 0, 100% 50%; }
+            100% { background-position: 0 0, 0% 50%; }
+        }
+
+        .post-card.fresh-in { animation: freshIn 0.45s cubic-bezier(0.16,1,0.3,1) both; }
+        @keyframes freshIn {
+            from { opacity: 0; transform: translateY(-12px) scale(0.99); }
+            to   { opacity: 1; transform: none; }
+        }
+
+        .post-header {
+            padding: 18px 18px 12px;
+            display: flex; align-items: flex-start;
+            justify-content: space-between; gap: 12px;
+        }
+        .post-author { display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0; }
+        .post-avatar {
+            width: 40px; height: 40px; border-radius: 50%;
+            background: rgba(255,255,255,0.1); color: var(--text-h);
+            border: 1px solid rgba(255,255,255,0.14);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 13px; font-weight: 700; flex-shrink: 0;
+            text-decoration: none; overflow: hidden; transition: opacity 0.15s;
+        }
+        .post-avatar:hover { opacity: 0.85; }
+        .post-author-info { flex: 1; min-width: 0; }
+        .post-author-name {
+            font-size: 13.5px; font-weight: 600; color: var(--text-h);
+            text-decoration: none; display: inline; transition: color 0.15s;
+        }
+        .post-author-name:hover { color: var(--text-body); }
+        .post-role-badge {
+            display: inline-block; font-size: 10px; font-weight: 400;
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+            background: rgba(255,255,255,0.08); color: var(--text-muted);
+            padding: 2px 7px; border-radius: 4px; vertical-align: middle;
+            margin-left: 6px; line-height: 1.5;
+        }
+        .post-meta-row { display: flex; align-items: center; gap: 6px; margin-top: 3px; flex-wrap: wrap; }
+        .post-type-badge {
+            display: inline-flex; align-items: center; gap: 4px;
+            font-size: 11px; font-weight: 400; border: none; background: none; padding: 0;
+        }
+        .post-type-badge svg { width: 12px; height: 12px; flex-shrink: 0; }
+        .badge-text    { color: var(--text-muted); }
+        .badge-project { color: #60a5fa; }
+        .badge-image   { color: #c084fc; }
+        .badge-code    { color: #facc15; }
+        .badge-link    { color: #a78bfa; }
+        .badge-collab  { color: #6ee7b7; }
+
+        .post-header-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; padding-top: 2px; }
+        .post-time { font-size: 11.5px; color: var(--text-muted); white-space: nowrap; }
+        .post-permalink-btn {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 24px; height: 24px; border-radius: 6px;
+            color: var(--text-muted); text-decoration: none;
+            opacity: 0; pointer-events: none;
+            transition: color 0.15s, background 0.15s, opacity 0.15s;
+        }
+        .post-card:hover .post-permalink-btn { opacity: 1; pointer-events: auto; }
+        .post-permalink-btn:hover { color: var(--text-h); background: rgba(255,255,255,0.08); }
+        .post-delete-btn {
+            background: none; border: none; cursor: pointer;
+            color: var(--text-muted); font-size: 13px;
+            padding: 4px 6px; border-radius: 6px;
+            opacity: 0; transition: all 0.16s; line-height: 1;
+        }
+        .post-card:hover .post-delete-btn { opacity: 1; }
+        .post-delete-btn:hover { color: #f87171; background: rgba(248,113,113,0.1); }
+
+        .post-content { padding: 0 18px 18px; }
+        .post-text {
+            font-size: 15px; line-height: 1.7; color: #e4e4e7;
+            white-space: pre-wrap; word-break: break-word; font-weight: 300;
+        }
+
+        .post-link-preview {
+            margin-top: 12px; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px;
+            overflow: hidden; display: flex; align-items: stretch; text-decoration: none;
+            transition: border-color 0.18s, box-shadow 0.18s;
+        }
+        .post-link-preview:hover { border-color: rgba(255,255,255,0.18); box-shadow: 0 4px 16px rgba(0,0,0,0.3); }
+        @keyframes linkBarFlow { 0% { background-position: 0% 0%; } 50% { background-position: 0% 100%; } 100% { background-position: 0% 0%; } }
+        .post-link-bar {
+            width: 4px; flex-shrink: 0;
+            background: linear-gradient(180deg, rgba(200,182,255,1) 0%, rgba(147,210,230,1) 25%, rgba(167,234,195,1) 50%, rgba(255,214,165,1) 75%, rgba(255,183,183,1) 100%);
+            background-size: 100% 300%; animation: linkBarFlow 5s ease infinite;
+        }
+        .post-link-body { padding: 10px 14px; flex: 1; min-width: 0; }
+        .post-link-title { font-size: 13px; font-weight: 600; color: var(--text-h); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .post-link-url { font-size: 11.5px; color: var(--text-muted); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+        .post-image-grid { margin-top: 12px; display: grid; gap: 3px; border-radius: 12px; overflow: hidden; }
+        .post-image-grid--1 { grid-template-columns: 1fr; }
+        .post-image-grid--2 { grid-template-columns: 1fr 1fr; }
+        .post-image-grid--3 { grid-template-columns: 2fr 1fr; grid-template-rows: 1fr 1fr; }
+        .post-image-grid--4 { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; }
+        .post-image-grid--3 .post-image-item:first-child { grid-row: 1 / 3; }
+        .post-image-item { display: block; overflow: hidden; aspect-ratio: 1; background: rgba(255,255,255,0.06); }
+        .post-image-grid--1 .post-image-item { aspect-ratio: 16/9; }
+        .post-image-item img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s ease; }
+        .post-image-item:hover img { transform: scale(1.03); }
+
+        .post-code-block {
+            margin-top: 0; border: 1px solid rgba(255,255,255,0.08); border-radius: 10px;
+            overflow: hidden; background: #0d1117; min-width: 0; max-width: 100%;
+        }
+        .post-code-card .post-content { padding-bottom: 0; }
+        .post-code-card .post-code-block { border-radius: 0 0 15px 15px; border-left: none; border-right: none; border-bottom: none; border-top: 1px solid rgba(255,255,255,0.06); margin: 0; }
+        .post-code-header { display: flex; align-items: center; justify-content: space-between; padding: 7px 14px; background: rgba(255,255,255,0.04); border-bottom: 1px solid rgba(255,255,255,0.06); }
+        .post-code-lang { font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted); }
+        .post-code-copy { font-size: 11px; color: var(--text-muted); background: none; border: none; cursor: pointer; padding: 2px 6px; border-radius: 5px; transition: all 0.15s; }
+        .post-code-copy:hover { background: rgba(255,255,255,0.08); color: var(--text-h); }
+        .post-code-pre {
+            margin: 0; padding: 14px 16px; overflow-x: auto; overflow-y: auto;
+            max-height: 320px; max-width: 100%; box-sizing: border-box;
+            font-size: 12.5px; line-height: 1.7;
+            font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+            tab-size: 2; scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.12) transparent;
+        }
+        .post-code-pre::-webkit-scrollbar { width: 5px; height: 5px; }
+        .post-code-pre::-webkit-scrollbar-track { background: transparent; }
+        .post-code-pre::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 99px; }
+        .post-code-pre::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.22); }
+        .post-code-pre code { background: none; padding: 0; font-size: inherit; }
+
+        .post-actions {
+            padding: 10px 18px 12px; border-top: 1px solid rgba(255,255,255,0.05);
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .post-actions-left  { display: flex; align-items: center; gap: 18px; }
+        .post-actions-right { display: flex; align-items: center; gap: 14px; }
+        .post-action-btn {
+            display: flex; align-items: center; gap: 6px;
+            background: none; border: none; cursor: pointer;
+            font-size: 12px; font-weight: 500; color: var(--text-muted);
+            font-family: inherit; padding: 4px 0; border-radius: 0;
+            transition: all 0.25s cubic-bezier(0.16,1,0.3,1);
+        }
+        .post-action-btn svg { width: 16px; height: 16px; flex-shrink: 0; }
+        .post-action-btn:hover { color: var(--text-h); transform: scale(1.05); }
+        .post-action-btn.liked       { color: #4ade80; }
+        .post-action-btn.liked:hover { color: #86efac; }
+        .onay-btn .action-label      { font-size: 11.5px; }
+        .yanka-btn                   { position: relative; }
+        .yanka-btn:hover:not(:disabled) { color: #fb923c; }
+        .yanka-btn.yankaed           { color: #fb923c; cursor: not-allowed; opacity: 0.8; }
+        .yanka-btn .action-label     { font-size: 11.5px; }
+        .action-icon                 { display: flex; align-items: center; font-size: 15px; line-height: 1; }
+
+        .post-follow-btn {
+            padding: 4px 12px; border-radius: 6px;
+            border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.05);
+            color: var(--text-muted); font-size: 11px; font-weight: 500;
+            font-family: inherit; cursor: pointer; transition: all 0.25s cubic-bezier(0.16,1,0.3,1);
+        }
+        .post-follow-btn:hover     { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); }
+        .post-follow-btn.following { color: var(--text-muted); background: rgba(255,255,255,0.05); }
+
+        .save-btn {
+            background: none; border: none; cursor: pointer;
+            color: var(--text-muted); font-size: 14px; line-height: 1;
+            padding: 7px 8px; border-radius: 8px;
+            transition: color 0.15s, background 0.15s; display: flex; align-items: center;
+        }
+        .save-btn:hover          { color: var(--text-h); background: rgba(255,255,255,0.05); }
+        .save-btn.saved          { color: #60a5fa; }
+        .save-btn.saved:hover    { color: #93c5fd; background: rgba(96,165,250,0.1); }
+
+        .post-view-count {
+            display: flex; align-items: center; gap: 4px;
+            font-size: 11px; color: rgba(161,161,170,0.5);
+            margin-left: auto; padding: 0 4px; pointer-events: none; user-select: none;
+        }
+        .post-actions:has(.save-btn) .post-view-count { margin-left: 0; }
+
+        /* Yankı animasyonları */
+        @keyframes yankaAmberPulse {
+            0%   { box-shadow: 0 0 0 0 rgba(251,146,60,0), 0 4px 12px rgba(0,0,0,0.08); border-color: var(--border); }
+            18%  { box-shadow: 0 0 0 3px rgba(251,146,60,0.45), 0 0 28px rgba(251,146,60,0.18), 0 4px 16px rgba(0,0,0,0.12); border-color: rgba(251,146,60,0.5); }
+            50%  { box-shadow: 0 0 0 2px rgba(251,146,60,0.2), 0 0 16px rgba(251,146,60,0.10), 0 4px 12px rgba(0,0,0,0.08); border-color: rgba(251,146,60,0.2); }
+            100% { box-shadow: 0 0 0 0 rgba(251,146,60,0), 0 4px 12px rgba(0,0,0,0.06); border-color: var(--border); }
+        }
+        .post-card.yanka-hype { animation: yankaAmberPulse 1.6s cubic-bezier(0.16,1,0.3,1) forwards; }
+
+        @keyframes yankaBurst {
+            0%   { transform: scale(1); color: inherit; }
+            25%  { transform: scale(1.22); color: #fb923c; }
+            55%  { transform: scale(0.92); color: #fb923c; }
+            78%  { transform: scale(1.05); color: #fb923c; }
+            100% { transform: scale(1); color: #fb923c; }
+        }
+        .yanka-btn.yanka-burst { animation: yankaBurst 0.44s cubic-bezier(0.22,1,0.36,1) forwards; }
+
+        /* ── Yorumlar ── */
+        .post-comments {
+            border-top: 1px solid rgba(255,255,255,0.05);
+            background: rgba(255,255,255,0.015); display: none;
+        }
+        .post-comments.open { display: block; }
+        .comment-list { padding: 10px 18px 4px; }
+        .comment-item {
+            display: flex; gap: 10px; padding: 9px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .comment-item:last-child { border-bottom: none; }
+        .comment-avatar {
+            width: 26px; height: 26px; border-radius: 50%;
+            background: rgba(255,255,255,0.1); color: var(--text-h);
+            border: 1px solid rgba(255,255,255,0.12);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 9.5px; font-weight: 700; flex-shrink: 0; margin-top: 1px;
+            text-decoration: none; overflow: hidden;
+        }
+        .comment-body   { flex: 1; min-width: 0; }
+        .comment-author { font-size: 12px; font-weight: 650; color: var(--text-h); }
+        .comment-text   { font-size: 13px; color: var(--text-body); line-height: 1.5; margin-top: 1px; word-break: break-word; }
+        .comment-time   { font-size: 10px; color: var(--text-muted); margin-top: 3px; }
+        .comment-form {
+            display: flex; gap: 8px; padding: 9px 14px;
+            border-top: 1px solid rgba(255,255,255,0.05); align-items: center;
+        }
+        .comment-avatar-sm {
+            width: 24px; height: 24px; border-radius: 50%;
+            background: rgba(255,255,255,0.1); color: var(--text-h);
+            border: 1px solid rgba(255,255,255,0.12);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 9px; font-weight: 700; flex-shrink: 0;
+        }
+        .comment-input {
+            flex: 1; padding: 7px 12px; border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 100px; font-size: 12.5px; font-family: inherit;
+            color: var(--text-h); background: rgba(255,255,255,0.04); transition: border-color 0.16s;
+        }
+        .comment-input:focus  { outline: none; border-color: rgba(255,255,255,0.18); background: rgba(255,255,255,0.06); }
+        .comment-input::placeholder { color: var(--text-muted); opacity: 0.7; }
+        .comment-send {
+            padding: 6px 13px; border-radius: 100px;
+            background: rgba(255,255,255,0.9); color: #09090b;
+            border: none; font-size: 11.5px; font-weight: 650;
+            font-family: inherit; cursor: pointer; transition: opacity 0.16s;
+        }
+        .comment-send:hover { opacity: 0.8; }
+
+        /* ── Mention linkleri ── */
+        .mention-link {
+            color: #818cf8; font-weight: 600; text-decoration: none;
+            border-radius: 3px; padding: 0 2px; transition: background 0.12s, color 0.12s;
+        }
+        .mention-link:hover { background: rgba(129,140,248,0.15); color: #a5b4fc; }
+
+        /* ════ ZİHİN HARİTASI — sağ kolon içi kart ════ */
+        .sp-mindmap-section {
+            margin-bottom: 0;
+            border-radius: 14px; overflow: hidden;
+            background: rgba(255,255,255,0.012);
+            border: 1px solid rgba(255,255,255,0.07);
+            backdrop-filter: blur(10px);
+            transition: border-color 0.3s;
+        }
+        .sp-mindmap-section:hover { border-color: rgba(255,255,255,0.11); }
+
+        /* Başlık barı — tıklanabilir */
+        .sp-mm-section-header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 13px 18px;
+            cursor: pointer; user-select: none;
+            border-bottom: 1px solid transparent;
+            transition: border-color 0.3s, background 0.2s;
+        }
+        .sp-mm-section-header:hover { background: rgba(255,255,255,0.02); }
+        .sp-mm-section-header.is-open { border-bottom-color: rgba(255,255,255,0.07); }
+
+        .sp-mm-section-title {
+            display: flex; align-items: center; gap: 8px;
+            font-size: 12px; font-weight: 600; color: var(--text-muted);
+            letter-spacing: 0.8px; text-transform: uppercase;
+        }
+        .sp-mm-section-title svg { opacity: 0.55; flex-shrink: 0; }
+
+        .sp-mm-chevron {
+            width: 18px; height: 18px; display: inline-flex; align-items: center;
+            justify-content: center; color: var(--text-muted); flex-shrink: 0;
+            transition: transform 0.38s cubic-bezier(0.4,0,0.2,1), color 0.18s var(--ease);
+        }
+        .sp-mm-section-header:hover .sp-mm-chevron { color: var(--text-body); }
+        .sp-mm-chevron.is-collapsed { transform: rotate(-90deg); }
+
+        /* Açılır kapanır gövde */
+        .sp-mm-section-body {
+            overflow: hidden; max-height: 0; opacity: 0;
+            transition: max-height 0.46s cubic-bezier(0.4,0,0.2,1), opacity 0.30s var(--ease);
+            pointer-events: none;
+        }
+        .sp-mm-section-body.is-open {
+            max-height: 580px; opacity: 1; pointer-events: auto;
+        }
+        .sp-mm-section-inner { padding: 16px 18px 20px; }
+        .sp-mm-section-inner .mmw-section { margin-top: 0; }
+
+        /* ════ GLOBAL SCROLLBAR ════ */
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+
+        /* ════ RESPONSIVE ════ */
+        @media (max-width: 1024px) {
+            .sp-layout { grid-template-columns: 260px 1fr; gap: 20px; }
+        }
+        @media (max-width: 768px) {
+            .sp-layout { grid-template-columns: 1fr; padding: 0 16px 60px; }
+            .sp-sidebar { position: static; margin-top: -40px; }
+            .topnav { padding: 0 16px; }
+            .sp-cover { height: 160px; }
+        }
+        @media (max-width: 520px) {
+            .topnav .nav-links { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="bg-gradient-orb"></div>
+<div class="bg-moving-orb"></div>
+
+<!-- ════ NAVBAR ════ -->
+<nav class="topnav">
+    <div class="nav-left">
+        <a href="{{ url_for('main.index') }}" class="nav-brand">
+            <span class="nav-brand-word">alvera</span>
+            <span class="nav-brand-social">Social</span>
+        </a>
+        <div class="nav-links">
+            <a href="{{ url_for('feed.index') }}" class="nav-link">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                Akış
+            </a>
+            <a href="{{ url_for('site.dashboard') }}" class="nav-link">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                Sitem
+            </a>
+            <a href="{{ url_for('dm.inbox') }}" class="nav-link" id="feedNavDm">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                Mesajlar
+                <span class="nav-dm-badge" id="feedDmBadge" style="display:none;">0</span>
+            </a>
+        </div>
+    </div>
+    <div class="nav-right">
+        <!-- Bildirim Zili -->
+        <div class="notif-bell-wrap" id="notifBellWrap">
+            <button class="notif-bell-btn" id="notifBellBtn" onclick="toggleNotifDropdown()" title="Bildirimler">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                    <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                </svg>
+                <span class="notif-bell-count" id="notifBellCount"></span>
+            </button>
+            <div class="notif-dropdown-panel" id="notifDropPanel">
+                <div class="notif-drop-header">
+                    <span class="notif-drop-title">Bildirimler</span>
+                    <a href="/notifications/" class="notif-drop-all">Tümünü gör</a>
+                </div>
+                <div class="notif-drop-body" id="notifDropBody">
+                    <div class="notif-empty">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.3;margin:0 auto 6px;display:block"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                        <span>Yükleniyor…</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Nav Avatar -->
+        <a href="{{ url_for('feed.social_profile', user_id=viewer.id) }}" class="nav-avatar" title="{{ viewer.full_name }}">
+            {% if viewer.site and viewer.site.avatar_file %}
+            <img src="{{ viewer.site.avatar_file }}" alt="{{ viewer.full_name }}">
+            {% else %}
+            {{ (viewer.full_name or viewer.email)[0] | upper }}
+            {% endif %}
+        </a>
+    </div>
+</nav>
+
+<!-- ════ KAPAK ════ -->
+<div class="sp-cover">
+    {% if target_site and target_site.cover_file %}
+    <img src="{{ target_site.cover_file }}" alt="">
+    {% else %}
+    {% set _initial = (target.full_name or target.email)[0] | upper %}
+    <div class="sp-cover-identity">
+        <span class="sp-cover-letter" aria-hidden="true">{{ _initial }}</span>
+    </div>
+    {% endif %}
+</div>
+
+<!-- ════ İKİ KOLON LAYOUT ════ -->
+<div class="sp-layout">
+
+    <!-- ════ SOL: PROFİL KARTI ════ -->
+    <aside class="sp-sidebar">
+
+        <div class="sp-profile-card">
+            <div class="sp-profile-inner">
+
+                <!-- Avatar + Aksiyon Butonları -->
+                <div style="display:flex; align-items:flex-end; justify-content:space-between; margin-bottom:14px;">
+                    <div class="sp-avatar-wrap">
+                        <div class="sp-avatar">
+                            {% if target_site and target_site.avatar_file %}
+                            <img src="{{ target_site.avatar_file }}" alt="{{ target.full_name }}">
+                            {% else %}
+                            {{ (target.full_name or target.email)[0] | upper }}
+                            {% endif %}
+                        </div>
+                        {% if target.is_available %}
+                        <div class="sp-avatar-online" title="Müsait"></div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- İsim & Unvan -->
+                <div class="sp-name" id="spName">{{ target.full_name or target.email.split('@')[0] }}</div>
+                {% if target_od and (target_od.job_title or target_od.company) %}
+                <div class="sp-role">
+                    {{ target_od.job_title or '' }}{% if target_od.job_title and target_od.company %} · {% endif %}{{ target_od.company or '' }}
+                </div>
+                {% endif %}
+
+                <!-- Status -->
+                {% if extras and extras.status_text %}
+                <div class="sp-status">
+                    <span class="sp-status-dot"></span>
+                    {% if extras.status_emoji %}<span>{{ extras.status_emoji }}</span>{% endif %}
+                    <span id="spStatusText">{{ extras.status_text }}</span>
+                </div>
+                {% endif %}
+
+                <!-- Bio -->
+                {% set bio_text = (target_od.bio if target_od else None) or (target_site.bio_text if target_site else None) %}
+                {% if bio_text %}
+                <p class="sp-bio" id="spBio">{{ bio_text }}</p>
+                {% endif %}
+
+                <!-- Rozetler -->
+                <div class="sp-badges">
+                    {% if cat_info %}
+                    <span class="sp-badge">{{ cat_info[0] }} {{ cat_info[1] }}</span>
+                    {% endif %}
+                    {% if target.is_available %}
+                    <span class="sp-badge sp-badge-avail">◉ Müsait</span>
+                    {% endif %}
+                    {% if pkg_info %}
+                    <span class="sp-badge sp-badge-pkg">{{ pkg_info[0] }} {{ pkg_info[1] }}</span>
+                    {% endif %}
+                </div>
+
+                <!-- Beceriler -->
+                {% if target_od and target_od.skills %}
+                <div class="sp-skills">
+                    <div class="sp-skills-title">Beceriler</div>
+                    <div class="sp-skills-list">
+                        {% for skill in target_od.skills.split(',') %}
+                        {% set s = skill.strip() %}
+                        {% if s %}
+                        <span class="sp-skill-tag">{{ s }}</span>
+                        {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- İstatistikler -->
+                <div class="sp-stats">
+                    <div class="sp-stat">
+                        <span class="sp-stat-num">{{ post_count }}</span>
+                        <span class="sp-stat-label">Gönderi</span>
+                    </div>
+                    <div class="sp-stat" id="spFollowerStat">
+                        <span class="sp-stat-num" id="spFollowerCount">{{ follower_count }}</span>
+                        <span class="sp-stat-label">Takipçi</span>
+                    </div>
+                    <div class="sp-stat">
+                        <span class="sp-stat-num">{{ follow_count }}</span>
+                        <span class="sp-stat-label">Takip</span>
+                    </div>
+                </div>
+
+                <!-- Aksiyon Butonları -->
+                <div class="sp-actions">
+                    {% if is_own %}
+                    {% if target_site and target_site.is_published %}
+                    <a href="/{{ target_site.slug }}" target="_blank" class="sp-btn sp-btn-landing">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                        Alvera Sayfam
+                    </a>
+                    {% endif %}
+                    {% else %}
+                    <button class="sp-btn {% if is_following %}sp-btn-following{% else %}sp-btn-primary{% endif %}"
+                            id="followBtn" onclick="spToggleFollow({{ target.id }})">
+                        {% if is_following %}
+                        <span class="btn-following-text">Takipte ✓</span>
+                        {% else %}
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+                        Takip Et
+                        {% endif %}
+                    </button>
+                    <a href="{{ url_for('dm.open_conversation', user_id=target.id) }}"
+                       class="sp-btn sp-btn-message">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                        Mesaj
+                    </a>
+                    {% if target_site and target_site.is_published %}
+                    <a href="/{{ target_site.slug }}" target="_blank" class="sp-btn sp-btn-landing">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                        Alvera Sayfası
+                    </a>
+                    {% endif %}
+                    {% if mind_map and mind_map.map_data %}
+                    <button class="sp-btn sp-btn-aura" id="auraBtn" onclick="openAura({{ target.id }})">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v8"/><path d="M8 12h8"/></svg>
+                        Aura Analizi
+                    </button>
+                    {% endif %}
+                    {% endif %}
+                </div>
+
+            </div>
+
+        </div><!-- /.sp-profile-card -->
+
+        {% if is_own %}
+        <!-- ════ PROFİL DÜZENLEME — Tetikleyici Bar ════ -->
+        <div class="sp-edit-trigger-bar" onclick="toggleEditPanel()" role="button" aria-haspopup="dialog">
+            <span class="sp-edit-trigger-label">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                Profili Düzenle
+            </span>
+            <svg class="sp-edit-trigger-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+            </svg>
+        </div>
+        {% endif %}
+
+    </aside>
+
+    <!-- ════ SAĞ: GÖNDERİLER ════ -->
+    <main class="sp-content">
+
+        {% if posts %}
+
+        {# Tip bazlı sayılar (Jinja'da hesaplanır) #}
+        {% set ns = namespace(text_c=0, project_c=0, image_c=0, code_c=0) %}
+        {% for p in posts %}
+            {% if p.post_type == 'text' %}    {% set ns.text_c    = ns.text_c + 1 %}
+            {% elif p.post_type == 'project' %}{% set ns.project_c = ns.project_c + 1 %}
+            {% elif p.post_type == 'image' %}  {% set ns.image_c   = ns.image_c + 1 %}
+            {% elif p.post_type == 'code' %}   {% set ns.code_c    = ns.code_c + 1 %}
+            {% endif %}
+        {% endfor %}
+
+        {% if mind_map and mind_map.map_data %}
+        <!-- ── Zihin Haritası — içerik kolonu, tab bar'ın üstünde ── -->
+        <div class="sp-mindmap-section" id="spMindmapSection">
+            <div class="sp-mm-section-header" id="spMmHeader" onclick="toggleMindmapSection()" role="button" aria-expanded="false">
+                <span class="sp-mm-section-title">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/></svg>
+                    Zihin Haritası
+                </span>
+                <svg class="sp-mm-chevron is-collapsed" id="spMmChevron" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="6 9 12 15 18 9"/>
+                </svg>
+            </div>
+            <div class="sp-mm-section-body" id="spMmBody">
+                <div class="sp-mm-section-inner">
+                    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+                    {% include '_mindmap_widget.html' %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Tab Bar -->
+        <div class="sp-tab-bar" role="tablist">
+            <button class="sp-tab active" role="tab" onclick="spSwitchTab(this,'all')" aria-selected="true">
+                Tümü <span class="sp-tab-count">{{ posts|length }}</span>
+            </button>
+            {% if ns.text_c > 0 %}
+            <button class="sp-tab" role="tab" onclick="spSwitchTab(this,'text')">
+                Not <span class="sp-tab-count">{{ ns.text_c }}</span>
+            </button>
+            {% endif %}
+            {% if ns.project_c > 0 %}
+            <button class="sp-tab" role="tab" onclick="spSwitchTab(this,'project')">
+                Proje <span class="sp-tab-count">{{ ns.project_c }}</span>
+            </button>
+            {% endif %}
+            {% if ns.image_c > 0 %}
+            <button class="sp-tab" role="tab" onclick="spSwitchTab(this,'image')">
+                Fotoğraf <span class="sp-tab-count">{{ ns.image_c }}</span>
+            </button>
+            {% endif %}
+            {% if ns.code_c > 0 %}
+            <button class="sp-tab" role="tab" onclick="spSwitchTab(this,'code')">
+                Kod <span class="sp-tab-count">{{ ns.code_c }}</span>
+            </button>
+            {% endif %}
+        </div>
+
+        <!-- Post Listesi -->
+        <div id="spPostList">
+            {% for post in posts %}
+            <div class="sp-post-wrapper" data-post-type="{{ post.post_type }}">
+                {% include '_feed_post.html' %}
+            </div>
+            {% endfor %}
+        </div>
+
+        {% else %}
+
+        <!-- Boş Durum -->
+        <div class="sp-empty">
+            <div class="sp-empty-icon">✦</div>
+            <p class="sp-empty-text">
+                {% if is_own %}Henüz bir gönderi paylaşmadın.{% else %}Henüz gönderi yok.{% endif %}
+            </p>
+            {% if is_own %}
+            <a href="{{ url_for('feed.index') }}" style="display:inline-block; margin-top:16px; font-size:13px; font-weight:600; color:var(--text-h); text-decoration:none; padding:10px 20px; border:1px solid rgba(255,255,255,0.1); border-radius:10px; transition:all 0.18s; background:rgba(255,255,255,0.04);">
+                İlk gönderini paylaş →
+            </a>
+            {% endif %}
+        </div>
+
+        {% endif %}
+
+    </main>
+
+</div>
+
+<!-- ════ AURA OVERLAY ════ -->
+{% if not is_own and current_user.is_authenticated and mind_map and mind_map.map_data %}
+{% include '_aura_overlay.html' %}
+{% endif %}
+
+{% if is_own %}
+<!-- ════ PROFİL DÜZENLEME MODAL ════ -->
+<div class="sp-edit-modal-backdrop" id="editModalBackdrop" onclick="handleBackdropClick(event)" role="dialog" aria-modal="true" aria-labelledby="editModalTitle">
+    <div class="sp-edit-modal" id="editModal">
+
+        <!-- Header -->
+        <div class="sp-edit-modal-header">
+            <span class="sp-edit-modal-title" id="editModalTitle">Profili Düzenle</span>
+            <button class="sp-edit-modal-close" onclick="toggleEditPanel()" title="Kapat" aria-label="Kapat">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+        </div>
+
+        <!-- Cover Banner Upload -->
+        <div class="sp-edit-cover-zone" id="editCoverZone" onclick="document.getElementById('editCoverInput').click()" title="Banner fotoğrafını değiştir">
+            {% if target_site and target_site.cover_file %}
+            <img class="sp-edit-cover-img" id="editCoverPreview" src="{{ target_site.cover_file }}" alt="Banner">
+            {% else %}
+            <img class="sp-edit-cover-img" id="editCoverPreview" src="" alt="Banner" style="display:none;">
+            {% endif %}
+            <div class="sp-edit-cover-overlay">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                Banner Fotoğrafını Değiştir
+            </div>
+            <!-- Avatar alanı cover üzerine taşar -->
+            <div class="sp-edit-avatar-zone" id="editAvatarZone" onclick="event.stopPropagation(); document.getElementById('editAvatarInput').click()" title="Profil fotoğrafını değiştir">
+                {% if target_site and target_site.avatar_file %}
+                <img id="editAvatarPreview" src="{{ target_site.avatar_file }}" alt="{{ target.full_name }}">
+                {% else %}
+                <img id="editAvatarPreview" src="" alt="" style="display:none;">
+                <div class="sp-edit-avatar-letter" id="editAvatarLetter">{{ (target.full_name or target.email)[0]|upper }}</div>
+                {% endif %}
+                <div class="sp-edit-avatar-overlay">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- Gizli input'lar -->
+        <input type="file" id="editAvatarInput" accept="image/png,image/jpeg,image/webp,image/gif" style="display:none;" onchange="handleAvatarUpload(this)">
+        <input type="file" id="editCoverInput"  accept="image/png,image/jpeg,image/webp,image/gif" style="display:none;" onchange="handleCoverUpload(this)">
+
+        <!-- Avatar & Cover etiket kısayolları -->
+        <div class="sp-edit-img-row">
+            <div class="sp-edit-img-labels">
+                <label class="sp-edit-img-label" for="editAvatarInput">📷 Profil Fotoğrafı</label>
+                <label class="sp-edit-img-label" for="editCoverInput">🖼 Banner</label>
+            </div>
+        </div>
+
+        <!-- Upload geri bildirim satırı -->
+        <div class="sp-edit-upload-feedback" id="editUploadFeedback"></div>
+
+        <!-- Metin Alanları -->
+        <div class="sp-edit-fields">
+            <div class="sp-field">
+                <label>Ad Soyad</label>
+                <input type="text" id="editName" value="{{ target.full_name or '' }}" maxlength="120" placeholder="Adın ve soyadın">
+            </div>
+            <div class="sp-field-row">
+                <div class="sp-field">
+                    <label>Durum Emojisi</label>
+                    <input type="text" id="editStatusEmoji" value="{{ extras.status_emoji if extras else '' }}" maxlength="10" placeholder="✨">
+                </div>
+                <div class="sp-field">
+                    <label>Durum Metni</label>
+                    <input type="text" id="editStatusText" value="{{ extras.status_text if extras else '' }}" maxlength="100" placeholder="Şu an ne üzerinde çalışıyorsun?">
+                </div>
+            </div>
+            <div class="sp-field">
+                <label>Kısa Bio</label>
+                <textarea id="editBio" rows="3" maxlength="1000" placeholder="Kendini kısaca anlat...">{{ target_od.bio if target_od else '' }}</textarea>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="sp-edit-modal-footer">
+            <div class="sp-edit-success" id="editMsg">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                Profil güncellendi.
+            </div>
+            <div class="sp-edit-footer-btns">
+                <button class="sp-edit-cancel" onclick="toggleEditPanel()">İptal</button>
+                <button class="sp-edit-save" id="editSaveBtn" onclick="saveProfile()">Kaydet →</button>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endif %}
+
+<script>
+// ════════════════════════════════════════════════════════
+//  YANKI KOTA DEĞİŞKENİ
+// ════════════════════════════════════════════════════════
+const _yankaTodayKey = 'yankaQuota_' + new Date().toISOString().split('T')[0];
+const _serverRemaining = {{ yanka_remaining }};
+
+function _loadYankaFromStorage() {
+    try { const s = localStorage.getItem(_yankaTodayKey); return s !== null ? parseInt(s) : null; } catch(_) { return null; }
+}
+function _saveYankaToStorage(v) {
+    try { localStorage.setItem(_yankaTodayKey, String(v)); } catch(_) {}
+}
+const _storedRemaining = _loadYankaFromStorage();
+let yankaRemaining = (_storedRemaining !== null && _storedRemaining < _serverRemaining) ? _storedRemaining : _serverRemaining;
+_saveYankaToStorage(yankaRemaining);
+
+// ════════════════════════════════════════════════════════
+//  TAB GEÇİŞİ
+// ════════════════════════════════════════════════════════
+function spSwitchTab(btn, tabId) {
+    // Aktif tab değiştir
+    document.querySelectorAll('.sp-tab').forEach(t => {
+        t.classList.remove('active');
+        t.setAttribute('aria-selected', 'false');
+    });
+    btn.classList.add('active');
+    btn.setAttribute('aria-selected', 'true');
+
+    // Gönderi filtrele + kademeli animasyon
+    let delay = 0;
+    document.querySelectorAll('#spPostList .sp-post-wrapper').forEach(wrapper => {
+        const matches = tabId === 'all' || wrapper.dataset.postType === tabId;
+        if (matches) {
+            wrapper.style.display = '';
+            // Animasyonu yeniden tetikle
+            wrapper.classList.remove('sp-post-wrapper-animate');
+            void wrapper.offsetWidth; // reflow
+            wrapper.classList.add('sp-post-wrapper-animate');
+            wrapper.style.animationDelay = `${delay}ms`;
+            delay += 28;
+        } else {
+            wrapper.style.display = 'none';
+        }
+    });
+
+    // Tab bar altındaki boşlukta kalmaması için scroll kontrolü
+    const tabBar = document.querySelector('.sp-tab-bar');
+    const list   = document.getElementById('spPostList');
+    if (tabBar && list) {
+        const tabBottom = tabBar.getBoundingClientRect().bottom;
+        const listTop   = list.getBoundingClientRect().top;
+        if (listTop < tabBottom + 10) {
+            window.scrollBy({ top: listTop - tabBottom - 12, behavior: 'smooth' });
+        }
+    }
+}
+
+// ════════════════════════════════════════════════════════
+//  PROFİL DÜZENLEME — Modal Overlay Toggle
+// ════════════════════════════════════════════════════════
+function toggleEditPanel() {
+    const backdrop = document.getElementById('editModalBackdrop');
+    if (!backdrop) return;
+    const isOpening = !backdrop.classList.contains('is-open');
+    backdrop.classList.toggle('is-open', isOpening);
+    document.body.style.overflow = isOpening ? 'hidden' : '';
+
+    if (isOpening) {
+        setTimeout(() => {
+            const firstInput = backdrop.querySelector('input[type="text"]');
+            if (firstInput) firstInput.focus();
+        }, 360);
+    } else {
+        const msg = document.getElementById('editMsg');
+        if (msg) msg.classList.remove('visible');
+        const feedback = document.getElementById('editUploadFeedback');
+        if (feedback) { feedback.textContent = ''; feedback.className = 'sp-edit-upload-feedback'; }
+    }
+}
+
+// Backdrop'a tıklayınca kapat (ama modal içine tıklamada kapanmasın)
+function handleBackdropClick(e) {
+    if (e.target === document.getElementById('editModalBackdrop')) {
+        toggleEditPanel();
+    }
+}
+
+// ESC ile kapat
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        const backdrop = document.getElementById('editModalBackdrop');
+        if (backdrop && backdrop.classList.contains('is-open')) toggleEditPanel();
+    }
+});
+
+// ════════════════════════════════════════════════════════
+//  AVATAR UPLOAD
+// ════════════════════════════════════════════════════════
+async function handleAvatarUpload(input) {
+    const file = input.files[0];
+    if (!file) return;
+    const feedback = document.getElementById('editUploadFeedback');
+    feedback.textContent = '⏳ Profil fotoğrafı yükleniyor…';
+    feedback.className = 'sp-edit-upload-feedback';
+
+    const fd = new FormData();
+    fd.append('avatar', file);
+    try {
+        const res  = await fetch('/feed/u/upload-avatar', { method: 'POST', body: fd });
+        const data = await res.json();
+        if (data.ok) {
+            // Önizlemeyi güncelle (modal içi)
+            const prev = document.getElementById('editAvatarPreview');
+            const letter = document.getElementById('editAvatarLetter');
+            if (prev) { prev.src = data.url; prev.style.display = 'block'; }
+            if (letter) letter.style.display = 'none';
+            // Sayfa üzerindeki asıl avatarı da güncelle
+            document.querySelectorAll('.sp-avatar img, .nav-avatar img').forEach(img => img.src = data.url + '?t=' + Date.now());
+            // Yeni fotoğrafı sayfa avatarına da yansıt (img yoksa oluştur)
+            const spAvatarWrap = document.querySelector('.sp-avatar');
+            if (spAvatarWrap) {
+                let existingImg = spAvatarWrap.querySelector('img');
+                if (!existingImg) {
+                    existingImg = document.createElement('img');
+                    existingImg.alt = '';
+                    spAvatarWrap.innerHTML = '';
+                    spAvatarWrap.appendChild(existingImg);
+                }
+                existingImg.src = data.url + '?t=' + Date.now();
+            }
+            feedback.textContent = '✓ Profil fotoğrafı güncellendi.';
+            feedback.className = 'sp-edit-upload-feedback ok';
+        } else {
+            feedback.textContent = '✕ ' + (data.error || 'Yükleme başarısız.');
+            feedback.className = 'sp-edit-upload-feedback error';
+        }
+    } catch(e) {
+        feedback.textContent = '✕ Bağlantı hatası.';
+        feedback.className = 'sp-edit-upload-feedback error';
+    }
+    input.value = '';
+}
+
+// ════════════════════════════════════════════════════════
+//  COVER / BANNER UPLOAD
+// ════════════════════════════════════════════════════════
+async function handleCoverUpload(input) {
+    const file = input.files[0];
+    if (!file) return;
+    const feedback = document.getElementById('editUploadFeedback');
+    feedback.textContent = '⏳ Banner yükleniyor…';
+    feedback.className = 'sp-edit-upload-feedback';
+
+    const fd = new FormData();
+    fd.append('cover', file);
+    try {
+        const res  = await fetch('/feed/u/upload-cover', { method: 'POST', body: fd });
+        const data = await res.json();
+        if (data.ok) {
+            // Modal içi önizleme
+            const prev = document.getElementById('editCoverPreview');
+            if (prev) { prev.src = data.url; prev.style.display = 'block'; }
+            // Sayfadaki cover alanı
+            const coverWrap = document.querySelector('.sp-cover');
+            if (coverWrap) {
+                let coverImg = coverWrap.querySelector('img');
+                if (!coverImg) {
+                    coverWrap.innerHTML = '';
+                    coverImg = document.createElement('img');
+                    coverImg.alt = '';
+                    coverWrap.appendChild(coverImg);
+                }
+                coverImg.src = data.url + '?t=' + Date.now();
+            }
+            feedback.textContent = '✓ Banner güncellendi.';
+            feedback.className = 'sp-edit-upload-feedback ok';
+        } else {
+            feedback.textContent = '✕ ' + (data.error || 'Yükleme başarısız.');
+            feedback.className = 'sp-edit-upload-feedback error';
+        }
+    } catch(e) {
+        feedback.textContent = '✕ Bağlantı hatası.';
+        feedback.className = 'sp-edit-upload-feedback error';
+    }
+    input.value = '';
+}
+
+// ════════════════════════════════════════════════════════
+//  ZİHİN HARİTASI — Accordion Toggle (sağ kolon)
+// ════════════════════════════════════════════════════════
+function toggleMindmapSection() {
+    const body    = document.getElementById('spMmBody');
+    const header  = document.getElementById('spMmHeader');
+    const chevron = document.getElementById('spMmChevron');
+    if (!body) return;
+
+    const isOpening = !body.classList.contains('is-open');
+
+    body.classList.toggle('is-open', isOpening);
+    if (header)  { header.classList.toggle('is-open', isOpening); header.setAttribute('aria-expanded', String(isOpening)); }
+    if (chevron) { chevron.classList.toggle('is-collapsed', !isOpening); }
+}
+
+async function saveProfile() {
+    const btn = document.getElementById('editSaveBtn');
+    const msg = document.getElementById('editMsg');
+    if (!btn) return;
+    btn.disabled = true; btn.textContent = 'Kaydediliyor…';
+    if (msg) msg.classList.remove('visible');
+
+    const body = {
+        full_name:    document.getElementById('editName')?.value.trim()        || '',
+        bio:          document.getElementById('editBio')?.value.trim()          || '',
+        status_text:  document.getElementById('editStatusText')?.value.trim()  || '',
+        status_emoji: document.getElementById('editStatusEmoji')?.value.trim() || '',
+    };
+
+    try {
+        const res  = await fetch('/feed/u/edit', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(body),
+        });
+        const data = await res.json();
+        if (data.ok) {
+            // Sayfa üzerindeki bilgileri anlık güncelle
+            if (data.full_name) {
+                const el = document.getElementById('spName');
+                if (el) el.textContent = data.full_name;
+            }
+            if (body.bio) {
+                let el = document.getElementById('spBio');
+                if (!el) {
+                    // Bio elementi yoksa oluştur
+                    el = document.createElement('p');
+                    el.className = 'sp-bio'; el.id = 'spBio';
+                    const nameBlock = document.querySelector('.sp-name');
+                    if (nameBlock) nameBlock.insertAdjacentElement('afterend', el);
+                }
+                if (el) el.textContent = body.bio;
+            }
+            if (body.status_text) {
+                let el = document.getElementById('spStatusText');
+                if (!el) {
+                    // Status bloğu yoksa oluştur
+                    const bio = document.getElementById('spBio');
+                    const statusDiv = document.createElement('div');
+                    statusDiv.className = 'sp-status';
+                    statusDiv.innerHTML = `<span class="sp-status-dot"></span><span id="spStatusText">${body.status_text}</span>`;
+                    if (bio) bio.parentNode.insertBefore(statusDiv, bio);
+                } else { el.textContent = body.status_text; }
+            }
+            // Başarı mesajını göster
+            if (msg) {
+                msg.classList.add('visible');
+                setTimeout(() => {
+                    toggleEditPanel();
+                }, 1600);
+            }
+        }
+    } catch(e) { console.error('Kaydetme hatası:', e); }
+    finally    { btn.disabled = false; btn.textContent = 'Kaydet →'; }
+}
+
+// ════════════════════════════════════════════════════════
+//  TAKİP TOGGLE (Profil Butonu)
+// ════════════════════════════════════════════════════════
+async function spToggleFollow(userId) {
+    const btn = document.getElementById('followBtn');
+    if (!btn) return;
+    try {
+        const res  = await fetch(`/feed/follow/${userId}`, { method: 'POST', headers: {'Content-Type':'application/json'} });
+        const data = await res.json();
+        if (!data.ok) return;
+        const countEl = document.getElementById('spFollowerCount');
+        if (countEl) countEl.textContent = data.follower_count;
+        if (data.following) {
+            btn.className = 'sp-btn sp-btn-following';
+            btn.innerHTML = '<span class="btn-following-text">Takipte ✓</span>';
+        } else {
+            btn.className = 'sp-btn sp-btn-primary';
+            btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg> Takip Et';
+        }
+    } catch(e) { console.error('Takip hatası:', e); }
+}
+
+// ════════════════════════════════════════════════════════
+//  POST İNTERAKSİYONLARI (feed.html ile aynı)
+// ════════════════════════════════════════════════════════
+async function toggleLike(btn, postId) {
+    const res  = await fetch(`/feed/post/${postId}/like`, { method: 'POST' });
+    const data = await res.json();
+    if (!data.ok) return;
+    btn.classList.toggle('liked', data.liked);
+    const label = btn.querySelector('.action-label');
+    const cnt   = btn.querySelector('.onay-count');
+    if (label) label.textContent = data.liked ? 'Onaylandı' : 'Onayla';
+    if (cnt)   cnt.textContent   = data.like_count;
+}
+
+async function toggleSave(btn, postId) {
+    const res  = await fetch(`/feed/post/${postId}/save`, { method: 'POST' });
+    const data = await res.json();
+    if (!data.ok) return;
+    btn.classList.toggle('saved', data.saved);
+    btn.title = data.saved ? 'Kaydı kaldır' : 'Kaydet';
+    const path = btn.querySelector('svg path');
+    if (path) path.setAttribute('fill', data.saved ? 'currentColor' : 'none');
+}
+
+async function giveYanka(btn, postId) {
+    if (btn.disabled) return;
+    if (yankaRemaining <= 0) {
+        const card = btn.closest('.post-card');
+        if (card) card.animate([{transform:'translateX(0)'},{transform:'translateX(-5px)'},{transform:'translateX(5px)'},{transform:'translateX(-4px)'},{transform:'translateX(4px)'},{transform:'translateX(0)'}], {duration:380, easing:'ease-out'});
+        showNotif('⚡ Bugünkü Yankı kotanı doldurdun. Yarın devam!');
+        return;
+    }
+    btn.disabled = true;
+    btn.classList.add('yanka-burst');
+    btn.addEventListener('animationend', () => btn.classList.remove('yanka-burst'), { once: true });
+    try {
+        const res  = await fetch(`/feed/post/${postId}/yanka`, { method: 'POST' });
+        const data = await res.json();
+        if (data.ok) {
+            yankaRemaining = Math.max(0, yankaRemaining - 1);
+            _saveYankaToStorage(yankaRemaining);
+            btn.classList.add('yankaed');
+            const label = btn.querySelector('.action-label');
+            const cnt   = btn.querySelector('.yanka-count');
+            if (label) label.textContent = 'Yankılandı';
+            if (cnt)   cnt.textContent   = parseInt(cnt.textContent || '0') + 1;
+            const card = btn.closest('.post-card');
+            if (card) {
+                card.classList.add('yanka-hype');
+                const onEnd = (e) => { if (e.target===card && e.animationName==='yankaAmberPulse') { card.classList.remove('yanka-hype'); card.removeEventListener('animationend',onEnd); } };
+                card.addEventListener('animationend', onEnd);
+            }
+        } else {
+            btn.disabled = false;
+            showNotif(data.error || '⚡ Yankı verilemedi.');
+        }
+    } catch(_) { btn.disabled = false; }
+}
+
+function toggleComments(postId) {
+    const s = document.getElementById(`comments-${postId}`);
+    if (!s) return;
+    s.classList.toggle('open');
+    if (s.classList.contains('open')) s.querySelector('.comment-input')?.focus();
+}
+
+async function sendComment(postId) {
+    const input   = document.getElementById(`comment-input-${postId}`);
+    const content = input.value.trim();
+    if (!content) return;
+    const res  = await fetch(`/feed/post/${postId}/comment`, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({content}) });
+    const data = await res.json();
+    if (data.ok) {
+        const list = document.getElementById(`comment-list-${postId}`);
+        if (list) {
+            const tmp = document.createElement('div');
+            tmp.innerHTML = data.html;
+            list.appendChild(tmp.firstElementChild);
+            list.lastElementChild?.scrollIntoView({behavior:'smooth', block:'nearest'});
+        }
+        input.value = '';
+        const cnt = document.querySelector(`[data-comment-count="${postId}"]`);
+        if (cnt) cnt.textContent = data.comment_count;
+    }
+}
+
+async function toggleFollow(btn, userId) {
+    const res  = await fetch(`/feed/follow/${userId}`, { method: 'POST' });
+    const data = await res.json();
+    if (!data.ok) return;
+    document.querySelectorAll(`[data-follow-uid="${userId}"]`).forEach(b => {
+        b.classList.toggle('following', data.following);
+        b.textContent = data.following ? 'Takipte' : 'Takip Et';
+    });
+}
+
+async function deletePost(postId) {
+    if (!confirm('Bu gönderiyi silmek istiyor musun?')) return;
+    const res  = await fetch(`/feed/post/${postId}`, { method: 'DELETE' });
+    const data = await res.json();
+    if (data.ok) {
+        const wrapper = document.querySelector(`.sp-post-wrapper:has(#post-${postId})`);
+        const card    = document.getElementById(`post-${postId}`);
+        const target  = wrapper || card;
+        if (target) {
+            target.style.transition = 'opacity 0.3s, transform 0.3s, max-height 0.4s';
+            target.style.opacity    = '0';
+            target.style.transform  = 'scale(0.97)';
+            target.style.maxHeight  = target.offsetHeight + 'px';
+            setTimeout(() => { target.style.maxHeight = '0'; target.style.margin = '0'; }, 200);
+            setTimeout(() => target.remove(), 500);
+        }
+    }
+}
+
+function copyCode(btn) {
+    const pre = btn.closest('.post-code-block').querySelector('pre');
+    navigator.clipboard.writeText(pre.textContent).then(() => {
+        btn.textContent = '✓ Kopyalandı';
+        setTimeout(() => btn.textContent = '⎘ Kopyala', 2000);
+    });
+}
+
+// ════════════════════════════════════════════════════════
+//  MENTION RENDER
+// ════════════════════════════════════════════════════════
+function renderMentions(el) {
+    const raw = el.dataset.raw || el.textContent;
+    if (!raw) return;
+    const escaped = raw.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    el.innerHTML = escaped.replace(/@\[([^\|\]]+)\|(\d+)\]/g, (_, name, id) => `<a href="/feed/u/${id}" class="mention-link">@${name}</a>`);
+}
+document.querySelectorAll('.mention-body').forEach(renderMentions);
+
+// Highlight.js
+document.querySelectorAll('pre code').forEach(el => {
+    if (window.hljs) hljs.highlightElement(el);
+});
+
+// ════════════════════════════════════════════════════════
+//  BİLDİRİM DROPDOWN
+// ════════════════════════════════════════════════════════
+let notifLoaded = false;
+function toggleNotifDropdown() {
+    const panel = document.getElementById('notifDropPanel');
+    const bell  = document.getElementById('notifBellBtn');
+    const isOpen = panel.classList.toggle('open');
+    if (isOpen && !notifLoaded) {
+        notifLoaded = true;
+        loadNotifications();
+        bell.classList.add('ring');
+        setTimeout(() => bell.classList.remove('ring'), 700);
+    }
+}
+async function loadNotifications() {
+    try {
+        const res  = await fetch('/feed/notifications');
+        const data = await res.json();
+        const body = document.getElementById('notifDropBody');
+        if (!data.notifications || data.notifications.length === 0) {
+            body.innerHTML = '<div class="notif-empty"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.3;margin:0 auto 6px;display:block"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg><span>Yeni bildirim yok</span></div>';
+            return;
+        }
+        body.innerHTML = data.notifications.map(n => `
+            <a class="notif-item" href="${n.url || '#'}">
+                <div class="notif-avatar">
+                    ${n.avatar_url ? `<img src="${n.avatar_url}" alt="">` : `<span>${n.actor_initial || '?'}</span>`}
+                    <div class="notif-type-dot">${n.icon || '•'}</div>
+                </div>
+                <div class="notif-body">
+                    <span class="notif-actor">${n.actor_name || ''}</span>
+                    <span class="notif-text"> ${n.text || ''}</span>
+                    <div class="notif-time">${n.time_ago || ''}</div>
+                </div>
+            </a>`).join('') + '<a href="/notifications/" class="notif-see-all">Tümünü gör</a>';
+        const countEl = document.getElementById('notifBellCount');
+        if (data.unread_count > 0) { countEl.textContent = data.unread_count; countEl.style.display = 'flex'; }
+    } catch(_) {}
+}
+document.addEventListener('click', e => {
+    const wrap = document.getElementById('notifBellWrap');
+    if (wrap && !wrap.contains(e.target)) document.getElementById('notifDropPanel')?.classList.remove('open');
+});
+
+// ════════════════════════════════════════════════════════
+//  ENTER → YORUM
+// ════════════════════════════════════════════════════════
+document.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !e.shiftKey && e.target.classList.contains('comment-input')) {
+        e.preventDefault();
+        const pid = e.target.dataset.postId;
+        if (pid) sendComment(pid);
+    }
+});
+
+// ════════════════════════════════════════════════════════
+//  ZİHİN HARİTASI COLLAPSE
+// ════════════════════════════════════════════════════════
+function initMindmapToggle() {
+    const section = document.querySelector('.sp-mindmap-inner');
+    if (!section) return;
+    const header = section.querySelector('.mmw-header');
+    if (!header) return;
+    const canvas = section.querySelector('.mmw-canvas');
+    const legend = section.querySelector('.mmw-legend-row');
+    if (!canvas) return;
+    const collapseBody = document.createElement('div');
+    collapseBody.className = 'mmw-collapse-body';
+    canvas.parentNode.insertBefore(collapseBody, canvas);
+    collapseBody.appendChild(canvas);
+    if (legend) collapseBody.appendChild(legend);
+    const headerRight = header.querySelector('.mmw-header-right') || header;
+    const chevron = document.createElement('span');
+    chevron.className = 'sp-mm-chevron';
+    chevron.setAttribute('aria-hidden', 'true');
+    chevron.innerHTML = `<svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2.5 4.5L6.5 8.5L10.5 4.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+    headerRight.appendChild(chevron);
+    header.addEventListener('click', (e) => {
+        if (e.target.closest('button')) return;
+        const isNowCollapsed = collapseBody.classList.toggle('is-collapsed');
+        chevron.classList.toggle('is-collapsed', isNowCollapsed);
+    });
+}
+
+// ════════════════════════════════════════════════════════
+//  MOUSE-TRACKING GLOW (post kartları)
+// ════════════════════════════════════════════════════════
+function initMouseGlow() {
+    document.querySelectorAll('.post-card').forEach(card => {
+        card.addEventListener('mousemove', e => {
+            const r = card.getBoundingClientRect();
+            card.style.setProperty('--mouse-x', `${e.clientX - r.left}px`);
+            card.style.setProperty('--mouse-y', `${e.clientY - r.top}px`);
+        });
+    });
+}
+
+// ════════════════════════════════════════════════════════
+//  YARDIMCİ: BİLDİRİM TOAST
+// ════════════════════════════════════════════════════════
+function showNotif(msg) {
+    const el = document.createElement('div');
+    el.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:rgba(255,255,255,0.95);color:#09090b;padding:9px 20px;border-radius:100px;font-size:12.5px;font-weight:600;z-index:9999;pointer-events:none;white-space:nowrap;box-shadow:0 8px 32px rgba(0,0,0,0.5);';
+    el.textContent = msg;
+    document.body.appendChild(el);
+    requestAnimationFrame(() => { el.style.transition = 'opacity 0.3s'; });
+    setTimeout(() => { el.style.opacity = '0'; setTimeout(() => el.remove(), 320); }, 2400);
+}
+
+// ════════════════════════════════════════════════════════
+//  INIT
+// ════════════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+    initMindmapToggle();
+    initMouseGlow();
+    // Bildirim sayısını yükle
+    fetch('/feed/notifications').then(r => r.json()).then(data => {
+        if (data.unread_count > 0) {
+            const el = document.getElementById('notifBellCount');
+            if (el) { el.textContent = data.unread_count; el.style.display = 'flex'; }
+        }
+    }).catch(() => {});
+});
+</script>
+
+</body>
+</html>

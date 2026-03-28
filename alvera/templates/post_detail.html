@@ -1,0 +1,897 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    {# ── Open Graph / Paylaşım Meta Tags ── #}
+    {% set og_author = post.author.full_name or post.author.email.split('@')[0] %}
+    {% set og_desc   = (post.content or '') | truncate(160, true, '…') %}
+    <title>{{ og_author }} — Alvera Social</title>
+    <meta property="og:title"       content="{{ og_author }} paylaştı">
+    <meta property="og:description" content="{{ og_desc }}">
+    <meta property="og:type"        content="article">
+    <meta property="og:url"         content="{{ request.url }}">
+    {% if post.post_type == 'image' and post.media_list %}
+    <meta property="og:image" content="/uploads/{{ post.author.id }}/{{ post.media_list[0].filename }}">
+    {% endif %}
+    <meta name="twitter:card" content="summary">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg:         #09090b;
+            --bg-subtle:  rgba(255,255,255,0.025);
+            --border:     rgba(255,255,255,0.08);
+            --text-h:     #f4f4f5;
+            --text-body:  #d4d4d8;
+            --text-muted: #a1a1aa;
+            --accent:     #ffffff;
+            --accent-fg:  #09090b;
+            --green:      #4ade80;
+            --ease:       cubic-bezier(0.4, 0, 0.2, 1);
+            --r:          14px;
+        }
+
+        html, body { min-height: 100%; background: var(--bg); }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            color: var(--text-body);
+            -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
+        }
+
+        /* Grain */
+        body::before {
+            content: "";
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+            opacity: 0.025; z-index: -2; pointer-events: none;
+        }
+
+        .bg-gradient-orb {
+            position: fixed; top: -25%; left: 50%; transform: translateX(-50%);
+            width: 80vw; height: 80vh;
+            background: radial-gradient(circle, rgba(124,58,237,0.07) 0%, rgba(9,9,11,0) 70%);
+            z-index: -1; filter: blur(100px); pointer-events: none;
+        }
+
+        /* ── Nav ── */
+        @keyframes navReveal {
+            from { opacity: 0; transform: translateY(-10px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .topnav {
+            position: sticky; top: 0; z-index: 200;
+            height: 64px;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 28px;
+            background: rgba(9,9,11,0.60);
+            backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            animation: navReveal 0.5s cubic-bezier(0.16,1,0.3,1) both;
+        }
+
+        .nav-left  { display: flex; align-items: center; gap: 24px; }
+        .nav-brand { display: flex; align-items: center; gap: 6px; text-decoration: none; }
+        .nav-brand-word   { font-size: 14px; font-weight: 650; letter-spacing: -0.3px; color: var(--text-h); }
+        .nav-brand-social {
+            font-size: 10.5px; font-weight: 600; letter-spacing: 1px;
+            text-transform: uppercase; color: var(--text-muted);
+            padding: 2px 7px; border-radius: 100px; border: 1px solid rgba(255,255,255,0.12);
+        }
+
+        .nav-links { display: flex; align-items: center; gap: 2px; }
+        .nav-link {
+            padding: 6px 14px; border-radius: 100px;
+            font-size: 13px; font-weight: 500; color: var(--text-muted);
+            text-decoration: none;
+            transition: color 0.2s, background 0.2s, transform 0.18s cubic-bezier(0.16,1,0.3,1);
+            display: flex; align-items: center; gap: 5px;
+        }
+        .nav-link:hover { color: var(--text-h); background: rgba(255,255,255,0.07); transform: scale(1.02); }
+        .nav-link.active { color: var(--text-h); background: rgba(255,255,255,0.10); }
+
+        .nav-dm-badge {
+            background: #ef4444; color: #fff;
+            font-size: 10px; font-weight: 700;
+            border-radius: 8px; padding: 1px 5px; line-height: 14px;
+        }
+
+        .nav-right { display: flex; align-items: center; gap: 6px; }
+
+        .nav-avatar {
+            width: 32px; height: 32px; border-radius: 50%;
+            background: rgba(255,255,255,0.1); color: var(--text-h);
+            border: 1px solid rgba(255,255,255,0.15);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 11px; font-weight: 700; text-decoration: none;
+            overflow: hidden;
+            transition: transform 0.2s cubic-bezier(0.16,1,0.3,1), border-color 0.2s;
+        }
+        .nav-avatar:hover { transform: scale(1.05); border-color: rgba(255,255,255,0.3); }
+        .nav-avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+        /* ── Sayfa Gövdesi ── */
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(16px) scale(0.99); }
+            to   { opacity: 1; transform: none; }
+        }
+
+        .detail-wrap {
+            max-width: 700px;
+            margin: 0 auto;
+            padding: 28px 20px 80px;
+            animation: fadeUp 0.45s cubic-bezier(0.16,1,0.3,1) 0.05s both;
+        }
+
+        /* ── Geri Butonu + Başlık Satırı ── */
+        .detail-topbar {
+            display: flex; align-items: center; gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .back-btn {
+            display: flex; align-items: center; gap: 6px;
+            padding: 7px 14px; border-radius: 100px;
+            border: 1px solid var(--border); background: var(--bg-subtle);
+            color: var(--text-muted); font-size: 12.5px; font-weight: 500;
+            text-decoration: none; font-family: inherit;
+            cursor: pointer;
+            transition: color 0.18s, background 0.18s, border-color 0.18s, transform 0.18s cubic-bezier(0.16,1,0.3,1);
+        }
+        .back-btn:hover {
+            color: var(--text-h); background: rgba(255,255,255,0.07);
+            border-color: rgba(255,255,255,0.14); transform: scale(1.02);
+        }
+
+        .detail-crumb {
+            font-size: 11.5px; color: var(--text-muted);
+            display: flex; align-items: center; gap: 5px;
+        }
+        .detail-crumb a { color: var(--text-muted); text-decoration: none; }
+        .detail-crumb a:hover { color: var(--text-h); }
+        .detail-crumb-sep { opacity: 0.4; }
+
+        /* ── Kopyalama / Paylaşım pill ── */
+        .share-row {
+            display: flex; align-items: center; justify-content: flex-end; gap: 8px;
+            margin-bottom: 14px;
+        }
+
+        .share-btn {
+            display: flex; align-items: center; gap: 6px;
+            padding: 6px 14px; border-radius: 100px;
+            border: 1px solid var(--border); background: var(--bg-subtle);
+            color: var(--text-muted); font-size: 12px; font-weight: 500;
+            cursor: pointer; font-family: inherit;
+            transition: color 0.18s, background 0.18s, border-color 0.18s, transform 0.18s cubic-bezier(0.16,1,0.3,1);
+        }
+        .share-btn:hover {
+            color: var(--text-h); background: rgba(255,255,255,0.07);
+            border-color: rgba(255,255,255,0.14); transform: scale(1.02);
+        }
+        .share-btn.copied {
+            color: var(--green); border-color: rgba(74,222,128,0.3);
+            background: rgba(74,222,128,0.06);
+        }
+
+        /* ════════════════════════════════════
+           POST CARD — Feed'den miras CSS
+        ════════════════════════════════════ */
+        .post-card {
+            background: var(--bg-subtle);
+            border: 1px solid var(--border);
+            border-radius: 15px;
+            padding: 18px;
+            transition: border-color 0.2s;
+        }
+
+        /* Header */
+        .post-header {
+            display: flex; align-items: flex-start; justify-content: space-between;
+            margin-bottom: 14px;
+        }
+        .post-author { display: flex; align-items: center; gap: 10px; }
+        .post-avatar {
+            width: 36px; height: 36px; border-radius: 50%;
+            background: rgba(255,255,255,0.1); color: var(--text-h);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 12px; font-weight: 700; text-decoration: none;
+            overflow: hidden; flex-shrink: 0;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .post-author-name {
+            font-size: 13.5px; font-weight: 600; color: var(--text-h);
+            text-decoration: none; display: block; line-height: 1.2;
+        }
+        .post-author-name:hover { color: var(--accent); }
+        .post-meta-row { display: flex; align-items: center; gap: 6px; margin-top: 3px; }
+
+        .post-role-badge {
+            font-size: 10.5px; color: var(--text-muted); font-weight: 500;
+        }
+        .post-type-badge {
+            font-size: 10px; font-weight: 600; letter-spacing: 0.5px;
+            padding: 2px 8px; border-radius: 100px;
+            display: flex; align-items: center; gap: 4px;
+        }
+        .badge-text    { background: rgba(255,255,255,0.07); color: var(--text-muted); }
+        .badge-project { background: rgba(250,204,21,0.1);   color: #fbbf24; }
+        .badge-image   { background: rgba(167,139,250,0.1);  color: #a78bfa; }
+        .badge-code    { background: rgba(110,231,183,0.1);  color: #6ee7b7; }
+
+        .post-header-right {
+            display: flex; align-items: center; gap: 8px; flex-shrink: 0;
+        }
+        .post-time { font-size: 11.5px; color: var(--text-muted); }
+
+        /* İçerik */
+        .post-content { margin-bottom: 14px; }
+        .post-text {
+            font-size: 14px; line-height: 1.7; color: var(--text-body);
+            white-space: pre-wrap; word-break: break-word;
+        }
+        .mention-link { color: var(--text-h); font-weight: 600; text-decoration: none; }
+        .mention-link:hover { text-decoration: underline; }
+
+        /* Resim Grid */
+        .post-image-grid {
+            display: grid; gap: 4px; border-radius: 10px; overflow: hidden; margin-top: 10px;
+        }
+        .post-image-grid--1 { grid-template-columns: 1fr; }
+        .post-image-grid--2 { grid-template-columns: 1fr 1fr; }
+        .post-image-grid--3 { grid-template-columns: 1fr 1fr; }
+        .post-image-grid--3 .post-image-item:first-child { grid-column: 1 / -1; }
+        .post-image-grid--4 { grid-template-columns: 1fr 1fr; }
+        .post-image-item { display: block; overflow: hidden; }
+        .post-image-item img { width: 100%; height: 240px; object-fit: cover; display: block; transition: transform 0.3s; }
+        .post-image-item:hover img { transform: scale(1.02); }
+
+        /* Kod Bloğu */
+        .post-code-block {
+            border: 1px solid rgba(255,255,255,0.07); border-radius: 10px; overflow: hidden;
+            margin-top: 10px; min-width: 0; max-width: 100%;
+        }
+        .post-code-header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 8px 14px;
+            background: rgba(255,255,255,0.04); border-bottom: 1px solid rgba(255,255,255,0.07);
+        }
+        .post-code-lang { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+        .post-code-copy {
+            font-size: 11px; color: var(--text-muted); background: none; border: none;
+            cursor: pointer; font-family: inherit; padding: 2px 8px;
+            border-radius: 6px; transition: color 0.15s, background 0.15s;
+        }
+        .post-code-copy:hover { color: var(--text-h); background: rgba(255,255,255,0.08); }
+        .post-code-pre {
+            margin: 0; padding: 14px 16px;
+            font-size: 13px; line-height: 1.6;
+            background: #0d1117;
+            overflow-x: auto; min-width: 0; max-width: 100%;
+            max-height: 480px; overflow-y: auto;
+        }
+        .post-code-pre::-webkit-scrollbar { width: 4px; height: 4px; }
+        .post-code-pre::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+
+        /* Aksiyonlar */
+        .post-actions {
+            display: flex; align-items: center; justify-content: space-between;
+            padding-top: 12px; border-top: 1px solid var(--border);
+            gap: 8px; flex-wrap: wrap;
+        }
+        .post-actions-left  { display: flex; align-items: center; gap: 2px; }
+        .post-actions-right { display: flex; align-items: center; gap: 6px; }
+
+        .post-action-btn {
+            display: flex; align-items: center; gap: 5px;
+            padding: 7px 10px; border-radius: 8px;
+            border: none; background: none; cursor: pointer;
+            color: var(--text-muted); font-size: 12.5px; font-weight: 500;
+            font-family: inherit;
+            transition: color 0.15s, background 0.15s, transform 0.18s cubic-bezier(0.16,1,0.3,1);
+        }
+        .post-action-btn:hover { color: var(--text-h); background: rgba(255,255,255,0.06); transform: scale(1.05); }
+
+        .post-action-btn.liked       { color: #4ade80; }
+        .post-action-btn.liked:hover { color: #86efac; }
+        .onay-btn .action-label      { font-size: 11.5px; }
+
+        .yanka-btn { position: relative; }
+        .yanka-btn:hover:not(:disabled) { color: #fb923c; }
+        .yanka-btn.yankaed { color: #fb923c; cursor: not-allowed; opacity: 0.8; }
+        .yanka-btn .action-label { font-size: 11.5px; }
+
+        .post-follow-btn {
+            padding: 4px 12px; border-radius: 6px;
+            border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.05);
+            color: var(--text-muted); font-size: 11px; font-weight: 500;
+            font-family: inherit; cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.16,1,0.3,1);
+        }
+        .post-follow-btn:hover     { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); }
+        .post-follow-btn.following { color: var(--text-muted); background: rgba(255,255,255,0.05); }
+
+        .post-view-count {
+            display: flex; align-items: center; gap: 4px;
+            font-size: 11px; color: var(--text-muted);
+        }
+
+        .save-btn {
+            background: none; border: none; cursor: pointer;
+            color: var(--text-muted); padding: 7px 8px; border-radius: 8px;
+            transition: color 0.15s, background 0.15s;
+        }
+        .save-btn:hover { color: var(--text-h); background: rgba(255,255,255,0.06); }
+        .save-btn.saved { color: var(--text-h); }
+
+        /* Yankı animasyonları (feed ile birebir) */
+        @keyframes yankaAmberPulse {
+            0%   { box-shadow: 0 0 0 0 rgba(251,146,60,0), 0 4px 12px rgba(0,0,0,0.08); border-color: var(--border); }
+            18%  { box-shadow: 0 0 0 3px rgba(251,146,60,0.45), 0 0 28px rgba(251,146,60,0.18), 0 4px 16px rgba(0,0,0,0.12); border-color: rgba(251,146,60,0.5); }
+            50%  { box-shadow: 0 0 0 2px rgba(251,146,60,0.2),  0 0 16px rgba(251,146,60,0.10), 0 4px 12px rgba(0,0,0,0.08); border-color: rgba(251,146,60,0.2); }
+            100% { box-shadow: 0 0 0 0 rgba(251,146,60,0), 0 4px 12px rgba(0,0,0,0.06); border-color: var(--border); }
+        }
+        .post-card.yanka-hype { animation: yankaAmberPulse 1.6s cubic-bezier(0.16,1,0.3,1) forwards; }
+
+        @keyframes yankaBurst {
+            0%   { transform: scale(1);    color: inherit; }
+            25%  { transform: scale(1.22); color: #fb923c; }
+            55%  { transform: scale(0.92); color: #fb923c; }
+            78%  { transform: scale(1.05); color: #fb923c; }
+            100% { transform: scale(1);    color: #fb923c; }
+        }
+        .yanka-btn.yanka-burst { animation: yankaBurst 0.44s cubic-bezier(0.22,1,0.36,1) forwards; }
+
+        /* ════ YORUMLAR ════ */
+        .detail-comments-section {
+            margin-top: 20px;
+            border: 1px solid var(--border);
+            border-radius: 15px;
+            background: var(--bg-subtle);
+            overflow: hidden;
+        }
+
+        .detail-comments-header {
+            padding: 16px 18px 12px;
+            border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; gap: 8px;
+        }
+        .detail-comments-title {
+            font-size: 13px; font-weight: 600; color: var(--text-h);
+        }
+        .detail-comments-count {
+            font-size: 11px; font-weight: 600; color: var(--text-muted);
+            background: rgba(255,255,255,0.07); padding: 2px 7px; border-radius: 100px;
+        }
+
+        .detail-comment-list { padding: 4px 0; }
+
+        .comment-item {
+            display: flex; align-items: flex-start; gap: 10px;
+            padding: 12px 18px;
+            border-bottom: 1px solid var(--border);
+            transition: background 0.15s;
+        }
+        .comment-item:last-child { border-bottom: none; }
+        .comment-item:hover { background: rgba(255,255,255,0.02); }
+
+        .comment-avatar {
+            width: 28px; height: 28px; border-radius: 50%;
+            background: rgba(255,255,255,0.1); color: var(--text-h);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 10px; font-weight: 700; flex-shrink: 0;
+            overflow: hidden; border: 1px solid rgba(255,255,255,0.08);
+        }
+        .comment-body { flex: 1; min-width: 0; }
+        .comment-author {
+            font-size: 12.5px; font-weight: 600; color: var(--text-h);
+            display: inline; margin-right: 6px;
+        }
+        .comment-text {
+            font-size: 13px; line-height: 1.6; color: var(--text-body);
+            display: inline; word-break: break-word;
+        }
+        .comment-time { font-size: 10.5px; color: var(--text-muted); margin-top: 4px; }
+
+        .no-comments {
+            padding: 28px 18px; text-align: center;
+            font-size: 13px; color: var(--text-muted);
+        }
+
+        /* Yorum Formu */
+        .detail-comment-form {
+            display: flex; align-items: center; gap: 10px;
+            padding: 14px 18px;
+            border-top: 1px solid var(--border);
+        }
+        .detail-comment-avatar {
+            width: 28px; height: 28px; border-radius: 50%;
+            background: rgba(255,255,255,0.1); color: var(--text-h);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 10px; font-weight: 700; flex-shrink: 0;
+            overflow: hidden; border: 1px solid rgba(255,255,255,0.08);
+        }
+        .detail-comment-input {
+            flex: 1; background: rgba(255,255,255,0.05);
+            border: 1px solid var(--border); border-radius: 100px;
+            padding: 8px 16px; color: var(--text-body); font-size: 13px;
+            font-family: inherit; outline: none;
+            transition: border-color 0.2s, background 0.2s;
+        }
+        .detail-comment-input::placeholder { color: var(--text-muted); }
+        .detail-comment-input:focus {
+            border-color: rgba(255,255,255,0.2); background: rgba(255,255,255,0.07);
+        }
+        .detail-comment-send {
+            padding: 8px 16px; border-radius: 100px;
+            border: none; background: var(--accent); color: var(--accent-fg);
+            font-size: 12.5px; font-weight: 600; font-family: inherit;
+            cursor: pointer;
+            transition: opacity 0.15s, transform 0.18s cubic-bezier(0.16,1,0.3,1);
+        }
+        .detail-comment-send:hover:not(:disabled) { opacity: 0.88; transform: scale(1.03); }
+        .detail-comment-send:disabled { opacity: 0.4; cursor: not-allowed; }
+
+        /* ════ BİLDİRİM TOAST ════ */
+        .notif-toast {
+            position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(10px);
+            background: #141416; border: 1px solid rgba(255,255,255,0.12);
+            padding: 10px 18px; border-radius: 100px;
+            font-size: 13px; color: var(--text-h); font-weight: 500;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+            opacity: 0; pointer-events: none; white-space: nowrap;
+            transition: opacity 0.22s, transform 0.22s cubic-bezier(0.16,1,0.3,1);
+            z-index: 9999;
+        }
+        .notif-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+        /* ── Scrollbar ── */
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+
+        /* ── Responsive ── */
+        @media (max-width: 640px) {
+            .detail-wrap { padding: 16px 12px 60px; }
+            .topnav { padding: 0 16px; }
+            .nav-links { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="bg-gradient-orb"></div>
+
+<!-- ── Navbar ── -->
+<nav class="topnav">
+    <div class="nav-left">
+        <a href="{{ url_for('main.index') }}" class="nav-brand">
+            <span class="nav-brand-word">alvera</span>
+            <span class="nav-brand-social">Social</span>
+        </a>
+        <div class="nav-links">
+            <a href="{{ url_for('feed.index') }}" class="nav-link">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                Akış
+            </a>
+            <a href="{{ url_for('site.dashboard') }}" class="nav-link">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                Sitem
+            </a>
+            <a href="{{ url_for('main.discover') }}" class="nav-link">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                Keşfet
+            </a>
+            <a href="{{ url_for('dm.inbox') }}" class="nav-link">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                Mesajlar
+            </a>
+        </div>
+    </div>
+    <div class="nav-right">
+        <a href="{{ url_for('feed.social_profile', user_id=current_user.id) }}" class="nav-avatar">
+            {% if current_user.site and current_user.site.profile_photo %}
+                <img src="{{ url_for('static', filename='uploads/' + current_user.site.profile_photo) }}" alt="">
+            {% else %}
+                {{ (current_user.full_name or current_user.email)[0] | upper }}
+            {% endif %}
+        </a>
+    </div>
+</nav>
+
+<!-- ── Ana İçerik ── -->
+<div class="detail-wrap">
+
+    <!-- Breadcrumb + Geri -->
+    <div class="detail-topbar">
+        <a href="{{ url_for('feed.index') }}" class="back-btn">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+            Akışa Dön
+        </a>
+        <div class="detail-crumb">
+            <a href="{{ url_for('feed.social_profile', user_id=post.author.id) }}">
+                {{ post.author.full_name or post.author.email.split('@')[0] }}
+            </a>
+            <span class="detail-crumb-sep">·</span>
+            <span>{{ post.created_at.strftime('%d %b %Y') }}</span>
+        </div>
+    </div>
+
+    <!-- Paylaş Butonu -->
+    <div class="share-row">
+        <button class="share-btn" id="shareLinkBtn" onclick="copyPostLink()">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+            Linki Kopyala
+        </button>
+    </div>
+
+    <!-- Post Kartı -->
+    {% set author      = post.author %}
+    {% set author_od   = author.onboarding %}
+    {% set author_site = author.site %}
+    {% set is_own      = (author.id == current_user.id) %}
+
+    {% set type_svgs = {
+        'text':    ('<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>', 'Not',     'badge-text'),
+        'project': ('<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>',           'Proje',    'badge-project'),
+        'image':   ('<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>', 'Fotoğraf', 'badge-image'),
+        'code':    ('<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>',   'Kod',      'badge-code'),
+    } %}
+    {% set type_info = type_svgs.get(post.post_type, type_svgs['text']) %}
+
+    <div class="post-card
+        {% if post.post_type == 'project' %} post-project{% endif %}
+        {% if post.post_type == 'image'   %} post-image-card{% endif %}
+        {% if post.post_type == 'code'    %} post-code-card{% endif %}"
+         id="post-{{ post.slug }}"
+         data-post-id="{{ post.slug }}"
+         data-author-id="{{ author.id }}"
+         {% if is_own %}data-own="1"{% endif %}>
+
+        <div class="post-header">
+            <div class="post-author">
+                <a href="{{ url_for('feed.social_profile', user_id=author.id) }}" class="post-avatar">
+                    {% if author_site and author_site.avatar_file %}
+                    <img src="{{ author_site.avatar_file }}" alt="{{ author.full_name }}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">
+                    {% else %}
+                    {{ (author.full_name or author.email)[0] | upper }}
+                    {% endif %}
+                </a>
+                <div class="post-author-info">
+                    <a href="{{ url_for('feed.social_profile', user_id=author.id) }}" class="post-author-name">
+                        {{ author.full_name or author.email.split('@')[0] }}
+                    </a>
+                    <div class="post-meta-row">
+                        {% if author_od and author_od.job_title %}
+                        <span class="post-role-badge">{{ author_od.job_title }}</span>
+                        {% endif %}
+                        <span class="post-type-badge {{ type_info[2] }}">{{ type_info[0] | safe }} {{ type_info[1] }}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="post-header-right">
+                <span class="post-time">{{ post.created_at.strftime('%d %b %Y, %H:%M') }}</span>
+            </div>
+        </div>
+
+        <!-- İçerik -->
+        <div class="post-content">
+            {% if post.content and post.post_type != 'code' %}
+            <p class="post-text mention-body" data-raw="{{ post.content }}"></p>
+            {% endif %}
+
+            {% if post.post_type == 'image' and post.media_list %}
+            {% set imgs = post.media_list %}
+            <div class="post-image-grid post-image-grid--{{ imgs|length }}">
+                {% for img in imgs %}
+                <a href="/uploads/{{ author.id }}/{{ img.filename }}" target="_blank" class="post-image-item">
+                    <img src="/uploads/{{ author.id }}/{{ img.filename }}" alt="Görsel {{ loop.index }}" loading="lazy">
+                </a>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            {% if post.post_type == 'code' %}
+            {% if post.link_title %}
+            <p class="post-text mention-body" data-raw="{{ post.link_title }}" style="margin-bottom:10px;"></p>
+            {% endif %}
+            <div class="post-code-block">
+                <div class="post-code-header">
+                    <span class="post-code-lang">{{ post.code_language or 'code' }}</span>
+                    <button class="post-code-copy" onclick="copyCode(this)">⎘ Kopyala</button>
+                </div>
+                <pre class="post-code-pre"><code class="language-{{ post.code_language or 'plaintext' }}">{{ post.content | e }}</code></pre>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Aksiyonlar -->
+        <div class="post-actions">
+            <div class="post-actions-left">
+                <button class="post-action-btn onay-btn {% if post.is_liked_by(current_user) %}liked{% endif %}"
+                        onclick="toggleLike(this, '{{ post.slug }}')">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    <span class="action-label">{% if post.is_liked_by(current_user) %}Onaylandı{% else %}Onayla{% endif %}</span>
+                    <span class="onay-count">{{ post.like_count }}</span>
+                </button>
+
+                {% if not is_own %}
+                {% set already_yankaed = post.is_yankaed_by(current_user) %}
+                <button class="post-action-btn yanka-btn {% if already_yankaed %}yankaed{% endif %}"
+                        onclick="giveYanka(this, '{{ post.slug }}')"
+                        {% if already_yankaed %}disabled title="Bu gönderiye zaten Yankı verdin"{% endif %}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                    <span class="action-label">{% if already_yankaed %}Yankılandı{% else %}Yankı{% endif %}</span>
+                    <span class="yanka-count" data-post-id="{{ post.slug }}">{{ post.yanka_count }}</span>
+                </button>
+                {% endif %}
+            </div>
+            <div class="post-actions-right">
+                {% if not is_own %}
+                <button class="post-follow-btn {% if current_user.is_following(author) %}following{% endif %}"
+                        data-follow-uid="{{ author.id }}"
+                        onclick="toggleFollow(this, {{ author.id }})">
+                    {% if current_user.is_following(author) %}Takipte{% else %}Takip Et{% endif %}
+                </button>
+                {% endif %}
+
+                {% set vc = post.view_count %}
+                {% if vc > 0 %}
+                <span class="post-view-count">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                    {{ vc if vc < 1000 else (vc // 1000)|string ~ 'K' }}
+                </span>
+                {% endif %}
+
+                {% set is_saved = post.is_saved_by(current_user) %}
+                <button class="save-btn {% if is_saved %}saved{% endif %}"
+                        onclick="toggleSave(this, '{{ post.slug }}')"
+                        title="{% if is_saved %}Kaydı kaldır{% else %}Kaydet{% endif %}">
+                    <svg width="14" height="14" viewBox="0 0 24 24"
+                         fill="{% if is_saved %}currentColor{% else %}none{% endif %}"
+                         stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Yorumlar Bölümü -->
+    <div class="detail-comments-section">
+        <div class="detail-comments-header">
+            <span class="detail-comments-title">Yorumlar</span>
+            <span class="detail-comments-count" id="commentCountBadge">{{ post.comment_count }}</span>
+        </div>
+
+        <div class="detail-comment-list" id="detailCommentList">
+            {% set all_comments = post.comments.all() %}
+            {% if all_comments %}
+                {% for comment in all_comments %}
+                <div class="comment-item" id="comment-{{ comment.id }}">
+                    <a href="{{ url_for('feed.social_profile', user_id=comment.commenter.id) }}" class="comment-avatar" style="text-decoration:none;">
+                        {% set c_site = comment.commenter.site %}
+                        {% if c_site and c_site.avatar_file %}
+                        <img src="{{ c_site.avatar_file }}" alt="" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">
+                        {% else %}
+                        {{ (comment.commenter.full_name or comment.commenter.email)[0] | upper }}
+                        {% endif %}
+                    </a>
+                    <div class="comment-body">
+                        <a href="{{ url_for('feed.social_profile', user_id=comment.commenter.id) }}" class="comment-author" style="text-decoration:none;color:inherit;">
+                            {{ comment.commenter.full_name or comment.commenter.email.split('@')[0] }}
+                        </a>
+                        <span class="comment-text mention-body" data-raw="{{ comment.content }}"></span>
+                        <div class="comment-time">{{ comment.created_at.strftime('%d %b %Y, %H:%M') }}</div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+            <div class="no-comments">Henüz yorum yok. İlk yorumu sen yap!</div>
+            {% endif %}
+        </div>
+
+        <!-- Yorum Formu -->
+        <div class="detail-comment-form">
+            <div class="detail-comment-avatar">
+                {% if current_user.site and current_user.site.avatar_file %}
+                <img src="{{ current_user.site.avatar_file }}" alt="" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">
+                {% else %}
+                {{ (current_user.full_name or current_user.email)[0] | upper }}
+                {% endif %}
+            </div>
+            <input type="text"
+                   class="detail-comment-input"
+                   id="detailCommentInput"
+                   placeholder="Yorum yaz…"
+                   maxlength="500"
+                   onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendDetailComment();}">
+            <button class="detail-comment-send" id="detailCommentSend" onclick="sendDetailComment()">
+                Gönder
+            </button>
+        </div>
+    </div>
+
+</div>
+
+<!-- Toast -->
+<div class="notif-toast" id="notifToast"></div>
+
+<script>
+// ── @mention render ──────────────────────────────────────────────────────────
+document.querySelectorAll('.mention-body[data-raw]').forEach(el => {
+    const raw = el.dataset.raw || '';
+    el.innerHTML = raw.replace(/@([\w.\-]+)/g,
+        '<a href="/feed/u/$1" class="mention-link">@$1</a>');
+});
+
+// ── Syntax highlight ─────────────────────────────────────────────────────────
+document.querySelectorAll('pre code').forEach(el => hljs.highlightElement(el));
+
+// ── Toast ────────────────────────────────────────────────────────────────────
+function showNotif(msg) {
+    const t = document.getElementById('notifToast');
+    t.textContent = msg; t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+// ── Link Kopyala ─────────────────────────────────────────────────────────────
+function copyPostLink() {
+    const url = window.location.href;
+    navigator.clipboard.writeText(url).then(() => {
+        const btn = document.getElementById('shareLinkBtn');
+        btn.classList.add('copied');
+        btn.querySelector('svg').style.stroke = '#4ade80';
+        btn.childNodes[btn.childNodes.length - 1].textContent = ' Kopyalandı!';
+        setTimeout(() => {
+            btn.classList.remove('copied');
+            btn.querySelector('svg').style.stroke = '';
+            btn.childNodes[btn.childNodes.length - 1].textContent = ' Linki Kopyala';
+        }, 2200);
+    }).catch(() => showNotif('Kopyalanamadı.'));
+}
+
+// ── Kod Kopyala ───────────────────────────────────────────────────────────────
+function copyCode(btn) {
+    const pre = btn.closest('.post-code-block').querySelector('pre');
+    navigator.clipboard.writeText(pre.textContent).then(() => {
+        btn.textContent = '✓ Kopyalandı';
+        setTimeout(() => { btn.textContent = '⎘ Kopyala'; }, 1800);
+    });
+}
+
+// ── Onayla (Like) ─────────────────────────────────────────────────────────────
+async function toggleLike(btn, postId) {
+    const res  = await fetch(`/feed/post/${postId}/like`, { method: 'POST' });
+    const data = await res.json();
+    if (!data.ok) return;
+    btn.classList.toggle('liked', data.liked);
+    const label = btn.querySelector('.action-label');
+    const cnt   = btn.querySelector('.onay-count');
+    if (label) label.textContent = data.liked ? 'Onaylandı' : 'Onayla';
+    if (cnt)   cnt.textContent   = data.like_count;
+}
+
+// ── Yankı ─────────────────────────────────────────────────────────────────────
+let yankaRemaining = {{ yanka_remaining }};
+
+async function giveYanka(btn, postId) {
+    if (btn.disabled) return;
+    if (yankaRemaining <= 0) {
+        showNotif('⚡ Bugünkü Yankı kotanı doldurdun. Yarın devam!');
+        return;
+    }
+    btn.disabled = true;
+    try {
+        const res  = await fetch(`/feed/post/${postId}/yanka`, { method: 'POST' });
+        const data = await res.json();
+        if (data.ok) {
+            btn.classList.add('yankaed');
+            const label = btn.querySelector('.action-label');
+            const cnt   = btn.querySelector('.yanka-count');
+            if (label) label.textContent = 'Yankılandı';
+            if (cnt)   cnt.textContent   = data.yanka_count;
+            yankaRemaining = data.remaining;
+
+            btn.classList.add('yanka-burst');
+            btn.addEventListener('animationend', (e) => {
+                if (e.target === btn) btn.classList.remove('yanka-burst');
+            }, { once: true });
+
+            const card = btn.closest('.post-card');
+            if (card) {
+                card.classList.remove('yanka-hype');
+                void card.offsetWidth;
+                card.classList.add('yanka-hype');
+                const onEnd = (e) => {
+                    if (e.target === card && e.animationName === 'yankaAmberPulse') {
+                        card.classList.remove('yanka-hype');
+                        card.removeEventListener('animationend', onEnd);
+                    }
+                };
+                card.addEventListener('animationend', onEnd);
+            }
+        } else {
+            btn.disabled = false;
+            showNotif(data.error || '⚡ Yankı verilemedi.');
+        }
+    } catch (_) { btn.disabled = false; }
+}
+
+// ── Takip Et ─────────────────────────────────────────────────────────────────
+async function toggleFollow(btn, userId) {
+    const res  = await fetch(`/feed/follow/${userId}`, { method: 'POST' });
+    const data = await res.json();
+    if (!data.ok) return;
+    btn.classList.toggle('following', data.following);
+    btn.textContent = data.following ? 'Takipte' : 'Takip Et';
+}
+
+// ── Bookmark ─────────────────────────────────────────────────────────────────
+async function toggleSave(btn, postId) {
+    const res  = await fetch(`/feed/post/${postId}/save`, { method: 'POST' });
+    const data = await res.json();
+    if (!data.ok) return;
+    btn.classList.toggle('saved', data.saved);
+    const svg = btn.querySelector('svg');
+    if (svg) svg.setAttribute('fill', data.saved ? 'currentColor' : 'none');
+    btn.title = data.saved ? 'Kaydı kaldır' : 'Kaydet';
+    showNotif(data.saved ? '🔖 Kaydedildi' : 'Kayıt kaldırıldı');
+}
+
+// ── Yorum Gönder ─────────────────────────────────────────────────────────────
+async function sendDetailComment() {
+    const input   = document.getElementById('detailCommentInput');
+    const sendBtn = document.getElementById('detailCommentSend');
+    const content = input.value.trim();
+    if (!content) return;
+
+    sendBtn.disabled = true;
+    try {
+        const res  = await fetch(`/feed/post/{{ post.slug }}/comment`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ content }),
+        });
+        const data = await res.json();
+        if (data.ok) {
+            input.value = '';
+            // Yorum listesine ekle
+            const list = document.getElementById('detailCommentList');
+            const noComments = list.querySelector('.no-comments');
+            if (noComments) noComments.remove();
+
+            const tmp = document.createElement('div');
+            tmp.innerHTML = data.html;
+            // Yorumu detail style'ına uygun hale getir
+            const ci = tmp.firstElementChild;
+            if (ci) {
+                ci.style.animation = 'fadeUp 0.3s cubic-bezier(0.16,1,0.3,1) both';
+                list.appendChild(ci);
+                ci.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+
+            // Yorum sayısını güncelle
+            const badge = document.getElementById('commentCountBadge');
+            if (badge) badge.textContent = data.comment_count;
+        } else {
+            showNotif(data.error || 'Yorum gönderilemedi.');
+        }
+    } catch(_) {
+        showNotif('Bir hata oluştu.');
+    } finally {
+        sendBtn.disabled = false;
+    }
+}
+</script>
+</body>
+</html>

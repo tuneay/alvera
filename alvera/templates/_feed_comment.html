@@ -1,0 +1,22 @@
+{# ─── Akış: Tek Yorum ─────────────────────────────────────────────────────────
+   Değişkenler: comment (PostComment)
+──────────────────────────────────────────────────────────────────────────── #}
+<div class="comment-item" id="comment-{{ comment.id }}">
+    <a href="{{ url_for('feed.social_profile', user_id=comment.commenter.id) }}"
+       class="comment-avatar" style="text-decoration:none;">
+        {% set c_site = comment.commenter.site %}
+        {% if c_site and c_site.avatar_file %}
+        <img src="{{ c_site.avatar_file }}" alt="" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">
+        {% else %}
+        {{ (comment.commenter.full_name or comment.commenter.email)[0] | upper }}
+        {% endif %}
+    </a>
+    <div class="comment-body">
+        <a href="{{ url_for('feed.social_profile', user_id=comment.commenter.id) }}"
+           class="comment-author" style="text-decoration:none; color:inherit;">
+            {{ comment.commenter.full_name or comment.commenter.email.split('@')[0] }}
+        </a>
+        <div class="comment-text mention-body" data-raw="{{ comment.content }}"></div>
+        <div class="comment-time">{{ comment.created_at.strftime('%d %b %H:%M') }}</div>
+    </div>
+</div>

@@ -1,0 +1,2697 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard — Alvera</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --white:          #FFFFFF;
+            --bg:             #FAFAFA;
+            --text-primary:   #0A0A0A;
+            --text-secondary: #525252;
+            --text-muted:     #A3A3A3;
+            --border:         #E5E5E5;
+            --green:          #16a34a;
+            --green-bg:       #f0fdf4;
+            --green-border:   #bbf7d0;
+            --ease:           cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg);
+            color: var(--text-primary);
+            -webkit-font-smoothing: antialiased;
+            min-height: 100vh;
+        }
+
+        .layout { display: flex; min-height: 100vh; }
+
+        /* ─── Sidebar ─── */
+        .sidebar {
+            width: 220px;
+            background: var(--white);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            padding: 24px 16px;
+            position: fixed;
+            top: 0; left: 0; bottom: 0;
+            z-index: 100;
+        }
+
+        .sidebar-logo {
+            font-size: 16px;
+            font-weight: 600;
+            letter-spacing: -0.5px;
+            color: var(--text-primary);
+            text-decoration: none;
+            padding: 0 8px;
+            margin-bottom: 28px;
+            display: block;
+        }
+
+        .sidebar-nav { display: flex; flex-direction: column; gap: 2px; }
+
+        .sidebar-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 10px;
+            border-radius: 7px;
+            font-size: 13.5px;
+            font-weight: 450;
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: background 0.25s var(--ease), color 0.25s var(--ease);
+        }
+
+        .sidebar-item:hover, .sidebar-item.active {
+            background: var(--bg);
+            color: var(--text-primary);
+        }
+
+        .sidebar-item.active { font-weight: 500; }
+        .sidebar-icon { font-size: 15px; width: 18px; text-align: center; }
+        .sidebar-section-label {
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+            color: #9ca3af;
+            padding: 4px 10px 2px;
+            margin-bottom: 2px;
+        }
+
+        .soon {
+            font-size: 10px;
+            font-weight: 500;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-left: auto;
+        }
+
+        .sidebar-bottom {
+            margin-top: auto;
+            border-top: 1px solid var(--border);
+            padding-top: 16px;
+        }
+
+        .sidebar-user {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 10px;
+            border-radius: 7px;
+            transition: background 0.25s var(--ease);
+        }
+
+        .sidebar-user:hover { background: var(--bg); }
+
+        .user-avatar {
+            width: 28px; height: 28px;
+            background: var(--text-primary);
+            color: var(--white);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+
+        .user-info .name  { font-size: 12.5px; font-weight: 500; color: var(--text-primary); }
+        .user-info .email { font-size: 11px; color: var(--text-muted); }
+
+        /* ─── Content ─── */
+        .content {
+            margin-left: 220px;
+            flex: 1;
+            padding: 40px 48px;
+        }
+
+        .page-header { margin-bottom: 32px; }
+
+        .page-title {
+            font-size: 22px;
+            font-weight: 700;
+            letter-spacing: -0.7px;
+            margin-bottom: 5px;
+        }
+
+        .page-sub { font-size: 14px; color: var(--text-secondary); }
+
+        /* ══════════════════════════════════════
+           STATE A — Site yok
+        ══════════════════════════════════════ */
+        .empty-state {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 64px 40px;
+            text-align: center;
+            max-width: 500px;
+        }
+
+        .empty-icon { font-size: 32px; margin-bottom: 16px; }
+
+        .empty-title {
+            font-size: 18px;
+            font-weight: 600;
+            letter-spacing: -0.5px;
+            margin-bottom: 8px;
+        }
+
+        .empty-sub {
+            font-size: 14px;
+            color: var(--text-secondary);
+            line-height: 1.7;
+            margin-bottom: 28px;
+        }
+
+        .btn-start {
+            background: var(--text-primary);
+            color: var(--white);
+            padding: 11px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.3s var(--ease);
+        }
+
+        .btn-start:hover {
+            background: #1f1f1f;
+            transform: translateY(-1px);
+            box-shadow: 0 6px 18px rgba(0,0,0,0.13);
+        }
+
+        /* ══════════════════════════════════════
+           STATE B — Site yayında
+        ══════════════════════════════════════ */
+        .site-dashboard { max-width: 720px; }
+
+        /* Live card */
+        .live-card {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .live-card-top {
+            padding: 24px 28px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+        }
+
+        /* Müsait toggle */
+        .avail-toggle {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 11.5px;
+            font-weight: 600;
+            padding: 4px 10px;
+            border-radius: 100px;
+            border: 1px solid var(--border);
+            background: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.25s var(--ease);
+        }
+
+        .avail-toggle:hover {
+            border-color: #16a34a;
+            color: #16a34a;
+        }
+
+        .avail-toggle.active {
+            background: var(--green-bg);
+            border-color: var(--green-border);
+            color: var(--green);
+        }
+
+        .live-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--green-bg);
+            border: 1px solid var(--green-border);
+            color: var(--green);
+            font-size: 12px;
+            font-weight: 600;
+            padding: 4px 10px;
+            border-radius: 100px;
+            margin-bottom: 10px;
+        }
+
+        .live-dot {
+            width: 6px; height: 6px;
+            border-radius: 50%;
+            background: var(--green);
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(22,163,74,0.3); }
+            50%       { box-shadow: 0 0 0 4px rgba(22,163,74,0); }
+        }
+
+        .live-headline {
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: -0.6px;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+
+        .live-tagline {
+            font-size: 13.5px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        .live-card-actions { display: flex; gap: 8px; flex-shrink: 0; }
+
+        .btn-view {
+            background: var(--text-primary);
+            color: var(--white);
+            border: 1px solid var(--text-primary);
+            padding: 9px 18px;
+            border-radius: 8px;
+            font-size: 13.5px;
+            font-weight: 500;
+            font-family: inherit;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.3s var(--ease);
+        }
+
+        .btn-view:hover {
+            background: #1f1f1f;
+            transform: translateY(-1px);
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: var(--text-secondary);
+            border: 1px solid var(--border);
+            padding: 9px 18px;
+            border-radius: 8px;
+            font-size: 13.5px;
+            font-weight: 500;
+            font-family: inherit;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.3s var(--ease);
+        }
+
+        .btn-outline:hover {
+            border-color: var(--text-primary);
+            color: var(--text-primary);
+        }
+
+        /* URL bar */
+        .live-url-bar {
+            border-top: 1px solid var(--border);
+            padding: 14px 28px;
+            background: var(--bg);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .url-display {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .url-lock { font-size: 11px; }
+
+        .url-text {
+            font-weight: 500;
+            color: var(--text-primary);
+            letter-spacing: -0.2px;
+        }
+
+        .copy-btn {
+            background: none;
+            border: 1px solid var(--border);
+            padding: 5px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.25s var(--ease);
+        }
+
+        .copy-btn:hover {
+            border-color: var(--text-primary);
+            color: var(--text-primary);
+        }
+
+        /* Stats row */
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px 22px;
+        }
+
+        .stat-value {
+            font-size: 26px;
+            font-weight: 700;
+            letter-spacing: -1px;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            font-size: 12.5px;
+            color: var(--text-muted);
+        }
+
+        .stat-soon {
+            font-size: 11px;
+            font-weight: 500;
+            color: var(--text-muted);
+            background: var(--bg);
+            border: 1px solid var(--border);
+            padding: 2px 8px;
+            border-radius: 4px;
+            margin-left: 6px;
+        }
+
+        /* Skills */
+        .skills-card {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 22px 24px;
+        }
+
+        .skills-card-label {
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 1.2px;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-bottom: 14px;
+        }
+
+        .skills-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 7px;
+        }
+
+        .skill-chip {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            padding: 5px 12px;
+            border-radius: 100px;
+            font-size: 12.5px;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        /* ══════════════════════════════════════
+           POSTS — Gönderi Bölümü
+        ══════════════════════════════════════ */
+        .posts-section { margin-top: 28px; }
+
+        .posts-section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+
+        .posts-section-title {
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: var(--text-muted);
+        }
+
+        .btn-suggest {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12.5px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            background: none;
+            border: 1px solid var(--border);
+            padding: 6px 13px;
+            border-radius: 7px;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.25s var(--ease);
+        }
+
+        .btn-suggest:hover {
+            border-color: var(--text-primary);
+            color: var(--text-primary);
+            background: var(--bg);
+        }
+
+        .btn-suggest.loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        /* ── AI Öneri Paneli ── */
+        .suggest-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.35);
+            z-index: 400;
+            display: flex;
+            align-items: flex-end;
+            justify-content: flex-end;
+            padding: 24px;
+            animation: fadeIn 0.2s ease both;
+        }
+
+        .suggest-overlay.hidden { display: none; }
+
+        .suggest-panel {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            width: 420px;
+            max-width: 95vw;
+            max-height: 85vh;
+            overflow-y: auto;
+            padding: 28px;
+            box-shadow: 0 24px 64px rgba(0,0,0,0.14);
+            animation: slideUp 0.35s cubic-bezier(0.4,0,0.2,1) both;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .suggest-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            margin-bottom: 6px;
+        }
+
+        .suggest-title {
+            font-size: 16px;
+            font-weight: 700;
+            letter-spacing: -0.4px;
+            color: var(--text-primary);
+        }
+
+        .suggest-close {
+            background: none;
+            border: none;
+            font-size: 18px;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 0 4px;
+            line-height: 1;
+            transition: color 0.2s;
+        }
+
+        .suggest-close:hover { color: var(--text-primary); }
+
+        .suggest-analysis {
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 20px;
+            padding: 12px 14px;
+            background: var(--bg);
+            border-radius: 9px;
+            border: 1px solid var(--border);
+        }
+
+        .suggest-loading {
+            text-align: center;
+            padding: 40px 0;
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        .suggest-spinner {
+            display: inline-block;
+            width: 22px; height: 22px;
+            border: 2px solid var(--border);
+            border-top-color: var(--text-primary);
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+            margin-bottom: 12px;
+        }
+
+        .suggest-error {
+            color: #dc2626;
+            font-size: 13px;
+            text-align: center;
+            padding: 20px 0;
+        }
+
+        .suggest-cards {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .suggest-card {
+            border: 1.5px solid var(--border);
+            border-radius: 12px;
+            padding: 16px 18px;
+            transition: border-color 0.2s;
+        }
+
+        .suggest-card:hover { border-color: #c0c0c0; }
+
+        .suggest-card-num {
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-bottom: 5px;
+        }
+
+        .suggest-card-title {
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: -0.3px;
+            color: var(--text-primary);
+            margin-bottom: 5px;
+        }
+
+        .suggest-card-why {
+            font-size: 12px;
+            color: var(--text-muted);
+            line-height: 1.5;
+            margin-bottom: 12px;
+        }
+
+        .suggest-card-draft {
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.65;
+            background: var(--bg);
+            border-radius: 8px;
+            padding: 10px 12px;
+            margin-bottom: 12px;
+            white-space: pre-line;
+        }
+
+        .btn-use-draft {
+            width: 100%;
+            background: var(--text-primary);
+            color: var(--white);
+            border: none;
+            padding: 8px 0;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            font-family: inherit;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-use-draft:hover { background: #1f1f1f; }
+
+        /* ── Bio Yenileme ── */
+        .bio-refresh-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .btn-bio-refresh {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 12.5px;
+            font-weight: 500;
+            color: var(--text-muted);
+            background: none;
+            border: 1px solid var(--border);
+            padding: 6px 12px;
+            border-radius: 7px;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.25s var(--ease);
+        }
+
+        .btn-bio-refresh:hover {
+            border-color: var(--text-primary);
+            color: var(--text-primary);
+        }
+
+        .bio-refresh-msg {
+            font-size: 12px;
+            color: #16a34a;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .bio-refresh-msg.visible { opacity: 1; }
+
+        /* ── Compose box ── */
+        .compose-box {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 20px 22px;
+            margin-bottom: 16px;
+            transition: border-color 0.25s;
+        }
+
+        .compose-box:focus-within {
+            border-color: #c0c0c0;
+        }
+
+        .compose-textarea {
+            width: 100%;
+            border: none;
+            outline: none;
+            font-family: inherit;
+            font-size: 14.5px;
+            color: var(--text-primary);
+            line-height: 1.65;
+            resize: none;
+            min-height: 72px;
+            background: transparent;
+        }
+
+        .compose-textarea::placeholder { color: var(--text-muted); }
+
+        .compose-divider {
+            height: 1px;
+            background: var(--border);
+            margin: 14px 0;
+        }
+
+        .compose-bottom {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .compose-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .compose-attach {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-muted);
+            background: none;
+            border: 1px solid var(--border);
+            padding: 6px 12px;
+            border-radius: 7px;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.2s;
+        }
+
+        .compose-attach:hover {
+            border-color: var(--text-primary);
+            color: var(--text-primary);
+        }
+
+        .compose-count {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .compose-count.warn { color: var(--error, #dc2626); }
+
+        .btn-post {
+            background: var(--text-primary);
+            color: var(--white);
+            border: none;
+            padding: 8px 20px;
+            border-radius: 8px;
+            font-size: 13.5px;
+            font-weight: 500;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.25s;
+            flex-shrink: 0;
+        }
+
+        .btn-post:hover {
+            background: #1f1f1f;
+        }
+
+        .btn-post:disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
+        }
+
+        /* Medya önizleme */
+        .media-previews {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .media-preview-item {
+            position: relative;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+
+        .media-preview-item img {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            display: block;
+        }
+
+        .media-preview-item.doc-preview {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 12px;
+            background: var(--bg);
+            font-size: 12px;
+            color: var(--text-secondary);
+            max-width: 200px;
+        }
+
+        .media-remove {
+            position: absolute;
+            top: 4px; right: 4px;
+            width: 18px; height: 18px;
+            background: rgba(0,0,0,0.6);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+        }
+
+        /* ── Post cards ── */
+        .post-card {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 18px 22px;
+            margin-bottom: 12px;
+            animation: fadeSlideUp 0.35s cubic-bezier(0.4,0,0.2,1) both;
+        }
+
+        @keyframes fadeSlideUp {
+            from { opacity: 0; transform: translateY(12px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .post-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .post-meta { display: flex; align-items: center; gap: 8px; }
+
+        .post-date {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .post-delete-btn {
+            background: none;
+            border: 1px solid transparent;
+            color: var(--text-muted);
+            font-size: 12px;
+            cursor: pointer;
+            padding: 3px 7px;
+            border-radius: 5px;
+            font-family: inherit;
+            transition: all 0.2s;
+        }
+
+        .post-delete-btn:hover {
+            background: #fef2f2;
+            border-color: #fecaca;
+            color: #dc2626;
+        }
+
+        .post-content {
+            font-size: 14.5px;
+            color: var(--text-primary);
+            line-height: 1.7;
+            white-space: pre-line;
+            margin-bottom: 12px;
+        }
+
+        .post-content:last-child { margin-bottom: 0; }
+
+        /* ── Post media ── */
+        .post-media {
+            display: grid;
+            gap: 6px;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .post-media.single { grid-template-columns: 1fr; }
+        .post-media.multi  { grid-template-columns: repeat(2, 1fr); }
+
+        .media-item img,
+        .media-item video {
+            width: 100%;
+            display: block;
+            border-radius: 8px;
+            cursor: pointer;
+            max-height: 320px;
+            object-fit: cover;
+            border: 1px solid var(--border);
+        }
+
+        .media-doc {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 14px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            text-decoration: none;
+            color: var(--text-secondary);
+            font-size: 13px;
+            transition: background 0.2s;
+        }
+
+        .media-doc:hover { background: #f0f0f0; }
+        .doc-icon { font-size: 16px; }
+        .doc-name { flex: 1; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .doc-arrow { font-size: 13px; color: var(--text-muted); }
+
+        /* Empty posts */
+        .posts-empty {
+            text-align: center;
+            padding: 36px 20px;
+            color: var(--text-muted);
+            font-size: 13.5px;
+            border: 1px dashed var(--border);
+            border-radius: 14px;
+        }
+
+        /* Lightbox */
+        .lightbox {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.88);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: zoom-out;
+            animation: fadeIn 0.2s ease both;
+        }
+
+        .lightbox img {
+            max-width: 90vw;
+            max-height: 90vh;
+            object-fit: contain;
+            border-radius: 8px;
+        }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        /* Error toast */
+        .post-error {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            color: #dc2626;
+            font-size: 13px;
+            padding: 9px 14px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+        }
+
+        .post-error.hidden { display: none; }
+
+        /* ─── Analytics gate & teaser ─── */
+        .analytics-gate {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            font-size: 11.5px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            cursor: pointer;
+            border-radius: 12px;
+            transition: background 0.2s;
+        }
+
+        .analytics-gate:hover { background: rgba(250,250,250,0.85); color: var(--text-primary); }
+        .analytics-gate-lock  { font-size: 13px; }
+
+        .analytics-teaser-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            border-radius: 10px;
+            padding: 11px 16px;
+            font-size: 13px;
+            color: #166534;
+            cursor: pointer;
+            margin-bottom: 20px;
+            transition: background 0.2s;
+        }
+
+        .analytics-teaser-bar:hover { background: #dcfce7; }
+
+        .teaser-cta {
+            font-size: 12px;
+            font-weight: 600;
+            color: #15803d;
+            white-space: nowrap;
+        }
+
+        /* ═══════════════════════════════════════════
+           UPSELL MODAL
+        ═══════════════════════════════════════════ */
+        .upsell-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.45);
+            z-index: 9000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            animation: fadeIn 0.2s ease;
+        }
+
+        .upsell-overlay.hidden { display: none; }
+
+        .upsell-modal {
+            background: var(--white);
+            border-radius: 20px;
+            padding: 36px 32px 28px;
+            max-width: 420px;
+            width: 100%;
+            position: relative;
+            box-shadow: 0 24px 64px rgba(0,0,0,0.18);
+            animation: fadeUp 0.3s var(--ease);
+        }
+
+        .upsell-close {
+            position: absolute;
+            top: 14px; right: 14px;
+            background: none;
+            border: none;
+            font-size: 16px;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 5px;
+            transition: all 0.2s;
+        }
+
+        .upsell-close:hover { background: var(--bg); color: var(--text-primary); }
+
+        .upsell-lock-icon {
+            font-size: 28px;
+            margin-bottom: 14px;
+        }
+
+        .upsell-badge {
+            display: inline-flex;
+            align-items: center;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            font-size: 10.5px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            padding: 3px 10px;
+            border-radius: 4px;
+            margin-bottom: 12px;
+        }
+
+        .upsell-title {
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: -0.6px;
+            color: var(--text-primary);
+            margin-bottom: 6px;
+        }
+
+        .upsell-sub {
+            font-size: 13.5px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .upsell-features {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 24px;
+        }
+
+        .upsell-features li {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .upsell-features .uf-check { color: #16a34a; font-size: 13px; }
+
+        .upsell-price-row {
+            display: flex;
+            align-items: baseline;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .upsell-price-old {
+            font-size: 14px;
+            color: var(--text-muted);
+            text-decoration: line-through;
+        }
+
+        .upsell-price-new {
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: -1px;
+            color: var(--text-primary);
+        }
+
+        .upsell-price-period {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .btn-upsell-primary {
+            display: block;
+            text-align: center;
+            background: var(--text-primary);
+            color: var(--white);
+            padding: 13px 20px;
+            border-radius: 10px;
+            font-size: 14.5px;
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.25s var(--ease);
+            margin-bottom: 10px;
+        }
+
+        .btn-upsell-primary:hover {
+            background: #1a1a1a;
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+        }
+
+        .btn-upsell-later {
+            display: block;
+            text-align: center;
+            font-size: 13px;
+            color: var(--text-muted);
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-family: inherit;
+            transition: color 0.2s;
+        }
+
+        .btn-upsell-later:hover { color: var(--text-secondary); }
+
+        /* ═══════════════════════════════════════════
+           SETUP GUIDE (Tamamlama Rehberi)
+        ═══════════════════════════════════════════ */
+        .setup-guide {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            animation: fadeSlideUp 0.4s var(--ease) 0.1s both;
+        }
+
+        .setup-guide-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            padding: 18px 24px 10px;
+        }
+
+        .setup-guide-title {
+            font-size: 13.5px;
+            font-weight: 600;
+            color: var(--text-primary);
+            letter-spacing: -0.2px;
+        }
+
+        .setup-guide-sub {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 3px;
+        }
+
+        .btn-dismiss-guide {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 14px;
+            cursor: pointer;
+            padding: 2px 6px;
+            border-radius: 4px;
+            transition: all 0.2s;
+            line-height: 1;
+            margin-top: -2px;
+        }
+
+        .btn-dismiss-guide:hover {
+            background: var(--bg);
+            color: var(--text-secondary);
+        }
+
+        .guide-progress-wrap {
+            padding: 4px 24px 16px;
+        }
+
+        .guide-progress-bar {
+            height: 3px;
+            background: var(--border);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .guide-progress-fill {
+            height: 100%;
+            background: var(--text-primary);
+            border-radius: 2px;
+            transition: width 0.6s var(--ease);
+        }
+
+        .guide-progress-label {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 7px;
+            letter-spacing: 0.1px;
+        }
+
+        .setup-steps {
+            border-top: 1px solid var(--border);
+            padding: 10px 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 1px;
+        }
+
+        .setup-step {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 9px 10px;
+            border-radius: 9px;
+            text-decoration: none;
+            color: inherit;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .setup-step:hover { background: var(--bg); }
+
+        .step-check {
+            width: 20px; height: 20px;
+            border-radius: 50%;
+            border: 1.5px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-size: 9px;
+            transition: all 0.3s var(--ease);
+        }
+
+        .setup-step.done .step-check {
+            background: #f0fdf4;
+            border-color: #86efac;
+            color: #16a34a;
+        }
+
+        .step-label {
+            font-size: 13px;
+            color: var(--text-secondary);
+            flex: 1;
+            letter-spacing: -0.1px;
+        }
+
+        .setup-step.done .step-label {
+            color: var(--text-muted);
+            text-decoration: line-through;
+        }
+
+        .step-action-hint {
+            font-size: 11.5px;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 3px;
+        }
+
+        .setup-step:not(.done):hover .step-action-hint {
+            color: var(--text-primary);
+        }
+
+        /* ─── Responsive ─── */
+        @media (max-width: 768px) {
+            .sidebar { display: none; }
+            .content { margin-left: 0; padding: 24px 20px; }
+            .stats-row { grid-template-columns: 1fr 1fr; }
+            .live-card-top { flex-direction: column; align-items: flex-start; }
+        }
+
+        /* ── Profil Skoru ─────────────────────────────────────────────────── */
+        .score-widget {
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 20px 24px;
+            display: flex;
+            align-items: center;
+            gap: 24px;
+            margin-bottom: 20px;
+        }
+        .score-ring-wrap {
+            position: relative;
+            width: 72px; height: 72px;
+            flex-shrink: 0;
+        }
+        .score-ring-wrap svg { transform: rotate(-90deg); }
+        .score-ring-bg { fill: none; stroke: #f0f0f0; stroke-width: 7; }
+        .score-ring-fill {
+            fill: none; stroke: #111; stroke-width: 7;
+            stroke-linecap: round;
+            stroke-dasharray: 195.8;
+            stroke-dashoffset: 195.8;
+            transition: stroke-dashoffset 1s ease;
+        }
+        .score-ring-fill.green { stroke: #16a34a; }
+        .score-ring-fill.yellow { stroke: #d97706; }
+        .score-num {
+            position: absolute; inset: 0;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 18px; font-weight: 800; color: #111;
+        }
+        .score-body { flex: 1; min-width: 0; }
+        .score-title { font-size: 14px; font-weight: 700; color: #111; margin-bottom: 4px; }
+        .score-sub   { font-size: 12px; color: #888; margin-bottom: 10px; }
+        .score-tips  { display: flex; flex-direction: column; gap: 5px; }
+        .score-tip {
+            display: flex; align-items: center; gap: 8px;
+            font-size: 12px; color: #555;
+        }
+        .score-tip-dot {
+            width: 6px; height: 6px; border-radius: 50%;
+            background: #d97706; flex-shrink: 0;
+        }
+        .score-tip-dot.done { background: #16a34a; }
+        .score-tip a { color: #111; font-weight: 600; text-decoration: none; }
+        .score-tip a:hover { text-decoration: underline; }
+
+        /* ── Araçlar Grid ─────────────────────────────────────────────────── */
+        .tools-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        @media (max-width: 860px) { .tools-grid { grid-template-columns: 1fr; } }
+        .tool-card {
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 20px 22px;
+        }
+        .tool-card-header {
+            display: flex; align-items: center; gap: 10px;
+            margin-bottom: 14px;
+        }
+        .tool-icon {
+            width: 36px; height: 36px; border-radius: 9px;
+            background: #f4f4f5;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 17px;
+        }
+        .tool-title  { font-size: 14px; font-weight: 700; color: #111; }
+        .tool-sub    { font-size: 12px; color: #888; margin-top: 1px; }
+
+        /* E-posta İmzası */
+        .sig-preview {
+            background: #fafafa;
+            border: 1px solid #ebebeb;
+            border-radius: 8px;
+            padding: 14px 16px;
+            margin-bottom: 12px;
+            font-family: Arial, sans-serif;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+        .sig-name  { font-weight: 700; font-size: 14px; color: #111; }
+        .sig-title { color: #666; font-size: 12px; }
+        .sig-divider { border: none; border-top: 1px solid #e0e0e0; margin: 8px 0; }
+        .sig-link  { color: #111; text-decoration: none; font-size: 12px; }
+        .sig-socials { margin-top: 5px; display: flex; gap: 10px; flex-wrap: wrap; }
+        .sig-social-item { font-size: 11px; color: #555; }
+
+        .btn-copy-sig {
+            width: 100%;
+            padding: 9px 0;
+            background: #111; color: #fff;
+            border: none; border-radius: 8px;
+            font-size: 13px; font-weight: 600;
+            cursor: pointer;
+            transition: background .15s;
+        }
+        .btn-copy-sig:hover { background: #333; }
+        .btn-copy-sig.copied { background: #16a34a; }
+
+        /* QR Kartvizit */
+        .qr-card-preview {
+            background: #111;
+            border-radius: 10px;
+            padding: 16px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+        .qr-card-info { flex: 1; min-width: 0; }
+        .qr-card-name  { font-size: 14px; font-weight: 700; color: #fff; }
+        .qr-card-title { font-size: 11px; color: rgba(255,255,255,.55); margin-top: 2px; }
+        .qr-card-url   { font-size: 11px; color: rgba(255,255,255,.4); margin-top: 6px; }
+        .qr-box {
+            width: 62px; height: 62px;
+            background: #fff;
+            border-radius: 6px;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+            overflow: hidden;
+        }
+        .qr-box canvas, .qr-box img { width: 54px !important; height: 54px !important; }
+        .btn-dl-qr {
+            width: 100%;
+            padding: 9px 0;
+            background: #fff; color: #111;
+            border: 1px solid var(--border); border-radius: 8px;
+            font-size: 13px; font-weight: 600;
+            cursor: pointer;
+            transition: background .15s;
+        }
+        .btn-dl-qr:hover { background: #f4f4f5; }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+<body>
+<div class="layout">
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <a href="{{ url_for('main.index') }}" class="sidebar-logo">alvera</a>
+        <nav class="sidebar-nav">
+            <!-- ── Sitem bölümü ── -->
+            <div class="sidebar-section-label">Sitem</div>
+            <a href="{{ url_for('site.dashboard') }}" class="sidebar-item active">
+                <span class="sidebar-icon">⊡</span> Genel Bakış
+            </a>
+            <a href="{% if site and site.slug %}/{{ site.slug }}{% else %}#{% endif %}"
+               {% if site and site.slug %}target="_blank"{% endif %}
+               class="sidebar-item">
+                <span class="sidebar-icon">✦</span> Sayfam
+                {% if not (site and site.is_published) %}<span class="soon">Yakında</span>{% endif %}
+            </a>
+            <a href="{% if site and site.is_published %}{{ url_for('site.edit') }}{% else %}#{% endif %}"
+               class="sidebar-item {% if request.path.startswith('/site/edit') %}active{% endif %}">
+                <span class="sidebar-icon">✏️</span> İçerik Düzenle
+                {% if not (site and site.is_published) %}<span class="soon">Yakında</span>{% endif %}
+            </a>
+            <a href="#" class="sidebar-item">
+                <span class="sidebar-icon">📊</span> Analitik
+                <span class="soon">Yakında</span>
+            </a>
+            <a href="#scoreWidget" class="sidebar-item">
+                <span class="sidebar-icon">⚡</span> Araçlar
+            </a>
+            <!-- ── Social bölümü ── -->
+            <div class="sidebar-section-label" style="margin-top:12px;">Social</div>
+            <a href="{{ url_for('feed.index') }}" class="sidebar-item {% if request.path.startswith('/feed') %}active{% endif %}">
+                <span class="sidebar-icon">◎</span> Akış
+            </a>
+            <a href="{{ url_for('mindmap.my_map') }}" class="sidebar-item {% if request.path.startswith('/mindmap') %}active{% endif %}">
+                <span class="sidebar-icon">🧠</span> Zihin Haritası
+            </a>
+            <a href="{{ url_for('dm.inbox') }}" class="sidebar-item {% if request.path.startswith('/dm') %}active{% endif %}" id="sidebarDmLink">
+                <span class="sidebar-icon">✉</span> Mesajlar
+                <span id="sidebarDmBadge" style="display:none; margin-left:auto; background:#ef4444; color:#fff; font-size:10px; font-weight:700; border-radius:8px; padding:1px 6px; line-height:16px;">0</span>
+            </a>
+            <a href="{{ url_for('main.discover') }}" class="sidebar-item">
+                <span class="sidebar-icon">⊙</span> Keşfet
+            </a>
+            <a href="{{ url_for('notifications.index') }}" class="sidebar-item {% if request.path.startswith('/notifications') %}active{% endif %}" id="sidebarNotifLink">
+                <span class="sidebar-icon">🔔</span> Bildirimler
+                <span id="sidebarNotifBadge" style="display:none; margin-left:auto; background:#111; color:#fff; font-size:10px; font-weight:700; border-radius:8px; padding:1px 6px; line-height:16px;">0</span>
+            </a>
+        </nav>
+        <div class="sidebar-bottom">
+            <div class="sidebar-user">
+                <div class="user-avatar">
+                    {{ user.full_name[0].upper() if user.full_name else user.email[0].upper() }}
+                </div>
+                <div class="user-info">
+                    <div class="name">{{ user.full_name or 'Kullanıcı' }}</div>
+                    <div class="email">{{ user.email }}</div>
+                </div>
+            </div>
+            <a href="{{ url_for('auth.logout') }}" class="sidebar-item" style="margin-top:4px;">
+                <span class="sidebar-icon">↩</span> Çıkış Yap
+            </a>
+        </div>
+    </aside>
+
+    <!-- Content -->
+    <main class="content">
+        <div class="page-header">
+            <h1 class="page-title">
+                Merhaba, {{ user.full_name.split()[0] if user.full_name else 'Hoş geldiniz' }} 👋
+            </h1>
+            <p class="page-sub">Dijital kimlik merkeziniz.</p>
+        </div>
+
+        {# ── STATE A: Site henüz yok ── #}
+        {% if not site or not site.is_published %}
+        <div class="empty-state">
+            <div class="empty-icon">✦</div>
+            <h2 class="empty-title">Sayfanız henüz hazır değil</h2>
+            <p class="empty-sub">
+                {% if not onboarding or not onboarding.is_complete %}
+                    Onboarding'i tamamlayın, yapay zeka size özel iki tasarım seçeneği hazırlasın.
+                    <br><br>
+                    <a href="{{ url_for('onboarding.index') }}" style="color:var(--text-primary); font-weight:500;">
+                        Onboarding'e devam et →
+                    </a>
+                {% else %}
+                    Yapay zeka size özel iki kimlik hazırlasın. Birini seçin, dakikalar içinde yayına girin.
+                {% endif %}
+            </p>
+            {% if onboarding and onboarding.is_complete %}
+            <a href="{{ url_for('ai.generate_page') }}" class="btn-start">
+                Kimliğimi Üret →
+            </a>
+            {% endif %}
+        </div>
+
+        {# ── STATE B: Site yayında ── #}
+        {% else %}
+        <div class="site-dashboard">
+
+            {# ── Setup Guide (tüm adımlar tamamlanmadıysa göster) ── #}
+            {% if current_user.package == '1' %}
+                {% set guide_done  = 1 + (1 if has_avatar else 0) + (1 if current_user.is_available else 0) %}
+                {% set guide_total = 3 %}
+            {% elif current_user.package == '2' %}
+                {% set guide_done  = 1 + (1 if has_avatar else 0) + (1 if has_cover else 0) + (1 if has_posts else 0) + (1 if current_user.is_available else 0) %}
+                {% set guide_total = 5 %}
+            {% else %}
+                {% set guide_done  = 1 + (1 if has_cover else 0) + (1 if has_portfolio else 0) + (1 if has_testimonials else 0) %}
+                {% set guide_total = 4 %}
+            {% endif %}
+            {% set guide_pct = ((guide_done / guide_total) * 100) | round | int %}
+
+            {% if guide_done < guide_total %}
+            <div class="setup-guide" id="setupGuide">
+                <div class="setup-guide-header">
+                    <div>
+                        <div class="setup-guide-title">Profilinizi güçlendirin</div>
+                        <div class="setup-guide-sub">{{ guide_done }}/{{ guide_total }} adım tamamlandı</div>
+                    </div>
+                    <button class="btn-dismiss-guide" onclick="dismissGuide()" title="Kapat">✕</button>
+                </div>
+                <div class="guide-progress-wrap">
+                    <div class="guide-progress-bar">
+                        <div class="guide-progress-fill" style="width: {{ guide_pct }}%"></div>
+                    </div>
+                    <div class="guide-progress-label">%{{ guide_pct }} tamamlandı</div>
+                </div>
+                <div class="setup-steps">
+                    <!-- Her zaman tamamlanmış: Kimlik oluşturuldu -->
+                    <div class="setup-step done">
+                        <div class="step-check">✓</div>
+                        <span class="step-label">Dijital kimliğiniz oluşturuldu</span>
+                    </div>
+
+                    {% if current_user.package in ('1', '2') %}
+                    <!-- Profil fotoğrafı -->
+                    <a class="setup-step {% if has_avatar %}done{% endif %}"
+                       href="{{ url_for('site.edit') }}#media">
+                        <div class="step-check">{% if has_avatar %}✓{% endif %}</div>
+                        <span class="step-label">Profil fotoğrafı ekleyin</span>
+                        {% if not has_avatar %}<span class="step-action-hint">Admin paneli →</span>{% endif %}
+                    </a>
+                    {% endif %}
+
+                    {% if current_user.package == '2' %}
+                    <!-- Kapak görseli -->
+                    <a class="setup-step {% if has_cover %}done{% endif %}"
+                       href="{{ url_for('site.edit') }}#media">
+                        <div class="step-check">{% if has_cover %}✓{% endif %}</div>
+                        <span class="step-label">Kapak görseli yükleyin</span>
+                        {% if not has_cover %}<span class="step-action-hint">Admin paneli →</span>{% endif %}
+                    </a>
+                    <!-- İlk gönderi -->
+                    <a class="setup-step {% if has_posts %}done{% endif %}"
+                       href="{{ url_for('site.dashboard') }}"
+                       onclick="document.querySelector('.compose-box')?.scrollIntoView({behavior:'smooth',block:'center'}); return false;">
+                        <div class="step-check">{% if has_posts %}✓{% endif %}</div>
+                        <span class="step-label">İlk gönderinizi paylaşın</span>
+                        {% if not has_posts %}<span class="step-action-hint">Gönderi yaz →</span>{% endif %}
+                    </a>
+                    {% endif %}
+
+                    {% if current_user.package == '3' %}
+                    <!-- Kapak görseli (P3) -->
+                    <a class="setup-step {% if has_cover %}done{% endif %}"
+                       href="{{ url_for('site.edit') }}#media">
+                        <div class="step-check">{% if has_cover %}✓{% endif %}</div>
+                        <span class="step-label">Marka kapak görseli ekleyin</span>
+                        {% if not has_cover %}<span class="step-action-hint">Admin paneli →</span>{% endif %}
+                    </a>
+                    <!-- Portföy -->
+                    <a class="setup-step {% if has_portfolio %}done{% endif %}"
+                       href="{{ url_for('site.edit') }}#portfolio">
+                        <div class="step-check">{% if has_portfolio %}✓{% endif %}</div>
+                        <span class="step-label">Portföy çalışması ekleyin</span>
+                        {% if not has_portfolio %}<span class="step-action-hint">Admin paneli →</span>{% endif %}
+                    </a>
+                    <!-- Referanslar -->
+                    <a class="setup-step {% if has_testimonials %}done{% endif %}"
+                       href="{{ url_for('site.edit') }}#testimonials">
+                        <div class="step-check">{% if has_testimonials %}✓{% endif %}</div>
+                        <span class="step-label">Müşteri referansı ekleyin</span>
+                        {% if not has_testimonials %}<span class="step-action-hint">Admin paneli →</span>{% endif %}
+                    </a>
+                    {% endif %}
+
+                    {% if current_user.package in ('1', '2') %}
+                    <!-- Müsait rozet -->
+                    <div class="setup-step {% if current_user.is_available %}done{% endif %}"
+                         onclick="if(typeof toggleAvailable==='function') toggleAvailable()">
+                        <div class="step-check">{% if current_user.is_available %}✓{% endif %}</div>
+                        <span class="step-label">"Müsait" rozetini aktifleştirin</span>
+                        {% if not current_user.is_available %}<span class="step-action-hint">Buradan aç →</span>{% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Canlı site kartı -->
+            <div class="live-card">
+                <div class="live-card-top">
+                    <div>
+                        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                            <div class="live-badge">
+                                <span class="live-dot"></span>
+                                Yayında
+                            </div>
+                            {% if current_user.package in ('1','2') %}
+                            <button class="avail-toggle {% if current_user.is_available %}active{% endif %}"
+                                    id="availToggle"
+                                    onclick="toggleAvailable()"
+                                    title="Yeni fırsatlara açık olduğunuzu belirtin">
+                                {% if current_user.is_available %}
+                                    ◉ Müsait
+                                {% else %}
+                                    ◎ Müsait Değil
+                                {% endif %}
+                            </button>
+                            {% endif %}
+                        </div>
+                        <div class="live-headline">{{ site.headline }}</div>
+                        <div class="live-tagline">{{ site.tagline }}</div>
+                    </div>
+                    <div class="live-card-actions">
+                        <a href="/{{ site.slug }}" target="_blank" class="btn-view">
+                            Görüntüle ↗
+                        </a>
+                        {% if current_user.package == '2' %}
+                        <button class="btn-outline" id="btnBioRefresh" onclick="doRefreshBio()">
+                            ✦ Bio'yu Yenile
+                        </button>
+                        {% else %}
+                        <a href="{{ url_for('ai.generate_page') }}" class="btn-outline">
+                            Yeniden Üret
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="live-url-bar">
+                    <div class="url-display">
+                        <span class="url-lock">🔒</span>
+                        alvera.me/<span class="url-text">{{ site.slug }}</span>
+                    </div>
+                    <button class="copy-btn" onclick="copyUrl(this, '{{ request.host_url }}{{ site.slug }}')">
+                        Kopyala
+                    </button>
+                </div>
+            </div>
+
+            <!-- ── Profil Skoru ── -->
+            <div class="score-widget" id="scoreWidget">
+                <div class="score-ring-wrap">
+                    <svg width="72" height="72" viewBox="0 0 72 72">
+                        <circle class="score-ring-bg" cx="36" cy="36" r="31.2"/>
+                        <circle class="score-ring-fill" id="scoreRing" cx="36" cy="36" r="31.2"/>
+                    </svg>
+                    <div class="score-num" id="scoreNum">–</div>
+                </div>
+                <div class="score-body">
+                    <div class="score-title" id="scoreTitle">Profil Gücü hesaplanıyor…</div>
+                    <div class="score-sub" id="scoreSub"></div>
+                    <div class="score-tips" id="scoreTips"></div>
+                </div>
+            </div>
+
+            <!-- ── Araçlar ── -->
+            <div class="tools-grid">
+
+                <!-- E-posta İmzası -->
+                <div class="tool-card">
+                    <div class="tool-card-header">
+                        <div class="tool-icon">✉</div>
+                        <div>
+                            <div class="tool-title">E-posta İmzası</div>
+                            <div class="tool-sub">Her mailiniz bir Alvera reklamı</div>
+                        </div>
+                    </div>
+                    <div class="sig-preview" id="sigPreview">
+                        <div class="sig-name">{{ user.full_name or site.slug }}</div>
+                        <div class="sig-title">{{ onboarding.job_title if onboarding and onboarding.job_title else site.headline or '' }}</div>
+                        <hr class="sig-divider">
+                        <div><a class="sig-link" href="https://alvera.me/{{ site.slug }}">✦ alvera.me/{{ site.slug }}</a></div>
+                        <div class="sig-socials">
+                            {% if user.linkedin %}<span class="sig-social-item">in {{ user.linkedin | replace('https://linkedin.com/in/','') | replace('https://www.linkedin.com/in/','') | truncate(20, True, '') }}</span>{% endif %}
+                            {% if user.twitter %}<span class="sig-social-item">𝕏 {{ user.twitter | replace('https://twitter.com/','') | replace('https://x.com/','') | replace('@','') | truncate(20, True, '') }}</span>{% endif %}
+                            {% if user.website %}<span class="sig-social-item">🔗 {{ user.website | replace('https://','') | replace('http://','') | truncate(24, True, '') }}</span>{% endif %}
+                        </div>
+                    </div>
+                    <button class="btn-copy-sig" id="btnCopySig" onclick="copySignature()">
+                        HTML Kopyala
+                    </button>
+                </div>
+
+                <!-- QR Dijital Kartvizit -->
+                <div class="tool-card">
+                    <div class="tool-card-header">
+                        <div class="tool-icon">⊞</div>
+                        <div>
+                            <div class="tool-title">Dijital Kartvizit</div>
+                            <div class="tool-sub">QR ile anında tanıştır</div>
+                        </div>
+                    </div>
+                    <div class="qr-card-preview" id="qrCardPreview">
+                        <div class="qr-card-info">
+                            <div class="qr-card-name">{{ user.full_name or site.slug }}</div>
+                            <div class="qr-card-title">{{ onboarding.job_title if onboarding and onboarding.job_title else site.headline or '' }}</div>
+                            <div class="qr-card-url">alvera.me/{{ site.slug }}</div>
+                        </div>
+                        <div class="qr-box" id="qrBox"></div>
+                    </div>
+                    <button class="btn-dl-qr" onclick="downloadQRCard()">
+                        Kartı İndir (PNG)
+                    </button>
+                </div>
+
+            </div><!-- /tools-grid -->
+
+            <!-- İstatistikler -->
+            <div class="stats-row">
+                <!-- Toplam görüntülenme -->
+                <div class="stat-card">
+                    <div class="stat-value">{{ total_views or 0 }}</div>
+                    <div class="stat-label">Toplam Ziyaret</div>
+                </div>
+
+                <!-- Bu hafta -->
+                <div class="stat-card" style="position:relative;">
+                    {% if current_user.package == '1' and week_views > 0 %}
+                    {# P1: Sayıyı göster, detay blur ile kapat #}
+                    <div class="stat-value" style="filter:blur(5px); user-select:none;">{{ week_views }}</div>
+                    <div class="stat-label">Bu Hafta</div>
+                    <div class="analytics-gate" onclick="showUpgradeModal('analytics')">
+                        <span class="analytics-gate-lock">🔒</span>
+                        <span>Standart'ta gör</span>
+                    </div>
+                    {% elif current_user.package == '1' %}
+                    <div class="stat-value">0</div>
+                    <div class="stat-label">Bu Hafta</div>
+                    {% else %}
+                    <div class="stat-value">{{ week_views or 0 }}</div>
+                    <div class="stat-label">Bu Hafta</div>
+                    {% endif %}
+                </div>
+
+                <!-- Tıklama / kaynak (P1 gate) -->
+                <div class="stat-card" style="position:relative;">
+                    {% if current_user.package == '1' %}
+                    <div class="stat-value" style="filter:blur(5px); user-select:none;">?</div>
+                    <div class="stat-label">Kaynak & Şehir</div>
+                    <div class="analytics-gate" onclick="showUpgradeModal('analytics')">
+                        <span class="analytics-gate-lock">🔒</span>
+                        <span>Standart'ta gör</span>
+                    </div>
+                    {% else %}
+                    <div class="stat-value"><span class="stat-soon">Yakında</span></div>
+                    <div class="stat-label">Kaynak & Şehir</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            {% if current_user.package == '1' and total_views > 0 %}
+            <div class="analytics-teaser-bar" onclick="showUpgradeModal('analytics')">
+                <span>📍 Bu hafta <strong>{{ week_views }}</strong> kişi profilinizi ziyaret etti</span>
+                <span class="teaser-cta">Nereden geldiklerini gör →</span>
+            </div>
+            {% endif %}
+
+            <!-- Skills -->
+            {% if skills %}
+            <div class="skills-card">
+                <div class="skills-card-label">Uzmanlık Alanları</div>
+                <div class="skills-chips">
+                    {% for skill in skills %}
+                    <span class="skill-chip">{{ skill }}</span>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- ── Gönderi Akışı (Paket 2) ── -->
+            {% if current_user.package == '2' %}
+            <div class="posts-section" id="postsSection">
+                <div class="posts-section-header">
+                    <span class="posts-section-title">Güncellemeler</span>
+                    <button class="btn-suggest" id="btnSuggest" onclick="openSuggestPanel()">
+                        ✦ AI'dan Fikir Al
+                    </button>
+                </div>
+
+                <!-- Compose -->
+                <div class="compose-box">
+                    <div class="post-error hidden" id="postError"></div>
+                    <textarea class="compose-textarea" id="composeText"
+                        placeholder="Bugün ne yaptınız? Bir güncelleme paylaşın…"
+                        maxlength="1000"></textarea>
+
+                    <!-- Medya önizlemeleri -->
+                    <div class="media-previews" id="mediaPreviews"></div>
+
+                    <div class="compose-divider"></div>
+                    <div class="compose-bottom">
+                        <div class="compose-actions">
+                            <button class="compose-attach" onclick="document.getElementById('mediaInput').click()">
+                                📎 Ekle
+                            </button>
+                            <input type="file" id="mediaInput"
+                                   accept="image/*,video/mp4,video/webm,.pdf"
+                                   multiple style="display:none"
+                                   onchange="handleFiles(this.files)">
+                            <span class="compose-count" id="composeCount">0 / 1000</span>
+                        </div>
+                        <button class="btn-post" id="btnPost" onclick="submitPost()">
+                            Paylaş
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Gönderi listesi -->
+                <div id="postsList">
+                    {% if posts %}
+                        {% for post in posts %}
+                            {% set editable = true %}
+                            {% include '_post_card.html' with context %}
+                        {% endfor %}
+                    {% else %}
+                    <div class="posts-empty" id="postsEmpty">
+                        Henüz güncelleme paylaşmadınız. İlk gönderinizi yapın.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+        </div>
+        {% endif %}
+
+    </main>
+</div>
+
+<!-- ── AI İçerik Öneri Paneli (overlay) ── -->
+<div class="suggest-overlay hidden" id="suggestOverlay" onclick="closeSuggestOnBg(event)">
+    <div class="suggest-panel" id="suggestPanel">
+        <div class="suggest-header">
+            <div class="suggest-title">✦ İçerik Önerileri</div>
+            <button class="suggest-close" onclick="closeSuggestPanel()">×</button>
+        </div>
+
+        <!-- Loading state -->
+        <div id="suggestLoading" class="suggest-loading">
+            <div class="suggest-spinner"></div>
+            <div>Gönderileriniz analiz ediliyor…</div>
+        </div>
+
+        <!-- Error state -->
+        <div id="suggestError" class="suggest-error hidden"></div>
+
+        <!-- Results -->
+        <div id="suggestResults" class="hidden">
+            <div class="suggest-analysis" id="suggestAnalysis"></div>
+            <div class="suggest-cards" id="suggestCards"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+/* ── URL kopyalama ───────────────────────────────────────────────────────── */
+function copyUrl(btn, url) {
+    navigator.clipboard.writeText(url).then(() => {
+        const orig = btn.textContent;
+        btn.textContent = '✓ Kopyalandı';
+        btn.style.borderColor = 'var(--text-primary)';
+        btn.style.color = 'var(--text-primary)';
+        setTimeout(() => {
+            btn.textContent = orig;
+            btn.style.borderColor = '';
+            btn.style.color = '';
+        }, 2000);
+    });
+}
+
+/* ── Gönderi sistemi ─────────────────────────────────────────────────────── */
+let selectedFiles = [];
+
+// Karakter sayacı
+const composeText = document.getElementById('composeText');
+const composeCount = document.getElementById('composeCount');
+if (composeText) {
+    composeText.addEventListener('input', () => {
+        const len = composeText.value.length;
+        composeCount.textContent = `${len} / 1000`;
+        composeCount.classList.toggle('warn', len > 950);
+    });
+}
+
+// Dosya seçimi
+function handleFiles(fileList) {
+    const ALLOWED = ['image/png','image/jpeg','image/gif','image/webp',
+                     'video/mp4','video/webm','video/quicktime','application/pdf'];
+
+    Array.from(fileList).forEach(f => {
+        if (!ALLOWED.some(t => f.type === t || f.type.startsWith('image/') || f.type.startsWith('video/'))) return;
+        if (selectedFiles.length >= 4) return; // max 4 dosya
+        selectedFiles.push(f);
+    });
+
+    renderPreviews();
+    // Input'u sıfırla (aynı dosyayı tekrar seçebilmek için)
+    document.getElementById('mediaInput').value = '';
+}
+
+function renderPreviews() {
+    const container = document.getElementById('mediaPreviews');
+    if (!container) return;
+    container.innerHTML = '';
+
+    selectedFiles.forEach((f, i) => {
+        const item = document.createElement('div');
+        item.className = 'media-preview-item';
+
+        if (f.type.startsWith('image/')) {
+            const img = document.createElement('img');
+            img.src = URL.createObjectURL(f);
+            item.appendChild(img);
+
+            const rm = document.createElement('button');
+            rm.className = 'media-remove';
+            rm.textContent = '×';
+            rm.onclick = () => { selectedFiles.splice(i, 1); renderPreviews(); };
+            item.appendChild(rm);
+        } else {
+            item.className += ' doc-preview';
+            item.innerHTML = `<span>📄</span><span style="font-size:12px;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${f.name}</span>`;
+            const rm = document.createElement('button');
+            rm.className = 'media-remove';
+            rm.textContent = '×';
+            rm.style.position = 'relative';
+            rm.style.top = 'auto'; rm.style.right = 'auto';
+            rm.style.background = 'var(--border)'; rm.style.color = 'var(--text-primary)';
+            rm.onclick = () => { selectedFiles.splice(i, 1); renderPreviews(); };
+            item.appendChild(rm);
+        }
+        container.appendChild(item);
+    });
+}
+
+async function submitPost() {
+    const text = composeText?.value.trim();
+    if (!text) return;
+
+    const btn = document.getElementById('btnPost');
+    btn.disabled = true;
+    btn.textContent = '…';
+    hidePostError();
+
+    const fd = new FormData();
+    fd.append('content', text);
+    selectedFiles.forEach(f => fd.append('media', f));
+
+    try {
+        const res = await fetch('/posts/create', { method: 'POST', body: fd });
+        const data = await res.json();
+
+        if (!data.ok) {
+            showPostError(data.error || 'Bir hata oluştu.');
+            return;
+        }
+
+        // Arayüzü güncelle
+        composeText.value = '';
+        composeCount.textContent = '0 / 1000';
+        selectedFiles = [];
+        renderPreviews();
+
+        // Boş state'i kaldır
+        const empty = document.getElementById('postsEmpty');
+        if (empty) empty.remove();
+
+        // Kartı en üste ekle
+        const list = document.getElementById('postsList');
+        list.insertAdjacentHTML('afterbegin', data.html);
+        attachDeleteHandlers();
+
+    } catch (e) {
+        showPostError('Bağlantı hatası. Lütfen tekrar deneyin.');
+    } finally {
+        btn.disabled = false;
+        btn.textContent = 'Paylaş';
+    }
+}
+
+async function deletePost(postId, btn) {
+    if (!confirm('Bu gönderiyi silmek istediğinize emin misiniz?')) return;
+
+    try {
+        const res = await fetch(`/posts/${postId}/delete`, { method: 'DELETE' });
+        const data = await res.json();
+        if (data.ok) {
+            const card = btn.closest('.post-card');
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(-8px)';
+            card.style.transition = 'all 0.3s ease';
+            setTimeout(() => {
+                card.remove();
+                // Eğer kart kalmadıysa boş state göster
+                const list = document.getElementById('postsList');
+                if (list && !list.querySelector('.post-card')) {
+                    list.innerHTML = '<div class="posts-empty">Henüz güncelleme paylaşmadınız. İlk gönderinizi yapın.</div>';
+                }
+            }, 320);
+        }
+    } catch (e) {
+        alert('Silme işlemi başarısız oldu.');
+    }
+}
+
+function showPostError(msg) {
+    const el = document.getElementById('postError');
+    if (el) { el.textContent = msg; el.classList.remove('hidden'); }
+}
+
+function hidePostError() {
+    const el = document.getElementById('postError');
+    if (el) el.classList.add('hidden');
+}
+
+// Lightbox
+function openMedia(src) {
+    const lb = document.createElement('div');
+    lb.className = 'lightbox';
+    lb.onclick = () => lb.remove();
+    lb.innerHTML = `<img src="${src}" alt="">`;
+    document.body.appendChild(lb);
+}
+
+function attachDeleteHandlers() {
+    // Dinamik eklenen kartlardaki sil butonları zaten inline onclick'e sahip
+}
+
+/* ── AI İçerik Önerileri ─────────────────────────────────────────────────── */
+let suggestLoaded = false;
+
+async function openSuggestPanel() {
+    const overlay = document.getElementById('suggestOverlay');
+    overlay.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+
+    // Sonuçlar zaten yüklendiyse tekrar istek atma
+    if (suggestLoaded) return;
+
+    // Loading göster
+    document.getElementById('suggestLoading').style.display = 'block';
+    document.getElementById('suggestError').classList.add('hidden');
+    document.getElementById('suggestResults').classList.add('hidden');
+
+    const btn = document.getElementById('btnSuggest');
+    btn.classList.add('loading');
+
+    try {
+        const res  = await fetch('/ai/content-suggestions', { method: 'POST' });
+        const data = await res.json();
+
+        if (!data.ok) throw new Error(data.error || 'Bir hata oluştu.');
+
+        // Analiz metni
+        document.getElementById('suggestAnalysis').textContent = data.analysis || '';
+
+        // 3 öneri kartı
+        const container = document.getElementById('suggestCards');
+        container.innerHTML = '';
+        (data.suggestions || []).forEach((s, i) => {
+            const card = document.createElement('div');
+            card.className = 'suggest-card';
+            card.innerHTML = `
+                <div class="suggest-card-num">Öneri ${i + 1}</div>
+                <div class="suggest-card-title">${escHtml(s.title)}</div>
+                <div class="suggest-card-why">${escHtml(s.rationale)}</div>
+                <div class="suggest-card-draft">${escHtml(s.draft)}</div>
+                <button class="btn-use-draft" onclick="useDraft(${JSON.stringify(s.draft)})">
+                    Bunu Kullan →
+                </button>`;
+            container.appendChild(card);
+        });
+
+        document.getElementById('suggestLoading').style.display = 'none';
+        document.getElementById('suggestResults').classList.remove('hidden');
+        suggestLoaded = true;
+
+    } catch (e) {
+        document.getElementById('suggestLoading').style.display = 'none';
+        const errEl = document.getElementById('suggestError');
+        errEl.textContent = e.message;
+        errEl.classList.remove('hidden');
+    } finally {
+        btn.classList.remove('loading');
+    }
+}
+
+function closeSuggestPanel() {
+    document.getElementById('suggestOverlay').classList.add('hidden');
+    document.body.style.overflow = '';
+}
+
+function closeSuggestOnBg(e) {
+    if (e.target === document.getElementById('suggestOverlay')) closeSuggestPanel();
+}
+
+function useDraft(draftText) {
+    // Compose box'a taşı ve paneli kapat
+    const ta = document.getElementById('composeText');
+    if (ta) {
+        ta.value = draftText;
+        ta.dispatchEvent(new Event('input')); // karakter sayacını güncelle
+        ta.focus();
+    }
+    closeSuggestPanel();
+    // Compose box'a scroll et
+    document.querySelector('.compose-box')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+function escHtml(str) {
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+}
+
+/* ── Bio Yenileme ────────────────────────────────────────────────────────── */
+async function doRefreshBio() {
+    const btn = document.getElementById('btnBioRefresh');
+    if (!btn) return;
+    const origText = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = '…';
+
+    try {
+        const res  = await fetch('/ai/refresh-bio', { method: 'POST' });
+        const data = await res.json();
+
+        if (!data.ok) throw new Error(data.error || 'Bir hata oluştu.');
+
+        // Live card'daki başlığı güncelle
+        const headlineEl = document.querySelector('.live-headline');
+        const taglineEl  = document.querySelector('.live-tagline');
+        if (headlineEl && data.headline) headlineEl.textContent = data.headline;
+        if (taglineEl  && data.bio)      taglineEl.textContent  = data.bio;
+
+        btn.textContent = '✓ Yenilendi';
+        btn.style.borderColor = '#16a34a';
+        btn.style.color = '#16a34a';
+        setTimeout(() => {
+            btn.textContent = origText;
+            btn.style.borderColor = '';
+            btn.style.color = '';
+            btn.disabled = false;
+        }, 2500);
+
+    } catch (e) {
+        btn.textContent = '✗ Hata';
+        btn.style.color = '#dc2626';
+        setTimeout(() => {
+            btn.textContent = origText;
+            btn.style.color = '';
+            btn.disabled = false;
+        }, 2000);
+    }
+}
+
+// ESC ile öneri panelini kapat
+document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closeSuggestPanel();
+});
+
+/* ── Setup Guide Dismiss ────────────────────────────────────────────────── */
+(function () {
+    const guideKey = 'alvera_guide_{{ current_user.id }}';
+    const guide    = document.getElementById('setupGuide');
+    if (!guide) return;
+
+    // Daha önce kapatıldıysa gizle
+    if (localStorage.getItem(guideKey) === '1') {
+        guide.style.display = 'none';
+    }
+})();
+
+function dismissGuide() {
+    const guide = document.getElementById('setupGuide');
+    if (!guide) return;
+    guide.style.transition = 'opacity 0.3s, transform 0.3s';
+    guide.style.opacity    = '0';
+    guide.style.transform  = 'translateY(-6px)';
+    setTimeout(() => { guide.style.display = 'none'; }, 300);
+    localStorage.setItem('alvera_guide_{{ current_user.id }}', '1');
+}
+
+/* ── Müsait Rozeti Toggle ──────────────────────────────────────────────────── */
+async function toggleAvailable() {
+    const btn = document.getElementById('availToggle');
+    if (!btn) return;
+    btn.style.opacity = '0.5';
+    btn.style.pointerEvents = 'none';
+
+    try {
+        const res  = await fetch('/profile/available-toggle', { method: 'POST' });
+        const data = await res.json();
+        if (!data.ok) return;
+
+        if (data.is_available) {
+            btn.classList.add('active');
+            btn.innerHTML = '◉ Müsait';
+        } else {
+            btn.classList.remove('active');
+            btn.innerHTML = '◎ Müsait Değil';
+        }
+    } finally {
+        btn.style.opacity = '';
+        btn.style.pointerEvents = '';
+    }
+}
+
+/* ── Gönderi Pinleme ─────────────────────────────────────────────────────── */
+async function togglePin(postId, btn) {
+    const isPinned = btn.dataset.pinned === 'true';
+    btn.style.opacity = '0.5';
+    btn.style.pointerEvents = 'none';
+
+    try {
+        const res  = await fetch(`/posts/${postId}/pin`, { method: 'POST' });
+        const data = await res.json();
+        if (!data.ok) { alert(data.error); return; }
+
+        btn.dataset.pinned = data.pinned ? 'true' : 'false';
+        btn.title          = data.pinned ? 'Sabitlenmiş — kaldırmak için tıkla' : 'Profile sabitle';
+        btn.textContent    = data.pinned ? '📌' : '📍';
+        btn.style.color    = data.pinned ? '#0A0A0A' : '';
+    } finally {
+        btn.style.opacity = '';
+        btn.style.pointerEvents = '';
+    }
+}
+
+/* ── Upsell Modal ─────────────────────────────────────────────────────── */
+const UPSELL_CONFIGS = {
+    analytics: {
+        badge:    'Standart Özelliği',
+        title:    'Ziyaretçi Analitiği',
+        sub:      'Profilinizi kimlerin ziyaret ettiğini, nereden geldiklerini ve hangi içeriğinize ilgi duyduklarını görün.',
+        features: [
+            'Haftalık & aylık ziyaret grafiği',
+            'Ziyaretçi kaynak analizi',
+            'Şehir & ülke dağılımı',
+            'AI içerik önerisi (haftada 3)',
+        ],
+        package:  'Standart',
+        oldPrice: '₺699',
+        newPrice: '₺499',
+    },
+    cover: {
+        badge:    'Standart Özelliği',
+        title:    'Kapak Görseli',
+        sub:      'Profilinize kapak fotoğrafı ekleyin. Ziyaretçiler sizi tanımadan önce markanızı hissetsin.',
+        features: [
+            'Tam genişlik kapak görseli',
+            'Gönderi & içerik akışı',
+            'AI ile bio yenileme',
+            'Öncelikli destek',
+        ],
+        package:  'Standart',
+        oldPrice: '₺699',
+        newPrice: '₺499',
+    },
+    posts: {
+        badge:    'Standart Özelliği',
+        title:    'Gönderi & İçerik Akışı',
+        sub:      'Profilinizde düşüncelerinizi, projelerinizi ve güncellemelerinizi paylaşın. Ziyaretçilerin geri gelmesini sağlayın.',
+        features: [
+            'Sınırsız gönderi paylaşımı',
+            'Gönderi sabitleme',
+            'Medya & belge ekleme',
+            'AI içerik önerisi',
+        ],
+        package:  'Standart',
+        oldPrice: '₺699',
+        newPrice: '₺499',
+    },
+    brand: {
+        badge:    'Profesyonel Özelliği',
+        title:    'Marka Kimliği',
+        sub:      'Hizmet kataloğu, portföy, müşteri referansları ve iletişim formu ile tam bir profesyonel vitrin kurun.',
+        features: [
+            'Hizmet kataloğu',
+            'Portföy & vaka çalışmaları',
+            'Müşteri referansları',
+            'İletişim formu + gelen kutusu',
+        ],
+        package:  'Profesyonel',
+        oldPrice: '₺1.299',
+        newPrice: '₺899',
+    },
+};
+
+function showUpgradeModal(type) {
+    const cfg = UPSELL_CONFIGS[type] || UPSELL_CONFIGS.analytics;
+    document.getElementById('upsellBadge').textContent    = cfg.badge;
+    document.getElementById('upsellTitle').textContent    = cfg.title;
+    document.getElementById('upsellSub').textContent      = cfg.sub;
+    document.getElementById('upsellOldPrice').textContent = cfg.oldPrice;
+    document.getElementById('upsellNewPrice').textContent = cfg.newPrice;
+    document.getElementById('upsellPkg').textContent      = cfg.package;
+
+    const ul = document.getElementById('upsellFeatures');
+    ul.innerHTML = '';
+    cfg.features.forEach(f => {
+        const li = document.createElement('li');
+        li.innerHTML = `<span class="uf-check">✓</span> ${f}`;
+        ul.appendChild(li);
+    });
+
+    document.getElementById('upsellOverlay').classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeUpsellModal() {
+    document.getElementById('upsellOverlay').classList.add('hidden');
+    document.body.style.overflow = '';
+}
+
+document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') { closeUpsellModal(); closeSuggestPanel(); }
+});
+
+{% if site and site.is_published %}
+// ═══════════════════════════════════════════════════════════════════════════
+// ── PROFIL SKORU ──────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════════════
+(function initProfileScore() {
+    const pkg          = '{{ current_user.package }}';
+    const hasAvatar    = {{ 'true' if has_avatar else 'false' }};
+    const hasHeadline  = {{ 'true' if site.headline else 'false' }};
+    const hasBio       = {{ 'true' if site.bio_text else 'false' }};
+    const hasSkills    = {{ 'true' if skills else 'false' }};
+    const hasSocial    = {{ 'true' if (user.linkedin or user.twitter or user.github or user.website) else 'false' }};
+    const hasCover     = {{ 'true' if has_cover else 'false' }};
+    const hasPosts     = {{ 'true' if has_posts else 'false' }};
+    const hasPortfolio = {{ 'true' if has_portfolio else 'false' }};
+    const hasTestim    = {{ 'true' if has_testimonials else 'false' }};
+    const hasAvail     = {{ 'true' if current_user.is_available else 'false' }};
+    const views        = {{ total_views }};
+
+    // Kriterleri puan / öneri olarak tanımla
+    const criteria = [
+        { done: hasAvatar,    pts: 15, msg: 'Profil fotoğrafı ekle',       href: "{{ url_for('site.edit') }}#sec-photos" },
+        { done: hasHeadline,  pts: 10, msg: 'Başlık/unvan ekle',           href: "{{ url_for('site.edit') }}" },
+        { done: hasBio,       pts: 15, msg: 'Bio metnini doldur',           href: "{{ url_for('site.edit') }}" },
+        { done: hasSkills,    pts: 10, msg: 'En az 3 beceri etiketi ekle',  href: "{{ url_for('site.edit') }}" },
+        { done: hasSocial,    pts: 15, msg: 'Sosyal link bağla (LinkedIn vb.)', href: "{{ url_for('site.edit') }}" },
+        { done: hasAvail,     pts:  5, msg: '"Müsait" rozetini aç',         href: "#" },
+        ...(pkg === '1' ? [] : [
+            { done: hasCover, pts: 10, msg: 'Kapak görseli yükle',           href: "{{ url_for('site.edit') }}#sec-photos" },
+        ]),
+        ...(pkg === '2' ? [
+            { done: hasPosts, pts: 20, msg: 'İlk güncellemeni paylaş',       href: "#postsSection" },
+        ] : []),
+        ...(pkg === '3' ? [
+            { done: hasPortfolio, pts: 15, msg: 'Portföye proje ekle',       href: "{{ url_for('site.edit') }}" },
+            { done: hasTestim,    pts: 15, msg: 'Referans ekle',             href: "{{ url_for('site.edit') }}" },
+        ] : []),
+        { done: views > 0,   pts:  0, msg: '',  href: '' }, // bonus only
+    ];
+
+    const maxPts = criteria.reduce((a, c) => a + c.pts, 0);
+    const earned = criteria.filter(c => c.done).reduce((a, c) => a + c.pts, 0);
+    const viewBonus = views >= 50 ? 5 : views >= 10 ? 3 : 0;
+    const score = Math.min(100, Math.round(((earned + viewBonus) / maxPts) * 100));
+
+    // Eksikler (puan getirenleri önce göster)
+    const missing = criteria
+        .filter(c => !c.done && c.pts > 0)
+        .sort((a, b) => b.pts - a.pts)
+        .slice(0, 3);
+
+    // Renk
+    const color = score >= 75 ? 'green' : score >= 45 ? 'yellow' : '';
+
+    // Sayı + halka
+    const ring = document.getElementById('scoreRing');
+    const numEl = document.getElementById('scoreNum');
+    const circ  = 195.8;
+    ring.classList.add(color);
+    numEl.textContent = score;
+
+    // Animasyon: offset azalır → doldu gibi görünür
+    setTimeout(() => {
+        ring.style.strokeDashoffset = circ - (circ * score / 100);
+    }, 100);
+
+    // Başlık
+    const titleEl = document.getElementById('scoreTitle');
+    const subEl   = document.getElementById('scoreSub');
+    if (score >= 90)      { titleEl.textContent = 'Mükemmel profil 🎉'; subEl.textContent = 'Keşfet\'te öne çıkma şansınız çok yüksek.'; }
+    else if (score >= 70) { titleEl.textContent = 'Güçlü profil'; subEl.textContent = 'Birkaç adımla zirveye ulaşabilirsiniz.'; }
+    else if (score >= 45) { titleEl.textContent = 'Geliştirme gerekiyor'; subEl.textContent = 'Eksikleri tamamlayın, ziyaretçi sayınız artacak.'; }
+    else                  { titleEl.textContent = 'Profiliniz zayıf'; subEl.textContent = 'Aşağıdaki adımları tamamlayarak hızla güçlendirin.'; }
+
+    // İpuçları
+    const tipsEl = document.getElementById('scoreTips');
+    if (missing.length === 0) {
+        tipsEl.innerHTML = '<div class="score-tip"><span class="score-tip-dot done"></span>Tüm adımlar tamamlandı!</div>';
+    } else {
+        tipsEl.innerHTML = missing.map(c =>
+            `<div class="score-tip"><span class="score-tip-dot"></span><a href="${c.href}">${c.msg}</a> <span style="color:#bbb;margin-left:auto;">+${c.pts}p</span></div>`
+        ).join('');
+    }
+})();
+
+// ═══════════════════════════════════════════════════════════════════════════
+// ── E-POSTA İMZASI ────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════════════
+function buildSignatureHTML() {
+    const name    = {{ (user.full_name or site.slug) | tojson }};
+    const title   = {{ ((onboarding.job_title if onboarding and onboarding.job_title else site.headline) or '') | tojson }};
+    const slug    = {{ site.slug | tojson }};
+    const alveraURL = 'https://alvera.me/' + slug;
+    const linkedin = {{ (user.linkedin or '') | tojson }};
+    const twitter  = {{ (user.twitter or '') | tojson }};
+    const website  = {{ (user.website or '') | tojson }};
+    const email    = {{ (user.email or '') | tojson }};
+
+    let socials = '';
+    if (linkedin) socials += `<a href="${linkedin}" style="color:#555;text-decoration:none;font-size:11px;margin-right:10px;">LinkedIn</a>`;
+    if (twitter)  socials += `<a href="${twitter}"  style="color:#555;text-decoration:none;font-size:11px;margin-right:10px;">𝕏 Twitter</a>`;
+    if (website)  socials += `<a href="${website}"  style="color:#555;text-decoration:none;font-size:11px;margin-right:10px;">Website</a>`;
+
+    return `<table cellpadding="0" cellspacing="0" border="0" style="font-family:Arial,Helvetica,sans-serif;font-size:13px;line-height:1.5;color:#111111;">
+  <tr>
+    <td style="padding-right:14px;vertical-align:top;border-right:2px solid #eeeeee;padding-bottom:4px;">
+      <div style="font-weight:700;font-size:15px;color:#111111;">${name}</div>
+      ${title ? `<div style="color:#666666;font-size:12px;margin-top:2px;">${title}</div>` : ''}
+      <div style="margin-top:8px;">
+        <a href="${alveraURL}" style="color:#111111;text-decoration:none;font-size:12px;font-weight:500;">✦ ${alveraURL.replace('https://','')}</a>
+      </div>
+      ${email ? `<div style="margin-top:3px;font-size:11px;color:#666666;">${email}</div>` : ''}
+    </td>
+    ${socials ? `<td style="padding-left:14px;vertical-align:top;"><div style="margin-top:2px;">${socials}</div></td>` : '<td></td>'}
+  </tr>
+</table>`;
+}
+
+function copySignature() {
+    const html = buildSignatureHTML();
+    // Clipboard API ile hem text/html hem de text/plain yaz
+    try {
+        const blob = new Blob([html], { type: 'text/html' });
+        const item = new ClipboardItem({ 'text/html': blob });
+        navigator.clipboard.write([item]).then(() => {
+            const btn = document.getElementById('btnCopySig');
+            btn.textContent = '✓ Kopyalandı!';
+            btn.classList.add('copied');
+            setTimeout(() => { btn.textContent = 'HTML Kopyala'; btn.classList.remove('copied'); }, 2500);
+        });
+    } catch(e) {
+        // Fallback: plain text
+        navigator.clipboard.writeText(html).then(() => {
+            const btn = document.getElementById('btnCopySig');
+            btn.textContent = '✓ Kopyalandı!';
+            btn.classList.add('copied');
+            setTimeout(() => { btn.textContent = 'HTML Kopyala'; btn.classList.remove('copied'); }, 2500);
+        });
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// ── QR DİJİTAL KARTVİZİT ─────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════════════
+(function initQR() {
+    const slug = {{ site.slug | tojson }};
+    const url  = 'https://alvera.me/' + slug;
+    const box  = document.getElementById('qrBox');
+    if (!box || typeof QRCode === 'undefined') return;
+    new QRCode(box, {
+        text: url,
+        width: 54, height: 54,
+        colorDark: '#111111',
+        colorLight: '#ffffff',
+        correctLevel: QRCode.CorrectLevel.M,
+    });
+})();
+
+function downloadQRCard() {
+    const name   = {{ (user.full_name or site.slug) | tojson }};
+    const title  = {{ ((onboarding.job_title if onboarding and onboarding.job_title else site.headline) or '') | tojson }};
+    const slug   = {{ site.slug | tojson }};
+    const url    = 'https://alvera.me/' + slug;
+
+    // Canvas ile kart oluştur
+    const W = 560, H = 220;
+    const canvas = document.createElement('canvas');
+    canvas.width = W * 2; canvas.height = H * 2; // @2x
+    const ctx = canvas.getContext('2d');
+    ctx.scale(2, 2);
+
+    // roundRect polyfill (eski tarayıcılar için)
+    function rrect(cx, x, y, w, h, r) {
+        cx.beginPath();
+        cx.moveTo(x + r, y);
+        cx.lineTo(x + w - r, y);
+        cx.quadraticCurveTo(x + w, y, x + w, y + r);
+        cx.lineTo(x + w, y + h - r);
+        cx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+        cx.lineTo(x + r, y + h);
+        cx.quadraticCurveTo(x, y + h, x, y + h - r);
+        cx.lineTo(x, y + r);
+        cx.quadraticCurveTo(x, y, x + r, y);
+        cx.closePath();
+    }
+
+    // Arka plan
+    ctx.fillStyle = '#111111';
+    rrect(ctx, 0, 0, W, H, 16);
+    ctx.fill();
+
+    // Alvera watermark (sağ alt)
+    ctx.fillStyle = 'rgba(255,255,255,0.18)';
+    ctx.font = '600 11px Arial';
+    ctx.fillText('✦ alvera', W - 64, H - 16);
+
+    // İsim
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '700 22px Arial';
+    ctx.fillText(name, 28, 64);
+
+    // Unvan
+    if (title) {
+        ctx.fillStyle = 'rgba(255,255,255,0.5)';
+        ctx.font = '400 14px Arial';
+        ctx.fillText(title, 28, 90);
+    }
+
+    // URL
+    ctx.fillStyle = 'rgba(255,255,255,0.35)';
+    ctx.font = '400 13px Arial';
+    ctx.fillText(url.replace('https://',''), 28, H - 28);
+
+    // QR kodu canvas'a çiz
+    const qrCanvas = document.querySelector('#qrBox canvas');
+    if (qrCanvas) {
+        const qSize = 110;
+        const qX = W - qSize - 28;
+        const qY = (H - qSize) / 2;
+        // QR arka plan beyaz kutu
+        ctx.fillStyle = '#ffffff';
+        rrect(ctx, qX - 8, qY - 8, qSize + 16, qSize + 16, 8);
+        ctx.fill();
+        ctx.drawImage(qrCanvas, qX, qY, qSize, qSize);
+    }
+
+    // İndir
+    const a = document.createElement('a');
+    a.href = canvas.toDataURL('image/png');
+    a.download = 'alvera-kartvizit-' + slug + '.png';
+    a.click();
+}
+{% endif %}{# /site and site.is_published #}
+</script>
+
+<!-- ── Upsell Modal ── -->
+<div class="upsell-overlay hidden" id="upsellOverlay" onclick="if(event.target===this)closeUpsellModal()">
+    <div class="upsell-modal">
+        <button class="upsell-close" onclick="closeUpsellModal()">✕</button>
+        <div class="upsell-lock-icon">🔒</div>
+        <div class="upsell-badge" id="upsellBadge">Standart Özelliği</div>
+        <h3 class="upsell-title" id="upsellTitle">Özellik Kilitli</h3>
+        <p class="upsell-sub" id="upsellSub"></p>
+        <ul class="upsell-features" id="upsellFeatures"></ul>
+        <div class="upsell-price-row">
+            <span class="upsell-price-old" id="upsellOldPrice">₺699</span>
+            <span class="upsell-price-new" id="upsellNewPrice">₺499</span>
+            <span class="upsell-price-period">tek seferlik · erken erişim</span>
+        </div>
+        <a href="{{ url_for('main.index') }}#pricing" class="btn-upsell-primary">
+            <span id="upsellPkg">Standart</span>'a Geç →
+        </a>
+        <button class="btn-upsell-later" onclick="closeUpsellModal()">Daha sonra</button>
+    </div>
+</div>
+
+
+<script>
+/* ── DM Okunmamış Badge ── */
+(function dmBadge() {
+  const badge = document.getElementById('sidebarDmBadge');
+  if (!badge) return;
+  function fetch_() {
+    fetch('/dm/unread-count').then(r => r.json()).then(d => {
+      badge.textContent = d.count < 10 ? d.count : '9+';
+      badge.style.display = d.count > 0 ? 'inline-block' : 'none';
+    }).catch(() => {});
+  }
+  fetch_(); setInterval(fetch_, 30000);
+})();
+
+/* ── Bildirim Badge (Dashboard sidebar) ── */
+(function notifBadge() {
+  const badge = document.getElementById('sidebarNotifBadge');
+  if (!badge) return;
+  function fetch_() {
+    fetch('/notifications/unread-count').then(r => r.json()).then(d => {
+      badge.textContent = d.count < 10 ? d.count : '9+';
+      badge.style.display = d.count > 0 ? 'inline-block' : 'none';
+    }).catch(() => {});
+  }
+  fetch_(); setInterval(fetch_, 20000);
+})();
+</script>
+
+</body>
+</html>

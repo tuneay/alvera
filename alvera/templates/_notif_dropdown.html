@@ -1,0 +1,58 @@
+{#
+  _notif_dropdown.html — Nav dropdown bildirim listesi
+  Değişken: notifs (list[Notification])
+#}
+{% if notifs %}
+  {% for n in notifs %}
+    {% set actor = n.actor %}
+    {% set actor_site = actor.site if actor else None %}
+    {% set actor_char = (actor.full_name or actor.email or '?')[0].upper() if actor else '?' %}
+
+    <a href="{% if n.post_id and n.post and n.post.slug %}/feed/u/{{ n.post.user_id }}/post/{{ n.post.slug }}{% elif n.notif_type == 'follow' %}/feed/u/{{ n.actor_id }}{% else %}/notifications/{% endif %}"
+       class="notif-item">
+
+      <!-- Aktör avatarı -->
+      <div class="notif-avatar">
+        {% if actor_site and actor_site.avatar_file %}
+          <img src="/{{ actor_site.avatar_file }}" alt="">
+        {% else %}
+          {{ actor_char }}
+        {% endif %}
+        <span class="notif-type-dot notif-dot--{{ n.notif_type }}">
+          {% if n.notif_type == 'like' %}✓
+          {% elif n.notif_type == 'yanka' %}⚡
+          {% elif n.notif_type == 'comment' %}💬
+          {% elif n.notif_type == 'follow' %}➕
+          {% elif n.notif_type == 'mention' %}@
+          {% endif %}
+        </span>
+      </div>
+
+      <!-- Metin -->
+      <div class="notif-body">
+        <span class="notif-actor">{{ actor.full_name or actor.email.split('@')[0] if actor else 'Biri' }}</span>
+        {% if n.notif_type == 'like' %}
+          <span class="notif-text"> gönderini onayladı</span>
+        {% elif n.notif_type == 'yanka' %}
+          <span class="notif-text"> gönderine Yankı verdi ⚡</span>
+        {% elif n.notif_type == 'comment' %}
+          <span class="notif-text"> gönderine yorum yaptı</span>
+        {% elif n.notif_type == 'follow' %}
+          <span class="notif-text"> seni takip etmeye başladı</span>
+        {% elif n.notif_type == 'mention' %}
+          <span class="notif-text"> senden bahsetti</span>
+        {% endif %}
+        <div class="notif-time">
+          {{ n.created_at.strftime('%-d %b, %H:%M') }}
+        </div>
+      </div>
+    </a>
+  {% endfor %}
+
+  <a href="/notifications/" class="notif-see-all">Tümünü gör →</a>
+{% else %}
+  <div class="notif-empty">
+    <span style="font-size:24px;opacity:0.3;">🔔</span>
+    <span>Henüz bildirim yok</span>
+  </div>
+{% endif %}

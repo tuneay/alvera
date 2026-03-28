@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profilinizi Zenginleştirin · Alvera</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        :root {
+            --border: #e8e8e8;
+            --text: #111;
+            --muted: #888;
+            --bg: #fafafa;
+            --radius: 12px;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #fff;
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 48px 20px 80px;
+        }
+
+        /* ── Header ── */
+        .page-top {
+            width: 100%;
+            max-width: 560px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 40px;
+        }
+        .logo { font-size: 18px; font-weight: 800; letter-spacing: -.5px; color: #111; text-decoration: none; }
+        .skip-btn {
+            font-size: 13px; color: var(--muted);
+            background: none; border: none; cursor: pointer;
+            text-decoration: underline; text-underline-offset: 3px;
+        }
+        .skip-btn:hover { color: #111; }
+
+        /* ── Badge ── */
+        .badge {
+            display: inline-flex; align-items: center; gap: 6px;
+            background: #f4f4f5; border-radius: 20px;
+            padding: 4px 12px; font-size: 12px; font-weight: 500; color: #555;
+            margin-bottom: 20px;
+        }
+        .badge-dot { width: 6px; height: 6px; border-radius: 50%; background: #16a34a; }
+
+        /* ── Title ── */
+        .page-title { font-size: 26px; font-weight: 800; line-height: 1.2; margin-bottom: 8px; text-align: center; }
+        .page-sub   { font-size: 14px; color: var(--muted); text-align: center; margin-bottom: 40px; line-height: 1.6; }
+
+        /* ── Card ── */
+        .card {
+            width: 100%; max-width: 560px;
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            overflow: hidden;
+            margin-bottom: 16px;
+        }
+        .card-header {
+            display: flex; align-items: center; gap: 12px;
+            padding: 16px 20px;
+            cursor: pointer;
+            user-select: none;
+            transition: background .15s;
+        }
+        .card-header:hover { background: var(--bg); }
+        .card-icon {
+            width: 38px; height: 38px;
+            background: #f4f4f5; border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 18px; flex-shrink: 0;
+        }
+        .card-meta { flex: 1; }
+        .card-title { font-size: 14px; font-weight: 700; }
+        .card-desc  { font-size: 12px; color: var(--muted); margin-top: 2px; }
+        .card-arrow { font-size: 16px; color: #bbb; transition: transform .2s; }
+        .card.open .card-arrow { transform: rotate(90deg); }
+        .card-optional { font-size: 11px; color: #bbb; font-weight: 500; margin-left: 6px; }
+
+        .card-body {
+            display: none;
+            padding: 0 20px 20px;
+            border-top: 1px solid var(--border);
+        }
+        .card.open .card-body { display: block; }
+
+        /* ── Form Elements ── */
+        .field-label { font-size: 12px; font-weight: 600; color: #555; margin-bottom: 6px; margin-top: 16px; }
+        .field-input {
+            width: 100%; padding: 10px 12px;
+            border: 1px solid var(--border); border-radius: 8px;
+            font-size: 13px; font-family: inherit; color: #111;
+            outline: none; transition: border-color .15s;
+        }
+        .field-input:focus { border-color: #111; }
+        .field-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+        /* Pill seçimler */
+        .pill-group { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
+        .pill {
+            padding: 6px 14px;
+            border: 1px solid var(--border); border-radius: 20px;
+            font-size: 12px; font-weight: 500; color: #555;
+            cursor: pointer; transition: all .15s;
+            background: #fff;
+        }
+        .pill.active { background: #111; color: #fff; border-color: #111; }
+
+        /* CTA toggle */
+        .toggle-row {
+            display: flex; align-items: center; justify-content: space-between;
+            margin-top: 16px; margin-bottom: 4px;
+        }
+        .toggle-label { font-size: 12px; font-weight: 600; color: #555; }
+        .toggle-switch {
+            position: relative; width: 36px; height: 20px;
+        }
+        .toggle-switch input { opacity: 0; width: 0; height: 0; }
+        .toggle-slider {
+            position: absolute; inset: 0;
+            background: #ddd; border-radius: 20px;
+            cursor: pointer; transition: background .2s;
+        }
+        .toggle-slider::after {
+            content: ''; position: absolute;
+            width: 14px; height: 14px;
+            left: 3px; top: 3px;
+            background: #fff; border-radius: 50%;
+            transition: transform .2s;
+        }
+        .toggle-switch input:checked + .toggle-slider { background: #111; }
+        .toggle-switch input:checked + .toggle-slider::after { transform: translateX(16px); }
+
+        /* Kariyer listesi */
+        .career-list { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
+        .career-row {
+            display: flex; align-items: center; gap: 10px;
+            background: var(--bg); border-radius: 8px; padding: 10px 12px;
+            font-size: 13px;
+        }
+        .career-row-info { flex: 1; }
+        .career-row-role    { font-weight: 600; font-size: 13px; }
+        .career-row-company { color: var(--muted); font-size: 12px; }
+        .career-row-del {
+            background: none; border: none; cursor: pointer;
+            font-size: 16px; color: #ccc; line-height: 1;
+        }
+        .career-row-del:hover { color: #e53e3e; }
+        .btn-add-career {
+            width: 100%; margin-top: 10px;
+            padding: 8px; border: 1px dashed var(--border); border-radius: 8px;
+            background: none; font-size: 13px; color: var(--muted); cursor: pointer;
+            transition: all .15s;
+        }
+        .btn-add-career:hover { border-color: #111; color: #111; }
+
+        /* Link listesi */
+        .link-list { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
+        .link-row {
+            display: flex; align-items: center; gap: 10px;
+            background: var(--bg); border-radius: 8px; padding: 10px 12px;
+        }
+        .link-emoji { font-size: 18px; width: 24px; text-align: center; }
+        .link-row-info { flex: 1; min-width: 0; }
+        .link-row-title { font-weight: 600; font-size: 13px; }
+        .link-row-url   { font-size: 11px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .link-row-del {
+            background: none; border: none; cursor: pointer;
+            font-size: 16px; color: #ccc;
+        }
+        .link-row-del:hover { color: #e53e3e; }
+
+        /* Mini form pop */
+        .mini-form {
+            display: none; margin-top: 10px;
+            border: 1px solid var(--border); border-radius: 10px; padding: 14px;
+            background: #fff;
+        }
+        .mini-form.open { display: block; }
+        .mini-form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .mini-form-actions { display: flex; gap: 8px; margin-top: 10px; }
+
+        /* Buttons */
+        .btn-save {
+            padding: 9px 18px;
+            background: #111; color: #fff;
+            border: none; border-radius: 8px;
+            font-size: 13px; font-weight: 600; cursor: pointer;
+            transition: background .15s;
+        }
+        .btn-save:hover { background: #333; }
+        .btn-cancel {
+            padding: 9px 14px;
+            background: none; border: 1px solid var(--border);
+            border-radius: 8px; font-size: 13px; cursor: pointer; color: #666;
+        }
+
+        /* ── Bottom CTA ── */
+        .page-cta {
+            margin-top: 32px;
+            display: flex; flex-direction: column; align-items: center; gap: 12px;
+        }
+        .btn-continue {
+            padding: 14px 40px;
+            background: #111; color: #fff;
+            border: none; border-radius: 10px;
+            font-size: 15px; font-weight: 700;
+            cursor: pointer; transition: background .15s;
+            text-decoration: none; display: inline-block;
+        }
+        .btn-continue:hover { background: #333; }
+        .btn-skip-bottom { font-size: 13px; color: var(--muted); cursor: pointer; background: none; border: none; text-decoration: underline; text-underline-offset: 3px; }
+        .btn-skip-bottom:hover { color: #111; }
+
+        .saved-toast {
+            position: fixed; bottom: 24px; right: 24px;
+            background: #111; color: #fff;
+            padding: 10px 18px; border-radius: 8px;
+            font-size: 13px; font-weight: 600;
+            opacity: 0; transform: translateY(8px);
+            transition: all .3s; pointer-events: none;
+        }
+        .saved-toast.show { opacity: 1; transform: none; }
+    </style>
+</head>
+<body>
+
+<div class="page-top">
+    <a href="{{ url_for('main.index') }}" class="logo">alvera</a>
+    <button class="skip-btn" onclick="goGenerate()">Atla, kimliğimi oluştur →</button>
+</div>
+
+<span class="badge"><span class="badge-dot"></span> İsteğe bağlı — son adım</span>
+<h1 class="page-title">Sitenizi zenginleştirin</h1>
+<p class="page-sub">Bu bilgiler AI'nin daha güçlü bir sayfa üretmesini sağlar.<br>İstediğiniz zaman admin panelinizden güncelleyebilirsiniz.</p>
+
+<!-- ── 1. Şu An Durumu + CTA ── -->
+<div class="card" id="cardStatus">
+    <div class="card-header" onclick="toggleCard('cardStatus')">
+        <div class="card-icon">⚡</div>
+        <div class="card-meta">
+            <div class="card-title">"Şu An" Durumu & CTA Butonu</div>
+            <div class="card-desc">Ziyaretçilere anlık mesaj + tek tıkla yönlendirme</div>
+        </div>
+        <span class="card-optional">İsteğe bağlı</span>
+        <span class="card-arrow">›</span>
+    </div>
+    <div class="card-body">
+        <div class="field-label">Şu an ne yapıyorsunuz? <span style="color:var(--muted);font-weight:400;">(kısa, samimi)</span></div>
+        <div style="display:flex;gap:8px;">
+            <input class="field-input" id="statusEmoji" placeholder="🚀" maxlength="4" style="width:54px;text-align:center;">
+            <input class="field-input" id="statusText" placeholder="Yeni freelance projesine açığım · Nisan'a kadar müsaitim" maxlength="160" style="flex:1;">
+        </div>
+
+        <div class="toggle-row">
+            <span class="toggle-label">Öne Çıkan CTA Butonu</span>
+            <label class="toggle-switch">
+                <input type="checkbox" id="ctaEnabled" onchange="document.getElementById('ctaFields').style.display=this.checked?'block':'none'">
+                <span class="toggle-slider"></span>
+            </label>
+        </div>
+        <div id="ctaFields" style="display:none;">
+            <div class="field-label">Buton Metni</div>
+            <input class="field-input" id="ctaText" placeholder="CV'mi İndir" maxlength="80">
+            <div class="field-label" style="margin-top:10px;">Buton URL'i</div>
+            <input class="field-input" id="ctaUrl" placeholder="https://drive.google.com/..." maxlength="255">
+        </div>
+
+        <div style="margin-top:14px;">
+            <button class="btn-save" onclick="saveProfileInfo()">Kaydet</button>
+        </div>
+    </div>
+</div>
+
+<!-- ── 2. Çalışma Tercihleri ── -->
+<div class="card" id="cardWork">
+    <div class="card-header" onclick="toggleCard('cardWork')">
+        <div class="card-icon">💼</div>
+        <div class="card-meta">
+            <div class="card-title">Çalışma Tercihleri</div>
+            <div class="card-desc">Nasıl çalışmak istediğinizi ziyaretçiler bilsin</div>
+        </div>
+        <span class="card-optional">İsteğe bağlı</span>
+        <span class="card-arrow">›</span>
+    </div>
+    <div class="card-body">
+        <div class="field-label">Çalışma Şekli</div>
+        <div class="pill-group" id="workTypeGroup">
+            <span class="pill" data-val="remote"  onclick="selectPill(this,'workTypeGroup','workType')">🌍 Uzaktan</span>
+            <span class="pill" data-val="hybrid"  onclick="selectPill(this,'workTypeGroup','workType')">🏢 Hibrit</span>
+            <span class="pill" data-val="onsite"  onclick="selectPill(this,'workTypeGroup','workType')">📍 Ofis</span>
+            <span class="pill" data-val="esnek"   onclick="selectPill(this,'workTypeGroup','workType')">✨ Esnek</span>
+        </div>
+        <input type="hidden" id="workType">
+
+        <div class="field-label" style="margin-top:14px;">İş Türü</div>
+        <div class="pill-group" id="workEngGroup">
+            <span class="pill" data-val="freelance"     onclick="selectPill(this,'workEngGroup','workEngagement')">Freelance</span>
+            <span class="pill" data-val="tam-zamanli"   onclick="selectPill(this,'workEngGroup','workEngagement')">Tam Zamanlı</span>
+            <span class="pill" data-val="proje"         onclick="selectPill(this,'workEngGroup','workEngagement')">Proje Bazlı</span>
+            <span class="pill" data-val="danismanlik"   onclick="selectPill(this,'workEngGroup','workEngagement')">Danışmanlık</span>
+        </div>
+        <input type="hidden" id="workEngagement">
+
+        <div class="field-label" style="margin-top:14px;">Bütçe / Ücret Beklentisi <span style="color:var(--muted);font-weight:400;">(opsiyonel)</span></div>
+        <input class="field-input" id="workBudget" placeholder="₺5.000/proje+" maxlength="50">
+
+        <div style="margin-top:14px;">
+            <button class="btn-save" onclick="saveProfileInfo()">Kaydet</button>
+        </div>
+    </div>
+</div>
+
+<!-- ── 3. Kariyer Zaman Çizelgesi ── -->
+<div class="card" id="cardCareer">
+    <div class="card-header" onclick="toggleCard('cardCareer')">
+        <div class="card-icon">🗂</div>
+        <div class="card-meta">
+            <div class="card-title">Kariyer Zaman Çizelgesi</div>
+            <div class="card-desc">Deneyimlerinizi minimalist şekilde gösterin</div>
+        </div>
+        <span class="card-optional">İsteğe bağlı</span>
+        <span class="card-arrow">›</span>
+    </div>
+    <div class="card-body">
+        <div class="career-list" id="careerList"></div>
+        <button class="btn-add-career" onclick="toggleCareerForm()">+ Kariyer girişi ekle</button>
+
+        <div class="mini-form" id="careerForm">
+            <div class="mini-form-row">
+                <div>
+                    <div class="field-label">Görev / Pozisyon</div>
+                    <input class="field-input" id="cRole" placeholder="Senior Designer">
+                </div>
+                <div>
+                    <div class="field-label">Şirket / Kurum</div>
+                    <input class="field-input" id="cCompany" placeholder="Spotify">
+                </div>
+            </div>
+            <div class="mini-form-row" style="margin-top:8px;">
+                <div>
+                    <div class="field-label">Başlangıç</div>
+                    <input class="field-input" id="cStart" placeholder="2020">
+                </div>
+                <div>
+                    <div class="field-label">Bitiş</div>
+                    <input class="field-input" id="cEnd" placeholder="2023 (boş = günümüz)">
+                </div>
+            </div>
+            <div style="margin-top:8px;">
+                <div class="field-label">Kısa Açıklama <span style="color:var(--muted);font-weight:400;">(opsiyonel)</span></div>
+                <input class="field-input" id="cDesc" placeholder="Ürün tasarımı ve kullanıcı araştırması" maxlength="300">
+            </div>
+            <div class="mini-form-actions">
+                <button class="btn-save" onclick="addCareer()">Ekle</button>
+                <button class="btn-cancel" onclick="toggleCareerForm()">İptal</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ── 4. Link Merkezi ── -->
+<div class="card" id="cardLinks">
+    <div class="card-header" onclick="toggleCard('cardLinks')">
+        <div class="card-icon">🔗</div>
+        <div class="card-meta">
+            <div class="card-title">Link Merkezi</div>
+            <div class="card-desc">CV, portföy, Calendly — her şeyi tek yerde</div>
+        </div>
+        <span class="card-optional">İsteğe bağlı</span>
+        <span class="card-arrow">›</span>
+    </div>
+    <div class="card-body">
+        <div class="link-list" id="linkList"></div>
+        <button class="btn-add-career" onclick="toggleLinkForm()" style="margin-top:10px;">+ Link ekle</button>
+
+        <div class="mini-form" id="linkForm">
+            <div class="mini-form-row">
+                <div>
+                    <div class="field-label">Emoji</div>
+                    <input class="field-input" id="lEmoji" placeholder="📄" maxlength="4" style="text-align:center;">
+                </div>
+                <div>
+                    <div class="field-label">Başlık</div>
+                    <input class="field-input" id="lTitle" placeholder="CV'mi İndir">
+                </div>
+            </div>
+            <div style="margin-top:8px;">
+                <div class="field-label">URL</div>
+                <input class="field-input" id="lUrl" placeholder="https://...">
+            </div>
+            <div class="mini-form-actions">
+                <button class="btn-save" onclick="addLink()">Ekle</button>
+                <button class="btn-cancel" onclick="toggleLinkForm()">İptal</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ── Bottom CTA ── -->
+<div class="page-cta">
+    <button class="btn-continue" onclick="goGenerate()">AI ile Kimliğimi Oluştur →</button>
+    <button class="btn-skip-bottom" onclick="goGenerate()">Bunları daha sonra eklerim</button>
+</div>
+
+<div class="saved-toast" id="toast">✓ Kaydedildi</div>
+
+<script>
+// Paket 2 (Ücretli Profil) → AI site üretim sayfasına git
+// Paket 1 (Ücretsiz Sosyal) → Feed'e git
+const NEXT_URL = "{{ url_for('ai.generate_page') if current_user.package == '2' else url_for('feed.index') }}";
+
+function goGenerate() {
+    window.location.href = NEXT_URL;
+}
+
+function toggleCard(id) {
+    document.getElementById(id).classList.toggle('open');
+}
+
+function selectPill(el, groupId, hiddenId) {
+    document.querySelectorAll(`#${groupId} .pill`).forEach(p => p.classList.remove('active'));
+    el.classList.add('active');
+    document.getElementById(hiddenId).value = el.dataset.val;
+}
+
+function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg || '✓ Kaydedildi';
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+async function post(url, body) {
+    const r = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+    });
+    return r.json();
+}
+
+// ── Profil Bilgileri ──
+async function saveProfileInfo() {
+    const body = {
+        status_text:     document.getElementById('statusText').value.trim(),
+        status_emoji:    document.getElementById('statusEmoji').value.trim(),
+        cta_enabled:     document.getElementById('ctaEnabled').checked,
+        cta_text:        document.getElementById('ctaText').value.trim(),
+        cta_url:         document.getElementById('ctaUrl').value.trim(),
+        work_type:       document.getElementById('workType').value,
+        work_engagement: document.getElementById('workEngagement').value,
+        work_budget:     document.getElementById('workBudget').value.trim(),
+    };
+    const res = await post('/extras/profile-info', body);
+    if (res.ok) showToast('✓ Kaydedildi');
+}
+
+// ── Kariyer ──
+let careers = [];
+
+function renderCareers() {
+    const list = document.getElementById('careerList');
+    list.innerHTML = careers.map(c => `
+        <div class="career-row" id="ce-${c.id}">
+            <div class="career-row-info">
+                <div class="career-row-role">${escHtml(c.role)}</div>
+                <div class="career-row-company">${escHtml(c.company)} · ${c.start_year}${c.is_current ? ' – Günümüz' : (c.end_year ? ' – ' + c.end_year : '')}</div>
+            </div>
+            <button class="career-row-del" onclick="deleteCareer(${c.id})">×</button>
+        </div>`).join('');
+}
+
+function toggleCareerForm() {
+    document.getElementById('careerForm').classList.toggle('open');
+}
+
+async function addCareer() {
+    const body = {
+        role:       document.getElementById('cRole').value.trim(),
+        company:    document.getElementById('cCompany').value.trim(),
+        start_year: document.getElementById('cStart').value.trim(),
+        end_year:   document.getElementById('cEnd').value.trim(),
+        is_current: !document.getElementById('cEnd').value.trim(),
+        description:document.getElementById('cDesc').value.trim(),
+    };
+    if (!body.role || !body.company || !body.start_year) { alert('Görev, şirket ve başlangıç yılı zorunludur.'); return; }
+    const res = await post('/extras/career', body);
+    if (res.ok) {
+        careers.unshift(res.entry);
+        renderCareers();
+        ['cRole','cCompany','cStart','cEnd','cDesc'].forEach(id => document.getElementById(id).value = '');
+        toggleCareerForm();
+        showToast('✓ Kariyer girişi eklendi');
+    }
+}
+
+async function deleteCareer(id) {
+    const r = await fetch(`/extras/career/${id}`, { method: 'DELETE' });
+    const res = await r.json();
+    if (res.ok) {
+        careers = careers.filter(c => c.id !== id);
+        renderCareers();
+    }
+}
+
+// ── Linkler ──
+let links = [];
+
+function renderLinks() {
+    const list = document.getElementById('linkList');
+    list.innerHTML = links.map(l => `
+        <div class="link-row" id="lk-${l.id}">
+            <span class="link-emoji">${l.emoji || '🔗'}</span>
+            <div class="link-row-info">
+                <div class="link-row-title">${escHtml(l.title)}</div>
+                <div class="link-row-url">${escHtml(l.url)}</div>
+            </div>
+            <button class="link-row-del" onclick="deleteLink(${l.id})">×</button>
+        </div>`).join('');
+}
+
+function toggleLinkForm() {
+    document.getElementById('linkForm').classList.toggle('open');
+}
+
+async function addLink() {
+    const body = {
+        emoji: document.getElementById('lEmoji').value.trim(),
+        title: document.getElementById('lTitle').value.trim(),
+        url:   document.getElementById('lUrl').value.trim(),
+    };
+    if (!body.title || !body.url) { alert('Başlık ve URL zorunludur.'); return; }
+    const res = await post('/extras/links', body);
+    if (res.ok) {
+        links.push(res.link);
+        renderLinks();
+        ['lEmoji','lTitle','lUrl'].forEach(id => document.getElementById(id).value = '');
+        toggleLinkForm();
+        showToast('✓ Link eklendi');
+    }
+}
+
+async function deleteLink(id) {
+    const r = await fetch(`/extras/links/${id}`, { method: 'DELETE' });
+    const res = await r.json();
+    if (res.ok) {
+        links = links.filter(l => l.id !== id);
+        renderLinks();
+    }
+}
+
+function escHtml(str) {
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+</script>
+
+</body>
+</html>

@@ -1,0 +1,1938 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Düzenle — Alvera</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --white:          #FFFFFF;
+            --bg:             #FAFAFA;
+            --text-primary:   #0A0A0A;
+            --text-secondary: #525252;
+            --text-muted:     #A3A3A3;
+            --border:         #E5E5E5;
+            --border-focus:   #0A0A0A;
+            --green:          #16a34a;
+            --green-bg:       #f0fdf4;
+            --green-border:   #bbf7d0;
+            --error:          #dc2626;
+            --error-bg:       #fef2f2;
+            --radius:         10px;
+            --radius-sm:      8px;
+            --ease:           cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg);
+            color: var(--text-primary);
+            -webkit-font-smoothing: antialiased;
+            min-height: 100vh;
+        }
+
+        .layout { display: flex; min-height: 100vh; }
+
+        /* ─── Sidebar ─── */
+        .sidebar {
+            width: 220px;
+            background: var(--white);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            padding: 24px 16px;
+            position: fixed;
+            top: 0; left: 0; bottom: 0;
+            z-index: 100;
+        }
+
+        .sidebar-logo {
+            font-size: 16px;
+            font-weight: 600;
+            letter-spacing: -0.5px;
+            color: var(--text-primary);
+            text-decoration: none;
+            padding: 0 8px;
+            margin-bottom: 28px;
+            display: block;
+        }
+
+        .sidebar-nav { display: flex; flex-direction: column; gap: 2px; }
+
+        .sidebar-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 10px;
+            border-radius: 7px;
+            font-size: 13.5px;
+            font-weight: 450;
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: background 0.25s var(--ease), color 0.25s var(--ease);
+        }
+
+        .sidebar-item:hover, .sidebar-item.active {
+            background: var(--bg);
+            color: var(--text-primary);
+        }
+
+        .sidebar-item.active { font-weight: 500; }
+        .sidebar-icon { font-size: 15px; width: 18px; text-align: center; }
+        .sidebar-section-label {
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+            color: #9ca3af;
+            padding: 4px 10px 2px;
+            margin-bottom: 2px;
+        }
+
+        .soon {
+            font-size: 10px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-left: auto;
+            font-weight: 500;
+        }
+
+        .sidebar-bottom {
+            margin-top: auto;
+            border-top: 1px solid var(--border);
+            padding-top: 16px;
+        }
+
+        .sidebar-user {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 10px;
+            border-radius: 7px;
+        }
+
+        .user-avatar {
+            width: 28px; height: 28px;
+            background: var(--text-primary);
+            color: var(--white);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+
+        .user-info .name  { font-size: 12.5px; font-weight: 500; color: var(--text-primary); }
+        .user-info .email { font-size: 11px; color: var(--text-muted); }
+
+        /* ─── Content ─── */
+        .content {
+            margin-left: 220px;
+            flex: 1;
+            padding: 40px 48px;
+            max-width: calc(220px + 760px);
+        }
+
+        .page-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 32px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .page-title {
+            font-size: 22px;
+            font-weight: 700;
+            letter-spacing: -0.7px;
+        }
+
+        .btn-preview {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: transparent;
+            color: var(--text-secondary);
+            border: 1px solid var(--border);
+            padding: 8px 18px;
+            border-radius: var(--radius-sm);
+            font-size: 13.5px;
+            font-weight: 500;
+            font-family: inherit;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.25s var(--ease);
+        }
+
+        .btn-preview:hover {
+            border-color: var(--text-primary);
+            color: var(--text-primary);
+        }
+
+        /* ─── Sections ─── */
+        .edit-section {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            overflow: hidden;
+            margin-bottom: 16px;
+        }
+
+        .section-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .section-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+            letter-spacing: -0.2px;
+        }
+
+        .section-sub {
+            font-size: 12.5px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .section-body {
+            padding: 22px 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        /* ─── Form fields ─── */
+        .field { display: flex; flex-direction: column; gap: 6px; }
+
+        .field-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .field-label {
+            font-size: 12.5px;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .field-limit {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        .field-limit.warn { color: var(--error); }
+
+        .field-input, .field-textarea {
+            width: 100%;
+            padding: 10px 13px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            font-family: inherit;
+            color: var(--text-primary);
+            background: var(--white);
+            outline: none;
+            transition: border-color 0.25s var(--ease), box-shadow 0.25s var(--ease);
+        }
+
+        .field-input::placeholder, .field-textarea::placeholder { color: var(--text-muted); }
+
+        .field-input:focus, .field-textarea:focus {
+            border-color: var(--border-focus);
+            box-shadow: 0 0 0 3px rgba(10,10,10,0.06);
+        }
+
+        .field-textarea { resize: none; line-height: 1.65; }
+
+        .field-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        /* ─── Tag input ─── */
+        .tag-input-wrap {
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 7px 9px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            cursor: text;
+            min-height: 44px;
+            align-items: center;
+            transition: border-color 0.25s var(--ease), box-shadow 0.25s var(--ease);
+        }
+
+        .tag-input-wrap:focus-within {
+            border-color: var(--border-focus);
+            box-shadow: 0 0 0 3px rgba(10,10,10,0.06);
+        }
+
+        .tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            padding: 3px 9px;
+            border-radius: 100px;
+            font-size: 12.5px;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .tag-remove {
+            background: none; border: none;
+            cursor: pointer;
+            color: var(--text-muted);
+            font-size: 14px; line-height: 1;
+            padding: 0;
+            transition: color 0.2s;
+        }
+
+        .tag-remove:hover { color: var(--error); }
+
+        .tag-text-input {
+            border: none; outline: none;
+            font-family: inherit; font-size: 13.5px;
+            color: var(--text-primary);
+            background: transparent;
+            flex: 1; min-width: 100px;
+            padding: 2px 4px;
+        }
+
+        .tag-text-input::placeholder { color: var(--text-muted); }
+
+        /* ─── Section footer ─── */
+        .section-footer {
+            padding: 14px 24px;
+            border-top: 1px solid var(--border);
+            background: var(--bg);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .save-status {
+            font-size: 12.5px;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            min-width: 120px;
+        }
+
+        .save-status.saved  { color: var(--green); }
+        .save-status.error  { color: var(--error); }
+
+        .btn-save {
+            background: var(--text-primary);
+            color: var(--white);
+            border: 1px solid var(--text-primary);
+            padding: 8px 20px;
+            border-radius: var(--radius-sm);
+            font-size: 13.5px;
+            font-weight: 500;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.3s var(--ease);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-save:hover {
+            background: #1f1f1f;
+            transform: translateY(-1px);
+        }
+
+        .btn-save:disabled { opacity: 0.5; pointer-events: none; }
+
+        /* ─── Limit uyarısı ─── */
+        .limit-banner {
+            background: #fef9ec;
+            border: 1px solid #fde68a;
+            border-radius: var(--radius-sm);
+            padding: 10px 14px;
+            font-size: 12.5px;
+            color: #92400e;
+            display: flex;
+            gap: 8px;
+        }
+
+        /* ─── Inbox badge ─── */
+        .inbox-badge {
+            margin-left: auto;
+            background: #dc2626;
+            color: #fff;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 1px 6px;
+            border-radius: 100px;
+        }
+
+        /* ─── Upload area ─── */
+        .upload-area {
+            border: 2px dashed var(--border);
+            border-radius: var(--radius);
+            padding: 24px;
+            text-align: center;
+            cursor: pointer;
+            transition: border-color 0.25s var(--ease), background 0.25s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .upload-area:hover { border-color: #c0c0c0; background: var(--bg); }
+        .upload-area.drag  { border-color: var(--text-primary); background: #f5f5f5; }
+
+        .upload-preview {
+            width: 100%;
+            max-height: 200px;
+            object-fit: cover;
+            border-radius: var(--radius-sm);
+            display: none;
+            margin-bottom: 8px;
+        }
+
+        .upload-cover-preview {
+            width: 100%;
+            height: 140px;
+            object-fit: cover;
+            border-radius: var(--radius-sm);
+            display: none;
+            margin-bottom: 8px;
+        }
+
+        .upload-label {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .upload-label strong { color: var(--text-primary); }
+
+        .photos-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        /* ─── P3 list rows ─── */
+        .p3-list { display: flex; flex-direction: column; gap: 10px; }
+
+        .p3-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 14px 16px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            background: var(--bg);
+        }
+
+        .p3-row-body { flex: 1; min-width: 0; }
+
+        .p3-row-title {
+            font-size: 13.5px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 2px;
+        }
+
+        .p3-row-sub {
+            font-size: 12px;
+            color: var(--text-muted);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .p3-row-del {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--text-muted);
+            font-size: 16px;
+            padding: 2px 4px;
+            line-height: 1;
+            transition: color 0.2s;
+            flex-shrink: 0;
+        }
+
+        .p3-row-del:hover { color: var(--error); }
+
+        /* ─── Add form toggle ─── */
+        .btn-add {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 7px 16px;
+            cursor: pointer;
+            transition: all 0.25s var(--ease);
+            font-family: inherit;
+        }
+
+        .btn-add:hover { border-color: var(--text-primary); color: var(--text-primary); }
+
+        .add-form {
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 18px;
+            margin-top: 10px;
+            background: var(--bg);
+            display: none;
+        }
+
+        .add-form.open { display: block; }
+
+        .add-form .field { margin-bottom: 12px; }
+        .add-form .field:last-child { margin-bottom: 0; }
+
+        /* ─── Inbox ─── */
+        .inbox-list { display: flex; flex-direction: column; gap: 10px; }
+
+        .inbox-msg {
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 14px 16px;
+            background: var(--bg);
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .inbox-msg.unread {
+            background: #f5f3ff;
+            border-color: #c4b5fd;
+        }
+
+        .inbox-msg-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+
+        .inbox-from {
+            font-size: 13.5px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .inbox-date {
+            font-size: 11.5px;
+            color: var(--text-muted);
+        }
+
+        .inbox-subject {
+            font-size: 12.5px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+        }
+
+        .inbox-preview {
+            font-size: 12px;
+            color: var(--text-muted);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        /* ─── Message detail modal ─── */
+        .msg-modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+        }
+
+        .msg-modal-box {
+            background: var(--white);
+            border-radius: var(--radius);
+            padding: 28px;
+            max-width: 540px;
+            width: 100%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .msg-modal-close {
+            float: right;
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            color: var(--text-muted);
+            margin-left: 12px;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar  { display: none; }
+            .content  { margin-left: 0; padding: 24px 20px; }
+            .field-row { grid-template-columns: 1fr; }
+            .photos-grid { grid-template-columns: 1fr; }
+        }
+
+        /* ─── Pill seçim (çalışma tercihleri) ─── */
+        .pill-group-adm { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
+        .adm-pill {
+            padding: 6px 14px;
+            border: 1px solid var(--border); border-radius: 20px;
+            font-size: 12px; font-weight: 500; color: #555;
+            cursor: pointer; transition: all .15s; background: #fff;
+        }
+        .adm-pill.active { background: #111; color: #fff; border-color: #111; }
+
+        /* ─── Upsell Modal ─── */
+        .upsell-overlay {
+            display: none;
+            position: fixed; inset: 0; z-index: 9999;
+            background: rgba(0,0,0,0.45);
+            backdrop-filter: blur(4px);
+            align-items: center; justify-content: center;
+        }
+        .upsell-overlay.open { display: flex; }
+        .upsell-modal {
+            background: #fff;
+            border-radius: 18px;
+            padding: 36px 32px 28px;
+            max-width: 400px; width: 90%;
+            box-shadow: 0 24px 60px rgba(0,0,0,0.18);
+            position: relative;
+            text-align: center;
+            animation: modalIn .25s ease;
+        }
+        @keyframes modalIn {
+            from { opacity:0; transform:scale(.94) translateY(10px); }
+            to   { opacity:1; transform:scale(1) translateY(0); }
+        }
+        .upsell-close {
+            position: absolute; top: 14px; right: 18px;
+            background: none; border: none; cursor: pointer;
+            font-size: 22px; color: #aaa; line-height: 1;
+        }
+        .upsell-close:hover { color: #555; }
+        .upsell-badge {
+            display: inline-block;
+            font-size: 11px; font-weight: 700; letter-spacing: .05em;
+            text-transform: uppercase;
+            padding: 3px 10px; border-radius: 20px;
+            background: #f4f4f5; color: #666;
+            margin-bottom: 16px;
+        }
+        .upsell-icon { font-size: 38px; margin-bottom: 12px; display: block; }
+        .upsell-title {
+            font-size: 20px; font-weight: 800; color: #111;
+            margin-bottom: 8px; line-height: 1.25;
+        }
+        .upsell-desc {
+            font-size: 14px; color: #666; line-height: 1.65;
+            margin-bottom: 22px;
+        }
+        .upsell-price-row {
+            display: flex; align-items: center; justify-content: center;
+            gap: 10px; margin-bottom: 22px;
+        }
+        .upsell-old-price {
+            font-size: 15px; color: #aaa;
+            text-decoration: line-through;
+        }
+        .upsell-price {
+            font-size: 26px; font-weight: 800; color: #111;
+        }
+        .upsell-period { font-size: 13px; color: #888; }
+        .upsell-cta {
+            display: block; width: 100%;
+            padding: 13px 0;
+            background: #111; color: #fff;
+            border: none; border-radius: 10px;
+            font-size: 14px; font-weight: 700;
+            cursor: pointer; text-decoration: none;
+            transition: background .2s;
+            margin-bottom: 10px;
+        }
+        .upsell-cta:hover { background: #333; }
+        .upsell-skip {
+            font-size: 12px; color: #aaa; cursor: pointer;
+            background: none; border: none;
+        }
+        .upsell-skip:hover { color: #666; }
+    </style>
+</head>
+<body>
+<div class="layout">
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <a href="{{ url_for('main.index') }}" class="sidebar-logo">alvera</a>
+        <nav class="sidebar-nav">
+            <!-- ── Sitem bölümü ── -->
+            <div class="sidebar-section-label">Sitem</div>
+            <a href="{{ url_for('site.dashboard') }}" class="sidebar-item">
+                <span class="sidebar-icon">⊡</span> Genel Bakış
+            </a>
+            <a href="/{{ site.slug }}" target="_blank" class="sidebar-item">
+                <span class="sidebar-icon">✦</span> Sayfam
+            </a>
+            <a href="{{ url_for('site.edit') }}" class="sidebar-item active">
+                <span class="sidebar-icon">✏️</span> İçerik Düzenle
+            </a>
+            <a href="#" class="sidebar-item">
+                <span class="sidebar-icon">📊</span> Analitik
+                <span class="soon">Yakında</span>
+            </a>
+            {% if user.package == '3' %}
+            <div class="sidebar-section-label" style="margin-top:10px;">Marka</div>
+            <a href="#sec-photos" class="sidebar-item" onclick="scrollTo('sec-photos')">
+                <span class="sidebar-icon">🖼</span> Görseller
+            </a>
+            <a href="#sec-services" class="sidebar-item" onclick="scrollTo('sec-services')">
+                <span class="sidebar-icon">◈</span> Hizmetler
+            </a>
+            <a href="#sec-portfolio" class="sidebar-item" onclick="scrollTo('sec-portfolio')">
+                <span class="sidebar-icon">◉</span> Portföy
+            </a>
+            <a href="#sec-testimonials" class="sidebar-item" onclick="scrollTo('sec-testimonials')">
+                <span class="sidebar-icon">★</span> Referanslar
+            </a>
+            <a href="#sec-inbox" class="sidebar-item" onclick="scrollTo('sec-inbox')">
+                <span class="sidebar-icon">✉</span> Gelen Kutusu
+                {% if unread_count > 0 %}
+                <span class="inbox-badge">{{ unread_count }}</span>
+                {% endif %}
+            </a>
+            {% endif %}
+            <div style="height:1px;background:var(--border);margin:6px 0;"></div>
+            <a href="#sec-status" class="sidebar-item" onclick="scrollTo('sec-status')">
+                <span class="sidebar-icon">⚡</span> Durum & CTA
+            </a>
+            <a href="#sec-workprefs" class="sidebar-item" onclick="scrollTo('sec-workprefs')">
+                <span class="sidebar-icon">💼</span> Tercihler
+            </a>
+            <a href="#sec-career" class="sidebar-item" onclick="scrollTo('sec-career')">
+                <span class="sidebar-icon">🗂</span> Kariyer
+            </a>
+            <a href="#sec-links" class="sidebar-item" onclick="scrollTo('sec-links')">
+                <span class="sidebar-icon">🔗</span> Linkler
+            </a>
+        </nav>
+        <div class="sidebar-bottom">
+            <div class="sidebar-user">
+                <div class="user-avatar">
+                    {{ user.full_name[0].upper() if user.full_name else user.email[0].upper() }}
+                </div>
+                <div class="user-info">
+                    <div class="name">{{ user.full_name or 'Kullanıcı' }}</div>
+                    <div class="email">{{ user.email }}</div>
+                </div>
+            </div>
+            <a href="{{ url_for('auth.logout') }}" class="sidebar-item" style="margin-top:4px;">
+                <span class="sidebar-icon">↩</span> Çıkış Yap
+            </a>
+        </div>
+    </aside>
+
+    <!-- Content -->
+    <main class="content">
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">İçeriğini Düzenle</h1>
+            </div>
+            <a href="/{{ site.slug }}" target="_blank" class="btn-preview">
+                Sayfayı Görüntüle ↗
+            </a>
+        </div>
+
+        <div class="limit-banner">
+            <span>⚠</span>
+            <span>Karakter limitleri Alvera estetiğini korumak için geçerlidir. Font ve layout değiştirilemez.</span>
+        </div>
+        <br>
+
+        <!-- ── Bölüm 1: İçerik ── -->
+        <div class="edit-section">
+            <div class="section-header">
+                <div>
+                    <div class="section-title">Sayfa İçeriği</div>
+                    <div class="section-sub">Başlık, tagline, bio ve çağrı butonu</div>
+                </div>
+            </div>
+            <div class="section-body" id="contentBody">
+                <div class="field">
+                    <div class="field-top">
+                        <label class="field-label">Başlık</label>
+                        <span class="field-limit" id="lim-headline">0 / {{ limits.headline }}</span>
+                    </div>
+                    <input class="field-input" type="text" id="headline"
+                        maxlength="{{ limits.headline }}"
+                        value="{{ site.headline or '' }}"
+                        data-limit="headline">
+                </div>
+
+                <div class="field">
+                    <div class="field-top">
+                        <label class="field-label">Tagline</label>
+                        <span class="field-limit" id="lim-tagline">0 / {{ limits.tagline }}</span>
+                    </div>
+                    <input class="field-input" type="text" id="tagline"
+                        maxlength="{{ limits.tagline }}"
+                        value="{{ site.tagline or '' }}"
+                        data-limit="tagline">
+                </div>
+
+                <div class="field">
+                    <div class="field-top">
+                        <label class="field-label">Bio</label>
+                        <span class="field-limit" id="lim-bio_text">0 / {{ limits.bio_text }}</span>
+                    </div>
+                    <textarea class="field-textarea" id="bio_text"
+                        maxlength="{{ limits.bio_text }}"
+                        rows="4"
+                        data-limit="bio_text">{{ site.bio_text or '' }}</textarea>
+                </div>
+
+                <div class="field-row">
+                    <div class="field">
+                        <div class="field-top">
+                            <label class="field-label">CTA Butonu</label>
+                            <span class="field-limit" id="lim-cta_text">0 / {{ limits.cta_text }}</span>
+                        </div>
+                        <input class="field-input" type="text" id="cta_text"
+                            maxlength="{{ limits.cta_text }}"
+                            value="{{ site.cta_text or '' }}"
+                            placeholder="İletişime Geçin"
+                            data-limit="cta_text">
+                    </div>
+                    <div class="field">
+                        <label class="field-label">Uzmanlık Alanları</label>
+                        <div class="tag-input-wrap" id="skillsWrap">
+                            <input class="tag-text-input" id="skillsTagInput" placeholder="Ekle → Enter">
+                        </div>
+                        <input type="hidden" id="skillsValue" value="{{ skills | join(',') }}">
+                    </div>
+                </div>
+            </div>
+            <div class="section-footer">
+                <span class="save-status" id="status-content"></span>
+                <button class="btn-save" onclick="saveSection('content')" id="btn-content">
+                    Kaydet
+                </button>
+            </div>
+        </div>
+
+        <!-- ── Bölüm 2: Kimlik ── -->
+        <div class="edit-section">
+            <div class="section-header">
+                <div>
+                    <div class="section-title">Kimlik Bilgileri</div>
+                    <div class="section-sub">Unvan ve kurum</div>
+                </div>
+            </div>
+            <div class="section-body">
+                <div class="field-row">
+                    <div class="field">
+                        <label class="field-label">Unvan / Meslek</label>
+                        <input class="field-input" type="text" id="job_title"
+                            maxlength="{{ limits.job_title }}"
+                            value="{{ onboarding.job_title or '' if onboarding else '' }}"
+                            placeholder="Product Designer">
+                    </div>
+                    <div class="field">
+                        <label class="field-label">Şirket / Kurum (opsiyonel)</label>
+                        <input class="field-input" type="text" id="company"
+                            maxlength="{{ limits.company }}"
+                            value="{{ onboarding.company or '' if onboarding else '' }}"
+                            placeholder="Trendyol">
+                    </div>
+                </div>
+            </div>
+            <div class="section-footer">
+                <span class="save-status" id="status-identity"></span>
+                <button class="btn-save" onclick="saveSection('identity')" id="btn-identity">
+                    Kaydet
+                </button>
+            </div>
+        </div>
+
+        <!-- ── Bölüm 3: Linkler ── -->
+        <div class="edit-section">
+            <div class="section-header">
+                <div>
+                    <div class="section-title">Profil Linkleri</div>
+                    <div class="section-sub">Sosyal medya ve web siteniz</div>
+                </div>
+            </div>
+            <div class="section-body">
+                <div class="field-row">
+                    <div class="field">
+                        <label class="field-label">LinkedIn</label>
+                        <input class="field-input" type="url" id="linkedin"
+                            value="{{ onboarding.linkedin or '' if onboarding else '' }}"
+                            placeholder="https://linkedin.com/in/...">
+                    </div>
+                    <div class="field">
+                        <label class="field-label">GitHub</label>
+                        <input class="field-input" type="url" id="github"
+                            value="{{ onboarding.github or '' if onboarding else '' }}"
+                            placeholder="https://github.com/...">
+                    </div>
+                </div>
+                <div class="field-row">
+                    <div class="field">
+                        <label class="field-label">Twitter / X</label>
+                        <input class="field-input" type="url" id="twitter"
+                            value="{{ onboarding.twitter or '' if onboarding else '' }}"
+                            placeholder="https://x.com/...">
+                    </div>
+                    <div class="field">
+                        <label class="field-label">Web Sitesi</label>
+                        <input class="field-input" type="url" id="website"
+                            value="{{ onboarding.website or '' if onboarding else '' }}"
+                            placeholder="https://...">
+                    </div>
+                </div>
+            </div>
+            <div class="section-footer">
+                <span class="save-status" id="status-links"></span>
+                <button class="btn-save" onclick="saveSection('links')" id="btn-links">
+                    Kaydet
+                </button>
+            </div>
+        </div>
+
+        {% if user.package in ('1','2','3') %}
+        <!-- ── Profil Fotoğrafı ── -->
+        <div class="edit-section" id="sec-photos">
+            <div class="section-header">
+                <div>
+                    <div class="section-title">Profil Görselleri</div>
+                    <div class="section-sub">Profil fotoğrafı{% if user.package in ('2','3') %} ve kapak görseli{% endif %}</div>
+                </div>
+            </div>
+            <div class="section-body">
+                <div class="photos-grid">
+                    <!-- Avatar -->
+                    <div>
+                        <div class="field-label" style="margin-bottom:8px;">Profil Fotoğrafı</div>
+                        <div class="upload-area" id="avatarDrop" onclick="document.getElementById('avatarInput').click()">
+                            {% if site.avatar_file %}
+                            <img class="upload-preview" id="avatarPreview" src="{{ site.avatar_file }}" style="display:block;width:80px;height:80px;object-fit:cover;border-radius:50%;margin:0 auto 8px;">
+                            {% else %}
+                            <img class="upload-preview" id="avatarPreview">
+                            {% endif %}
+                            <div class="upload-label" id="avatarLabel">
+                                <strong>Tıkla</strong> veya sürükle · PNG, JPG, WebP (maks. 8 MB)
+                            </div>
+                        </div>
+                        <input type="file" id="avatarInput" accept="image/*" style="display:none" onchange="uploadPhoto('avatar', this)">
+                        <div style="font-size:12px;color:var(--text-muted);margin-top:6px;" id="avatarStatus"></div>
+                    </div>
+                    {% if user.package in ('2', '3') %}
+                    <!-- Cover — P2 & P3 -->
+                    <div>
+                        <div class="field-label" style="margin-bottom:8px;">Kapak Görseli</div>
+                        <div class="upload-area" id="coverDrop" onclick="document.getElementById('coverInput').click()">
+                            {% if site.cover_file %}
+                            <img class="upload-cover-preview" id="coverPreview" src="{{ site.cover_file }}" style="display:block;">
+                            {% else %}
+                            <img class="upload-cover-preview" id="coverPreview">
+                            {% endif %}
+                            <div class="upload-label" id="coverLabel">
+                                <strong>Tıkla</strong> veya sürükle · Önerilen: 1200×400 px
+                            </div>
+                        </div>
+                        <input type="file" id="coverInput" accept="image/*" style="display:none" onchange="uploadPhoto('cover', this)">
+                        <div style="font-size:12px;color:var(--text-muted);margin-top:6px;" id="coverStatus"></div>
+                    </div>
+                    {% elif user.package == '1' %}
+                    <!-- Cover — P1 locked teaser -->
+                    <div>
+                        <div class="field-label" style="margin-bottom:8px;">Kapak Görseli</div>
+                        <div class="upload-area" id="coverDrop" style="position:relative;cursor:pointer;filter:none;" onclick="showUpgradeModal('cover')">
+                            <div style="filter:blur(4px);pointer-events:none;padding:20px 0;">
+                                <div style="width:100%;height:80px;background:linear-gradient(90deg,#f0f0f0 25%,#e8e8e8 50%,#f0f0f0 75%);border-radius:8px;"></div>
+                            </div>
+                            <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;">
+                                <span style="font-size:20px;">🔒</span>
+                                <span style="font-size:12px;font-weight:600;color:#111;">Standart'ta Açılır</span>
+                                <span style="font-size:11px;color:#888;">Paketini yükselterek kapak görseli ekle</span>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if user.package == '3' %}
+
+        <!-- ── Hizmetler ── -->
+        <div class="edit-section" id="sec-services">
+            <div class="section-header">
+                <div>
+                    <div class="section-title">Hizmetler</div>
+                    <div class="section-sub">Profilinizde gösterilecek hizmet kartları</div>
+                </div>
+            </div>
+            <div class="section-body">
+                <div class="p3-list" id="serviceList">
+                    {% for svc in p3_services %}
+                    <div class="p3-row" id="svc-{{ svc.id }}">
+                        <div class="p3-row-body">
+                            <div class="p3-row-title">{{ svc.title }}</div>
+                            <div class="p3-row-sub">{{ svc.description | truncate(80) if svc.description else '—' }}</div>
+                        </div>
+                        <button class="p3-row-del" onclick="deleteService({{ svc.id }})" title="Sil">×</button>
+                    </div>
+                    {% endfor %}
+                </div>
+                <div style="margin-top:12px;">
+                    <button class="btn-add" onclick="toggleForm('addServiceForm')">+ Hizmet Ekle</button>
+                    <div class="add-form" id="addServiceForm">
+                        <div class="field">
+                            <label class="field-label">Hizmet Adı *</label>
+                            <input class="field-input" type="text" id="svcTitle" placeholder="Örn: Web Tasarımı" maxlength="120">
+                        </div>
+                        <div class="field">
+                            <label class="field-label">Açıklama</label>
+                            <textarea class="field-textarea" id="svcDesc" rows="3" placeholder="Kısa açıklama..."></textarea>
+                        </div>
+                        <div class="field-row" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                            <div class="field">
+                                <label class="field-label">Fiyat Aralığı</label>
+                                <input class="field-input" type="text" id="svcPrice" placeholder="₺5.000 – ₺15.000" maxlength="80">
+                            </div>
+                            <div class="field">
+                                <label class="field-label">Buton Etiketi</label>
+                                <input class="field-input" type="text" id="svcCta" placeholder="İletişime Geç" maxlength="60">
+                            </div>
+                        </div>
+                        <div style="display:flex;gap:8px;margin-top:4px;">
+                            <button class="btn-save" onclick="addService()">Ekle</button>
+                            <button class="btn-add" onclick="toggleForm('addServiceForm')">İptal</button>
+                        </div>
+                        <div style="font-size:12px;color:var(--error);margin-top:6px;" id="svcError"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── Portföy ── -->
+        <div class="edit-section" id="sec-portfolio">
+            <div class="section-header">
+                <div>
+                    <div class="section-title">Portföy</div>
+                    <div class="section-sub">Vaka çalışmaları ve projeler</div>
+                </div>
+            </div>
+            <div class="section-body">
+                <div class="p3-list" id="portfolioList">
+                    {% for item in p3_portfolio %}
+                    <div class="p3-row" id="pf-{{ item.id }}">
+                        <div class="p3-row-body">
+                            <div class="p3-row-title">{{ item.title }}</div>
+                            <div class="p3-row-sub">{{ item.tags_list | join(', ') if item.tags_list else '—' }}</div>
+                        </div>
+                        <button class="p3-row-del" onclick="deletePortfolio({{ item.id }})" title="Sil">×</button>
+                    </div>
+                    {% endfor %}
+                </div>
+                <div style="margin-top:12px;">
+                    <button class="btn-add" onclick="toggleForm('addPortfolioForm')">+ Proje Ekle</button>
+                    <div class="add-form" id="addPortfolioForm">
+                        <div class="field">
+                            <label class="field-label">Proje Başlığı *</label>
+                            <input class="field-input" type="text" id="pfTitle" placeholder="Proje adı" maxlength="160">
+                        </div>
+                        <div class="field">
+                            <label class="field-label">Problem / Bağlam</label>
+                            <textarea class="field-textarea" id="pfProblem" rows="2" placeholder="Ne sorunu çözüldü?"></textarea>
+                        </div>
+                        <div class="field">
+                            <label class="field-label">Yaklaşım / Yapılanlar</label>
+                            <textarea class="field-textarea" id="pfSolution" rows="2" placeholder="Nasıl çözüldü?"></textarea>
+                        </div>
+                        <div class="field">
+                            <label class="field-label">Sonuç</label>
+                            <textarea class="field-textarea" id="pfResult" rows="2" placeholder="Elde edilen sonuç..."></textarea>
+                        </div>
+                        <div class="field-row" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                            <div class="field">
+                                <label class="field-label">Etiketler</label>
+                                <input class="field-input" type="text" id="pfTags" placeholder="React, UX, Figma" maxlength="200">
+                            </div>
+                            <div class="field">
+                                <label class="field-label">Canlı Link</label>
+                                <input class="field-input" type="url" id="pfUrl" placeholder="https://..." maxlength="255">
+                            </div>
+                        </div>
+                        <div style="display:flex;gap:8px;margin-top:4px;">
+                            <button class="btn-save" onclick="addPortfolio()">Ekle</button>
+                            <button class="btn-add" onclick="toggleForm('addPortfolioForm')">İptal</button>
+                        </div>
+                        <div style="font-size:12px;color:var(--error);margin-top:6px;" id="pfError"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── Referanslar ── -->
+        <div class="edit-section" id="sec-testimonials">
+            <div class="section-header">
+                <div>
+                    <div class="section-title">Referanslar</div>
+                    <div class="section-sub">Müşteri yorumları ve değerlendirmeler</div>
+                </div>
+            </div>
+            <div class="section-body">
+                <div class="p3-list" id="testimonialList">
+                    {% for t in p3_testimonials %}
+                    <div class="p3-row" id="tst-{{ t.id }}">
+                        <div class="p3-row-body">
+                            <div class="p3-row-title">{{ t.client_name }}{% if t.client_role %} · {{ t.client_role }}{% endif %}  {{'⭐' * t.rating}}</div>
+                            <div class="p3-row-sub">{{ t.quote | truncate(80) }}</div>
+                        </div>
+                        <button class="p3-row-del" onclick="deleteTestimonial({{ t.id }})" title="Sil">×</button>
+                    </div>
+                    {% endfor %}
+                </div>
+                <div style="margin-top:12px;">
+                    <button class="btn-add" onclick="toggleForm('addTestimonialForm')">+ Referans Ekle</button>
+                    <div class="add-form" id="addTestimonialForm">
+                        <div class="field-row" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                            <div class="field">
+                                <label class="field-label">Müşteri Adı *</label>
+                                <input class="field-input" type="text" id="tstName" placeholder="Ayşe Kaya" maxlength="120">
+                            </div>
+                            <div class="field">
+                                <label class="field-label">Unvan / Şirket</label>
+                                <input class="field-input" type="text" id="tstRole" placeholder="Kurucu, Acme A.Ş." maxlength="120">
+                            </div>
+                        </div>
+                        <div class="field">
+                            <label class="field-label">Yorum *</label>
+                            <textarea class="field-textarea" id="tstQuote" rows="3" placeholder="Müşterinin yorumu..."></textarea>
+                        </div>
+                        <div class="field">
+                            <label class="field-label">Puan (1-5)</label>
+                            <select class="field-input" id="tstRating" style="height:40px;">
+                                <option value="5">⭐⭐⭐⭐⭐ — Mükemmel</option>
+                                <option value="4">⭐⭐⭐⭐ — Çok İyi</option>
+                                <option value="3">⭐⭐⭐ — İyi</option>
+                                <option value="2">⭐⭐ — Orta</option>
+                                <option value="1">⭐ — Zayıf</option>
+                            </select>
+                        </div>
+                        <div style="display:flex;gap:8px;margin-top:4px;">
+                            <button class="btn-save" onclick="addTestimonial()">Ekle</button>
+                            <button class="btn-add" onclick="toggleForm('addTestimonialForm')">İptal</button>
+                        </div>
+                        <div style="font-size:12px;color:var(--error);margin-top:6px;" id="tstError"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── Gelen Kutusu ── -->
+        <div class="edit-section" id="sec-inbox">
+            <div class="section-header">
+                <div>
+                    <div class="section-title">Gelen Kutusu
+                        {% if unread_count > 0 %}
+                        <span class="inbox-badge">{{ unread_count }} yeni</span>
+                        {% endif %}
+                    </div>
+                    <div class="section-sub">Profilinizden gelen iletişim mesajları</div>
+                </div>
+            </div>
+            <div class="section-body">
+                {% if p3_inbox %}
+                <div class="inbox-list">
+                    {% for msg in p3_inbox %}
+                    <div class="inbox-msg {% if not msg.is_read %}unread{% endif %}"
+                         id="msg-{{ msg.id }}"
+                         onclick="openMsg({{ msg.id }}, '{{ msg.name | e }}', '{{ msg.email | e }}', '{{ (msg.subject or '') | e }}', {{ msg.message | tojson }}, '{{ msg.created_at.strftime('%d %b %Y %H:%M') }}')">
+                        <div class="inbox-msg-top">
+                            <span class="inbox-from">{{ msg.name }}</span>
+                            <span class="inbox-date">{{ msg.created_at.strftime('%d %b %Y') }}</span>
+                        </div>
+                        {% if msg.subject %}
+                        <div class="inbox-subject">{{ msg.subject }}</div>
+                        {% endif %}
+                        <div class="inbox-preview">{{ msg.message }}</div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div style="text-align:center;color:var(--text-muted);padding:32px;font-size:14px;">
+                    Henüz mesaj bulunmuyor.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        {% endif %}{# /user.package == '3' #}
+
+        <!-- ══════════════════════════════════════════════════════════════════
+             ── OPSIYONEL BÖLÜMLER (tüm paketler) ──────────────────────────
+             ══════════════════════════════════════════════════════════════ -->
+
+        <!-- ── "Şu An" Durumu & CTA Butonu ── -->
+        <div class="edit-section" id="sec-status">
+            <div class="section-header">
+                <div>
+                    <div class="section-title">Durum & CTA Butonu</div>
+                    <div class="section-sub">Ziyaretçilere anlık mesaj ve öne çıkan yönlendirme butonu</div>
+                </div>
+            </div>
+            <div class="section-body">
+                <div class="field-row" style="align-items:flex-end;">
+                    <div style="max-width:60px;">
+                        <label class="field-label">Emoji</label>
+                        <input class="field-input" id="adm-statusEmoji" maxlength="4"
+                               value="{{ extras.status_emoji or '' }}"
+                               placeholder="🚀" style="text-align:center;">
+                    </div>
+                    <div style="flex:1;">
+                        <label class="field-label">Şu An Durumu <span class="field-limit" id="lim-statusText">0 / 160</span></label>
+                        <input class="field-input" id="adm-statusText" maxlength="160"
+                               data-limit="statusText"
+                               value="{{ extras.status_text or '' }}"
+                               placeholder="Yeni freelance projesine açığım · Nisan'a kadar müsaitim">
+                    </div>
+                </div>
+                <div style="display:flex;align-items:center;gap:12px;margin-top:16px;margin-bottom:8px;">
+                    <label class="field-label" style="margin:0;">CTA Butonu Aktif</label>
+                    <label style="position:relative;width:36px;height:20px;display:inline-block;">
+                        <input type="checkbox" id="adm-ctaEnabled" style="opacity:0;width:0;height:0;"
+                               {% if extras and extras.cta_enabled %}checked{% endif %}
+                               onchange="document.getElementById('adm-ctaFields').style.display=this.checked?'grid':'none'">
+                        <span style="position:absolute;inset:0;background:{% if extras and extras.cta_enabled %}#111{% else %}#ddd{% endif %};border-radius:20px;cursor:pointer;transition:.2s;" id="ctaSlider">
+                            <span style="position:absolute;width:14px;height:14px;background:#fff;border-radius:50%;top:3px;left:3px;transition:.2s;transform:{% if extras and extras.cta_enabled %}translateX(16px){% else %}none{% endif %};" id="ctaThumb"></span>
+                        </span>
+                    </label>
+                </div>
+                <div id="adm-ctaFields" class="field-row" style="display:{% if extras and extras.cta_enabled %}grid{% else %}none{% endif %};">
+                    <div>
+                        <label class="field-label">Buton Metni</label>
+                        <input class="field-input" id="adm-ctaText" maxlength="80"
+                               value="{{ extras.cta_text or '' }}" placeholder="CV'mi İndir">
+                    </div>
+                    <div>
+                        <label class="field-label">Buton URL</label>
+                        <input class="field-input" id="adm-ctaUrl" maxlength="255"
+                               value="{{ extras.cta_url or '' }}" placeholder="https://...">
+                    </div>
+                </div>
+                <button class="btn-save-section" style="margin-top:16px;" onclick="saveStatusCta()">Kaydet</button>
+            </div>
+        </div>
+
+        <!-- ── Çalışma Tercihleri ── -->
+        <div class="edit-section" id="sec-workprefs">
+            <div class="section-header">
+                <div>
+                    <div class="section-title">Çalışma Tercihleri</div>
+                    <div class="section-sub">Ziyaretçilere nasıl çalıştığınızı bildirin</div>
+                </div>
+            </div>
+            <div class="section-body">
+                <label class="field-label">Çalışma Şekli</label>
+                <div class="pill-group-adm" id="adm-workTypeGroup">
+                    {% for val, lbl in [('remote','🌍 Uzaktan'),('hybrid','🏢 Hibrit'),('onsite','📍 Ofis'),('esnek','✨ Esnek')] %}
+                    <span class="adm-pill {% if extras and extras.work_type == val %}active{% endif %}"
+                          data-val="{{ val }}" onclick="selectAdmPill(this,'adm-workTypeGroup','adm-workType')">{{ lbl }}</span>
+                    {% endfor %}
+                </div>
+                <input type="hidden" id="adm-workType" value="{{ extras.work_type or '' }}">
+
+                <label class="field-label" style="margin-top:14px;">İş Türü</label>
+                <div class="pill-group-adm" id="adm-workEngGroup">
+                    {% for val, lbl in [('freelance','Freelance'),('tam-zamanli','Tam Zamanlı'),('proje','Proje Bazlı'),('danismanlik','Danışmanlık')] %}
+                    <span class="adm-pill {% if extras and extras.work_engagement == val %}active{% endif %}"
+                          data-val="{{ val }}" onclick="selectAdmPill(this,'adm-workEngGroup','adm-workEngagement')">{{ lbl }}</span>
+                    {% endfor %}
+                </div>
+                <input type="hidden" id="adm-workEngagement" value="{{ extras.work_engagement or '' }}">
+
+                <label class="field-label" style="margin-top:14px;">Bütçe / Ücret Beklentisi</label>
+                <input class="field-input" id="adm-workBudget" maxlength="50"
+                       value="{{ extras.work_budget or '' }}" placeholder="₺5.000/proje+" style="max-width:260px;">
+
+                <button class="btn-save-section" style="margin-top:16px;" onclick="saveWorkPrefs()">Kaydet</button>
+            </div>
+        </div>
+
+        <!-- ── Kariyer Zaman Çizelgesi ── -->
+        <div class="edit-section" id="sec-career">
+            <div class="section-header">
+                <div>
+                    <div class="section-title">Kariyer Zaman Çizelgesi</div>
+                    <div class="section-sub">Deneyimlerinizi minimalist şekilde sergileyin</div>
+                </div>
+            </div>
+            <div class="section-body">
+                <div class="p3-list" id="adm-careerList">
+                    {% for c in career_entries %}
+                    <div class="p3-row" id="adm-ce-{{ c.id }}">
+                        <div class="p3-row-body">
+                            <div class="p3-row-title">{{ c.role }} · {{ c.company }}</div>
+                            <div class="p3-row-sub">{{ c.start_year }}{% if c.is_current %} – Günümüz{% elif c.end_year %} – {{ c.end_year }}{% endif %}{% if c.description %} · {{ c.description | truncate(60) }}{% endif %}</div>
+                        </div>
+                        <button class="p3-row-del" onclick="delCareer({{ c.id }})">×</button>
+                    </div>
+                    {% endfor %}
+                </div>
+                <div style="margin-top:14px;padding:14px;border:1px dashed var(--border);border-radius:10px;">
+                    <div class="field-row">
+                        <div>
+                            <label class="field-label">Görev / Pozisyon</label>
+                            <input class="field-input" id="adm-cRole" placeholder="Senior Designer">
+                        </div>
+                        <div>
+                            <label class="field-label">Şirket</label>
+                            <input class="field-input" id="adm-cCompany" placeholder="Spotify">
+                        </div>
+                    </div>
+                    <div class="field-row" style="margin-top:8px;">
+                        <div>
+                            <label class="field-label">Başlangıç</label>
+                            <input class="field-input" id="adm-cStart" placeholder="2020">
+                        </div>
+                        <div>
+                            <label class="field-label">Bitiş (boş = günümüz)</label>
+                            <input class="field-input" id="adm-cEnd" placeholder="2023">
+                        </div>
+                    </div>
+                    <div style="margin-top:8px;">
+                        <label class="field-label">Kısa Açıklama (opsiyonel)</label>
+                        <input class="field-input" id="adm-cDesc" placeholder="Ürün tasarımı ve kullanıcı araştırması" maxlength="300">
+                    </div>
+                    <button class="btn-save-section" style="margin-top:12px;" onclick="addAdmCareer()">+ Ekle</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── Link Merkezi ── -->
+        <div class="edit-section" id="sec-links">
+            <div class="section-header">
+                <div>
+                    <div class="section-title">Link Merkezi</div>
+                    <div class="section-sub">CV, portföy, Calendly — her şeyi tek yerde toplayın</div>
+                </div>
+            </div>
+            <div class="section-body">
+                <div class="p3-list" id="adm-linkList">
+                    {% for l in custom_links %}
+                    <div class="p3-row" id="adm-lk-{{ l.id }}">
+                        <div class="p3-row-body" style="display:flex;align-items:center;gap:10px;">
+                            <span style="font-size:20px;">{{ l.emoji or '🔗' }}</span>
+                            <div>
+                                <div class="p3-row-title">{{ l.title }}</div>
+                                <div class="p3-row-sub">{{ l.url | truncate(50) }} · {{ l.click_count }} tıklama</div>
+                            </div>
+                        </div>
+                        <button class="p3-row-del" onclick="delAdmLink({{ l.id }})">×</button>
+                    </div>
+                    {% endfor %}
+                </div>
+                <div style="margin-top:14px;padding:14px;border:1px dashed var(--border);border-radius:10px;">
+                    <div class="field-row" style="align-items:flex-end;">
+                        <div style="max-width:70px;">
+                            <label class="field-label">Emoji</label>
+                            <input class="field-input" id="adm-lEmoji" placeholder="📄" maxlength="4" style="text-align:center;">
+                        </div>
+                        <div style="flex:1;">
+                            <label class="field-label">Başlık</label>
+                            <input class="field-input" id="adm-lTitle" placeholder="CV'mi İndir">
+                        </div>
+                    </div>
+                    <div style="margin-top:8px;">
+                        <label class="field-label">URL</label>
+                        <input class="field-input" id="adm-lUrl" placeholder="https://...">
+                    </div>
+                    <button class="btn-save-section" style="margin-top:12px;" onclick="addAdmLink()">+ Ekle</button>
+                </div>
+            </div>
+        </div>
+
+    </main>
+</div>
+
+<!-- Mesaj modal -->
+<div class="msg-modal" id="msgModal" style="display:none;" onclick="closeMsgModal(event)">
+    <div class="msg-modal-box">
+        <button class="msg-modal-close" onclick="document.getElementById('msgModal').style.display='none'">×</button>
+        <div style="font-size:16px;font-weight:700;margin-bottom:4px;" id="modalFrom"></div>
+        <div style="font-size:12.5px;color:var(--text-muted);margin-bottom:16px;" id="modalMeta"></div>
+        <div style="font-size:14px;font-weight:600;margin-bottom:8px;" id="modalSubject"></div>
+        <div style="font-size:14px;line-height:1.75;color:#404040;white-space:pre-line;" id="modalMessage"></div>
+    </div>
+</div>
+
+<script>
+    // ── Karakter sayaçları ───────────────────────────────────────────────────
+    function initCounters() {
+        document.querySelectorAll('[data-limit]').forEach(el => {
+            const key  = el.dataset.limit;
+            const max  = parseInt(el.getAttribute('maxlength'));
+            const span = document.getElementById(`lim-${key}`);
+            const update = () => {
+                const len = el.value.length;
+                span.textContent = `${len} / ${max}`;
+                span.classList.toggle('warn', len > max * 0.9);
+            };
+            el.addEventListener('input', update);
+            update();
+        });
+    }
+
+    // ── Tag input ────────────────────────────────────────────────────────────
+    function initTagInput() {
+        const wrap   = document.getElementById('skillsWrap');
+        const input  = document.getElementById('skillsTagInput');
+        const hidden = document.getElementById('skillsValue');
+        let   tags   = hidden.value ? hidden.value.split(',').map(t => t.trim()).filter(Boolean) : [];
+
+        function render() {
+            wrap.querySelectorAll('.tag').forEach(t => t.remove());
+            tags.forEach((tag, i) => {
+                const el = document.createElement('div');
+                el.className = 'tag';
+                el.innerHTML = `${tag} <button class="tag-remove" type="button">×</button>`;
+                el.querySelector('.tag-remove').onclick = () => { tags.splice(i, 1); render(); };
+                wrap.insertBefore(el, input);
+            });
+            hidden.value = tags.join(',');
+            input.disabled = tags.length >= 6;
+            input.placeholder = tags.length >= 6 ? 'Maks. 6 alan' : 'Ekle → Enter';
+        }
+
+        input.addEventListener('keydown', e => {
+            if ((e.key === 'Enter' || e.key === ',') && input.value.trim()) {
+                e.preventDefault();
+                const val = input.value.trim().replace(/,/g, '');
+                if (val && tags.length < 6 && !tags.includes(val)) { tags.push(val); render(); }
+                input.value = '';
+            }
+            if (e.key === 'Backspace' && !input.value && tags.length) { tags.pop(); render(); }
+        });
+
+        wrap.onclick = () => input.focus();
+        render();
+    }
+
+    // ── Kaydetme ─────────────────────────────────────────────────────────────
+    async function saveSection(section) {
+        const btn    = document.getElementById(`btn-${section}`);
+        const status = document.getElementById(`status-${section}`);
+
+        btn.disabled = true;
+        status.className = 'save-status';
+        status.textContent = 'Kaydediliyor…';
+
+        let data = {};
+        if (section === 'content') {
+            data = {
+                headline: document.getElementById('headline').value,
+                tagline:  document.getElementById('tagline').value,
+                bio_text: document.getElementById('bio_text').value,
+                cta_text: document.getElementById('cta_text').value,
+                skills:   document.getElementById('skillsValue').value,
+            };
+        } else if (section === 'identity') {
+            data = {
+                job_title: document.getElementById('job_title').value,
+                company:   document.getElementById('company').value,
+            };
+        } else if (section === 'links') {
+            data = {
+                linkedin: document.getElementById('linkedin').value,
+                github:   document.getElementById('github').value,
+                twitter:  document.getElementById('twitter').value,
+                website:  document.getElementById('website').value,
+            };
+        }
+
+        try {
+            const res  = await fetch('/admin/save', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ section, data }),
+            });
+            const json = await res.json();
+
+            if (json.ok) {
+                status.className = 'save-status saved';
+                status.textContent = '✓ Kaydedildi';
+                setTimeout(() => { status.textContent = ''; status.className = 'save-status'; }, 2500);
+            } else {
+                status.className = 'save-status error';
+                status.textContent = json.error || 'Hata oluştu.';
+            }
+        } catch (e) {
+            status.className = 'save-status error';
+            status.textContent = 'Bağlantı hatası.';
+        } finally {
+            btn.disabled = false;
+        }
+    }
+
+    initCounters();
+    initTagInput();
+
+    // ── Sidebar scroll ────────────────────────────────────────────────────────
+    function scrollTo(id) {
+        const el = document.getElementById(id);
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    // ── Photo upload ──────────────────────────────────────────────────────────
+    async function uploadPhoto(type, input) {
+        const file     = input.files[0];
+        if (!file) return;
+        const statusEl = document.getElementById(`${type}Status`);
+        const preview  = document.getElementById(`${type}Preview`);
+        const label    = document.getElementById(`${type}Label`);
+        const endpoint = type === 'avatar' ? '/profile/upload-avatar' : '/brand/upload-cover';
+        const fieldKey = type === 'avatar' ? 'avatar' : 'cover';
+
+        statusEl.textContent = 'Yükleniyor…';
+        statusEl.style.color = 'var(--text-muted)';
+
+        const fd = new FormData();
+        fd.append(fieldKey, file);
+
+        try {
+            const res  = await fetch(endpoint, { method: 'POST', body: fd });
+            const data = await res.json();
+            if (data.ok) {
+                preview.src           = data.url + '?t=' + Date.now();
+                preview.style.display = 'block';
+                if (label) label.style.display = 'none';
+                statusEl.textContent  = '✓ Kaydedildi';
+                statusEl.style.color  = 'var(--green)';
+            } else {
+                statusEl.textContent = data.error || 'Hata oluştu.';
+                statusEl.style.color = 'var(--error)';
+            }
+        } catch {
+            statusEl.textContent = 'Bağlantı hatası.';
+            statusEl.style.color = 'var(--error)';
+        }
+    }
+
+    // ── P3 add/delete helpers ─────────────────────────────────────────────────
+    function toggleForm(id) {
+        const f = document.getElementById(id);
+        f.classList.toggle('open');
+    }
+
+    async function p3Fetch(url, method, body) {
+        const res = await fetch(url, {
+            method,
+            headers: { 'Content-Type': 'application/json' },
+            body: body ? JSON.stringify(body) : undefined,
+        });
+        return await res.json();
+    }
+
+    // ── Hizmetler ─────────────────────────────────────────────────────────────
+    async function addService() {
+        const title = document.getElementById('svcTitle').value.trim();
+        if (!title) { document.getElementById('svcError').textContent = 'Hizmet adı gerekli.'; return; }
+        const data = await p3Fetch('/brand/services', 'POST', {
+            title,
+            description: document.getElementById('svcDesc').value.trim(),
+            price_range: document.getElementById('svcPrice').value.trim(),
+            cta_label:   document.getElementById('svcCta').value.trim(),
+        });
+        if (data.ok) {
+            const svc = data.service;
+            const row = `<div class="p3-row" id="svc-${svc.id}">
+                <div class="p3-row-body">
+                    <div class="p3-row-title">${svc.title}</div>
+                    <div class="p3-row-sub">${svc.description || '—'}</div>
+                </div>
+                <button class="p3-row-del" onclick="deleteService(${svc.id})">×</button>
+            </div>`;
+            document.getElementById('serviceList').insertAdjacentHTML('beforeend', row);
+            ['svcTitle','svcDesc','svcPrice','svcCta'].forEach(id => document.getElementById(id).value = '');
+            document.getElementById('svcError').textContent = '';
+            toggleForm('addServiceForm');
+        } else {
+            document.getElementById('svcError').textContent = data.error || 'Hata.';
+        }
+    }
+
+    async function deleteService(id) {
+        if (!confirm('Bu hizmeti silmek istediğinizden emin misiniz?')) return;
+        const data = await p3Fetch(`/brand/services/${id}`, 'DELETE');
+        if (data.ok) document.getElementById(`svc-${id}`)?.remove();
+    }
+
+    // ── Portföy ───────────────────────────────────────────────────────────────
+    async function addPortfolio() {
+        const title = document.getElementById('pfTitle').value.trim();
+        if (!title) { document.getElementById('pfError').textContent = 'Proje başlığı gerekli.'; return; }
+        const data = await p3Fetch('/brand/portfolio', 'POST', {
+            title,
+            problem:  document.getElementById('pfProblem').value.trim(),
+            solution: document.getElementById('pfSolution').value.trim(),
+            result:   document.getElementById('pfResult').value.trim(),
+            tags:     document.getElementById('pfTags').value.trim(),
+            url:      document.getElementById('pfUrl').value.trim(),
+        });
+        if (data.ok) {
+            const item = data.item;
+            const row  = `<div class="p3-row" id="pf-${item.id}">
+                <div class="p3-row-body">
+                    <div class="p3-row-title">${item.title}</div>
+                    <div class="p3-row-sub">${(item.tags || []).join(', ') || '—'}</div>
+                </div>
+                <button class="p3-row-del" onclick="deletePortfolio(${item.id})">×</button>
+            </div>`;
+            document.getElementById('portfolioList').insertAdjacentHTML('beforeend', row);
+            ['pfTitle','pfProblem','pfSolution','pfResult','pfTags','pfUrl'].forEach(id => document.getElementById(id).value = '');
+            document.getElementById('pfError').textContent = '';
+            toggleForm('addPortfolioForm');
+        } else {
+            document.getElementById('pfError').textContent = data.error || 'Hata.';
+        }
+    }
+
+    async function deletePortfolio(id) {
+        if (!confirm('Bu projeyi silmek istediğinizden emin misiniz?')) return;
+        const data = await p3Fetch(`/brand/portfolio/${id}`, 'DELETE');
+        if (data.ok) document.getElementById(`pf-${id}`)?.remove();
+    }
+
+    // ── Referanslar ───────────────────────────────────────────────────────────
+    async function addTestimonial() {
+        const name  = document.getElementById('tstName').value.trim();
+        const quote = document.getElementById('tstQuote').value.trim();
+        if (!name || !quote) { document.getElementById('tstError').textContent = 'Ad ve yorum zorunlu.'; return; }
+        const data = await p3Fetch('/brand/testimonials', 'POST', {
+            client_name: name,
+            client_role: document.getElementById('tstRole').value.trim(),
+            quote,
+            rating: parseInt(document.getElementById('tstRating').value),
+        });
+        if (data.ok) {
+            const t   = data.testimonial;
+            const stars = '⭐'.repeat(t.rating);
+            const row = `<div class="p3-row" id="tst-${t.id}">
+                <div class="p3-row-body">
+                    <div class="p3-row-title">${t.client_name}${t.client_role ? ' · ' + t.client_role : ''}  ${stars}</div>
+                    <div class="p3-row-sub">${t.quote.substring(0, 80)}…</div>
+                </div>
+                <button class="p3-row-del" onclick="deleteTestimonial(${t.id})">×</button>
+            </div>`;
+            document.getElementById('testimonialList').insertAdjacentHTML('beforeend', row);
+            ['tstName','tstRole','tstQuote'].forEach(id => document.getElementById(id).value = '');
+            document.getElementById('tstError').textContent = '';
+            toggleForm('addTestimonialForm');
+        } else {
+            document.getElementById('tstError').textContent = data.error || 'Hata.';
+        }
+    }
+
+    async function deleteTestimonial(id) {
+        if (!confirm('Bu referansı silmek istediğinizden emin misiniz?')) return;
+        const data = await p3Fetch(`/brand/testimonials/${id}`, 'DELETE');
+        if (data.ok) document.getElementById(`tst-${id}`)?.remove();
+    }
+
+    // ── Gelen Kutusu ──────────────────────────────────────────────────────────
+    async function openMsg(id, name, email, subject, message, date) {
+        document.getElementById('modalFrom').textContent  = name + ' <' + email + '>';
+        document.getElementById('modalMeta').textContent  = date;
+        document.getElementById('modalSubject').textContent = subject || '';
+        document.getElementById('modalMessage').textContent = message;
+        document.getElementById('msgModal').style.display  = 'flex';
+
+        // Okundu olarak işaretle
+        const row = document.getElementById(`msg-${id}`);
+        if (row && row.classList.contains('unread')) {
+            row.classList.remove('unread');
+            await p3Fetch(`/brand/inbox/${id}/read`, 'POST');
+        }
+    }
+
+    function closeMsgModal(e) {
+        if (e.target === document.getElementById('msgModal')) {
+            document.getElementById('msgModal').style.display = 'none';
+        }
+    }
+
+    // ── Opsiyonel Bölümler — Durum/CTA, Tercihler, Kariyer, Linkler ──────────
+
+    async function admPost(url, body) {
+        const r = await fetch(url, {
+            method: 'POST',
+            headers: {'Content-Type':'application/json'},
+            body: JSON.stringify(body),
+        });
+        return r.json();
+    }
+
+    function selectAdmPill(el, groupId, hiddenId) {
+        document.querySelectorAll(`#${groupId} .adm-pill`).forEach(p => p.classList.remove('active'));
+        el.classList.add('active');
+        document.getElementById(hiddenId).value = el.dataset.val;
+    }
+
+    // CTA toggle animasyonu
+    document.getElementById('adm-ctaEnabled')?.addEventListener('change', function() {
+        const slider = document.getElementById('ctaSlider');
+        const thumb  = document.getElementById('ctaThumb');
+        if (this.checked) {
+            slider.style.background = '#111';
+            thumb.style.transform   = 'translateX(16px)';
+        } else {
+            slider.style.background = '#ddd';
+            thumb.style.transform   = 'none';
+        }
+    });
+
+    async function saveStatusCta() {
+        const res = await admPost('/extras/profile-info', {
+            status_emoji: document.getElementById('adm-statusEmoji').value.trim(),
+            status_text:  document.getElementById('adm-statusText').value.trim(),
+            cta_enabled:  document.getElementById('adm-ctaEnabled').checked,
+            cta_text:     document.getElementById('adm-ctaText')?.value.trim() || '',
+            cta_url:      document.getElementById('adm-ctaUrl')?.value.trim()  || '',
+            work_type:       document.getElementById('adm-workType').value,
+            work_engagement: document.getElementById('adm-workEngagement').value,
+            work_budget:     document.getElementById('adm-workBudget').value.trim(),
+        });
+        if (res.ok) showStatus('adm-statusText', '✓ Kaydedildi');
+    }
+
+    async function saveWorkPrefs() {
+        const res = await admPost('/extras/profile-info', {
+            status_emoji:    document.getElementById('adm-statusEmoji').value.trim(),
+            status_text:     document.getElementById('adm-statusText').value.trim(),
+            cta_enabled:     document.getElementById('adm-ctaEnabled').checked,
+            cta_text:        document.getElementById('adm-ctaText')?.value.trim() || '',
+            cta_url:         document.getElementById('adm-ctaUrl')?.value.trim()  || '',
+            work_type:       document.getElementById('adm-workType').value,
+            work_engagement: document.getElementById('adm-workEngagement').value,
+            work_budget:     document.getElementById('adm-workBudget').value.trim(),
+        });
+        if (res.ok) showStatus('adm-workBudget', '✓ Kaydedildi');
+    }
+
+    function showStatus(nearId, msg) {
+        const el = document.getElementById(nearId);
+        if (!el) return;
+        const s = document.createElement('span');
+        s.textContent = msg;
+        s.style.cssText = 'font-size:12px;color:#16a34a;font-weight:600;margin-left:10px;';
+        el.parentNode.appendChild(s);
+        setTimeout(() => s.remove(), 2500);
+    }
+
+    // Kariyer
+    async function addAdmCareer() {
+        const body = {
+            role:        document.getElementById('adm-cRole').value.trim(),
+            company:     document.getElementById('adm-cCompany').value.trim(),
+            start_year:  document.getElementById('adm-cStart').value.trim(),
+            end_year:    document.getElementById('adm-cEnd').value.trim(),
+            is_current:  !document.getElementById('adm-cEnd').value.trim(),
+            description: document.getElementById('adm-cDesc').value.trim(),
+        };
+        if (!body.role || !body.company || !body.start_year) {
+            alert('Görev, şirket ve başlangıç yılı zorunludur.');
+            return;
+        }
+        const res = await admPost('/extras/career', body);
+        if (res.ok) {
+            const c = res.entry;
+            const row = document.createElement('div');
+            row.className = 'p3-row'; row.id = `adm-ce-${c.id}`;
+            row.innerHTML = `
+                <div class="p3-row-body">
+                    <div class="p3-row-title">${escH(c.role)} · ${escH(c.company)}</div>
+                    <div class="p3-row-sub">${c.start_year}${c.is_current?' – Günümüz':(c.end_year?' – '+c.end_year:'')}</div>
+                </div>
+                <button class="p3-row-del" onclick="delCareer(${c.id})">×</button>`;
+            document.getElementById('adm-careerList').appendChild(row);
+            ['adm-cRole','adm-cCompany','adm-cStart','adm-cEnd','adm-cDesc'].forEach(id => {
+                const el = document.getElementById(id); if (el) el.value = '';
+            });
+        }
+    }
+
+    async function delCareer(id) {
+        const r = await fetch(`/extras/career/${id}`, {method:'DELETE'});
+        const res = await r.json();
+        if (res.ok) document.getElementById(`adm-ce-${id}`)?.remove();
+    }
+
+    // Linkler
+    async function addAdmLink() {
+        const body = {
+            emoji: document.getElementById('adm-lEmoji').value.trim(),
+            title: document.getElementById('adm-lTitle').value.trim(),
+            url:   document.getElementById('adm-lUrl').value.trim(),
+        };
+        if (!body.title || !body.url) { alert('Başlık ve URL zorunludur.'); return; }
+        const res = await admPost('/extras/links', body);
+        if (res.ok) {
+            const l = res.link;
+            const row = document.createElement('div');
+            row.className = 'p3-row'; row.id = `adm-lk-${l.id}`;
+            row.innerHTML = `
+                <div class="p3-row-body" style="display:flex;align-items:center;gap:10px;">
+                    <span style="font-size:20px;">${l.emoji||'🔗'}</span>
+                    <div>
+                        <div class="p3-row-title">${escH(l.title)}</div>
+                        <div class="p3-row-sub">${escH(l.url)} · 0 tıklama</div>
+                    </div>
+                </div>
+                <button class="p3-row-del" onclick="delAdmLink(${l.id})">×</button>`;
+            document.getElementById('adm-linkList').appendChild(row);
+            ['adm-lEmoji','adm-lTitle','adm-lUrl'].forEach(id => {
+                const el = document.getElementById(id); if (el) el.value = '';
+            });
+        }
+    }
+
+    async function delAdmLink(id) {
+        const r = await fetch(`/extras/links/${id}`, {method:'DELETE'});
+        const res = await r.json();
+        if (res.ok) document.getElementById(`adm-lk-${id}`)?.remove();
+    }
+
+    function escH(str) {
+        return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+    // ── Upsell Modal ─────────────────────────────────────────────────────────
+    const UPSELL_CONFIGS = {
+        cover: {
+            badge:    'Standart Özelliği',
+            icon:     '🖼️',
+            title:    'Kapak Görseli',
+            desc:     'Profilinizin üstüne etkileyici bir banner ekleyin. İlk izlenim her şeydir — ziyaretçiler kapak görselinizi 3 saniyede değerlendirir.',
+            oldPrice: '₺699',
+            price:    '₺499',
+            period:   'tek seferlik',
+            cta:      'Standart\'a Geç → Kapak Ekle',
+            link:     '{{ url_for("auth.register") }}',
+        },
+        posts: {
+            badge:    'Standart Özelliği',
+            icon:     '📝',
+            title:    'Gönderi & İçerik Akışı',
+            desc:     'Düşüncelerinizi, projelerinizi ve güncellemelerinizi paylaşın. İçerik akışı olan profiller %3.2x daha fazla mesaj alır.',
+            oldPrice: '₺699',
+            price:    '₺499',
+            period:   'tek seferlik',
+            cta:      'Standart\'a Geç → İçerik Ekle',
+            link:     '{{ url_for("auth.register") }}',
+        },
+        analytics: {
+            badge:    'Standart Özelliği',
+            icon:     '📊',
+            title:    'Ziyaretçi Analitiği',
+            desc:     'Haftalık görüntülenme, trafik kaynağı ve şehir bilgilerini görün. Profilinizi kimlerin incelediğini bilin.',
+            oldPrice: '₺699',
+            price:    '₺499',
+            period:   'tek seferlik',
+            cta:      'Standart\'a Geç → Analitiği Gör',
+            link:     '{{ url_for("auth.register") }}',
+        },
+        brand: {
+            badge:    'Profesyonel Özelliği',
+            icon:     '✦',
+            title:    'Marka Kimliği',
+            desc:     'Hizmetler, portföy, referanslar ve özel iletişim formu. Tam donanımlı dijital kimliğinizi oluşturun.',
+            oldPrice: '₺1.299',
+            price:    '₺899',
+            period:   'tek seferlik',
+            cta:      'Profesyonel\'e Geç → Markamı Oluştur',
+            link:     '{{ url_for("auth.register") }}',
+        },
+    };
+
+    function showUpgradeModal(type) {
+        const cfg = UPSELL_CONFIGS[type];
+        if (!cfg) return;
+        document.getElementById('upsellBadge').textContent    = cfg.badge;
+        document.getElementById('upsellIcon').textContent     = cfg.icon;
+        document.getElementById('upsellTitle').textContent    = cfg.title;
+        document.getElementById('upsellDesc').textContent     = cfg.desc;
+        document.getElementById('upsellOldPrice').textContent = cfg.oldPrice;
+        document.getElementById('upsellPrice').textContent    = cfg.price;
+        document.getElementById('upsellPeriod').textContent   = cfg.period;
+        const btn = document.getElementById('upsellCtaBtn');
+        btn.textContent  = cfg.cta;
+        btn.href         = cfg.link;
+        document.getElementById('upsellOverlay').classList.add('open');
+    }
+
+    function closeUpsellModal() {
+        document.getElementById('upsellOverlay').classList.remove('open');
+    }
+
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Escape') {
+            document.getElementById('upsellOverlay').classList.remove('open');
+            document.getElementById('msgModal').style.display = 'none';
+        }
+    });
+</script>
+
+<!-- Upsell Modal -->
+<div class="upsell-overlay" id="upsellOverlay" onclick="if(event.target===this)closeUpsellModal()">
+    <div class="upsell-modal">
+        <button class="upsell-close" onclick="closeUpsellModal()">×</button>
+        <span class="upsell-badge" id="upsellBadge"></span>
+        <span class="upsell-icon" id="upsellIcon"></span>
+        <div class="upsell-title" id="upsellTitle"></div>
+        <div class="upsell-desc" id="upsellDesc"></div>
+        <div class="upsell-price-row">
+            <span class="upsell-old-price" id="upsellOldPrice"></span>
+            <span class="upsell-price" id="upsellPrice"></span>
+            <span class="upsell-period" id="upsellPeriod"></span>
+        </div>
+        <a class="upsell-cta" id="upsellCtaBtn" href="#">Paketi Yükselt</a>
+        <button class="upsell-skip" onclick="closeUpsellModal()">Şimdi değil</button>
+    </div>
+</div>
+
+</body>
+</html>

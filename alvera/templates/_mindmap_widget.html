@@ -1,0 +1,530 @@
+{#
+  _mindmap_widget.html
+  ─────────────────────
+  Zihin Haritası embeddable widget.
+  feed_profile.html → .sp-mindmap-section wrapper içinde kullanılır (margin-top: 0 override).
+  profile.html      → standalone kullanım (margin-top: 20px aktif).
+
+  Beklenen değişkenler:
+    target      : User modeli
+    mind_map    : MindMap modeli (nullable)
+    is_own      : bool
+    widget_id   : str (varsayılan: 'mmw')
+#}
+
+{% set wid     = widget_id if widget_id is defined else 'mmw' %}
+{% set has_data = mind_map and mind_map.map_data %}
+
+<style>
+/* ═══════════════════════════════════════════════════
+   Zihin Haritası Widget  ·  Linear SaaS Profile Card
+═══════════════════════════════════════════════════ */
+
+.mmw-section {
+    margin-top: 20px;       /* standalone kullanımda boşluk; wrapper içinde 0'a override edilir */
+    border: 1px solid var(--border, #E8E8E8);
+    border-radius: 12px;
+    overflow: hidden;
+    background: var(--bg, #fff);
+}
+
+/* ── Header ──────────────────────────────────────── */
+.mmw-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px 11px;
+    border-bottom: 1px solid var(--border, #E8E8E8);
+    gap: 8px;
+}
+.mmw-header-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+}
+.mmw-title {
+    font-size: 12.5px;
+    font-weight: 600;
+    letter-spacing: -0.1px;
+    color: var(--text-h, #0a0a0a);
+    white-space: nowrap;
+}
+.mmw-meta-row {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+.mmw-badge {
+    font-size: 9.5px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: var(--text-muted, #9A9A9A);
+    background: var(--bg-subtle, #F7F7F7);
+    border: 1px solid var(--border, #E8E8E8);
+    padding: 2px 6px;
+    border-radius: 5px;
+}
+.mmw-version {
+    font-size: 10.5px;
+    color: var(--text-muted, #9A9A9A);
+    font-weight: 500;
+}
+.mmw-sep {
+    width: 1px;
+    height: 10px;
+    background: var(--border, #E8E8E8);
+    flex-shrink: 0;
+}
+
+/* ── Header Butonlar ──────────────────────────────── */
+.mmw-header-right {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    flex-shrink: 0;
+}
+.mmw-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11.5px;
+    font-weight: 500;
+    font-family: inherit;
+    padding: 5px 11px;
+    border-radius: 7px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.13s ease;
+    white-space: nowrap;
+    border: 1px solid var(--border, #E8E8E8);
+}
+.mmw-btn-ghost {
+    background: transparent;
+    color: var(--text-muted, #9A9A9A);
+}
+.mmw-btn-ghost:hover {
+    background: var(--bg-subtle, #F3F3F3);
+    color: var(--text-h, #0a0a0a);
+}
+.mmw-btn-solid {
+    background: #0A0A0A;
+    color: #fff;
+    border-color: #0A0A0A;
+}
+.mmw-btn-solid:hover   { opacity: 0.82; }
+.mmw-btn-solid:disabled { opacity: 0.45; pointer-events: none; }
+.mmw-btn-aura {
+    background: #0A0A0A;
+    color: #fff;
+    border-color: #0A0A0A;
+    position: relative;
+    overflow: hidden;
+}
+.mmw-btn-aura::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(135deg, rgba(124,58,237,0.3), rgba(37,99,235,0.25));
+    opacity: 0;
+    transition: opacity 0.22s ease;
+}
+.mmw-btn-aura:hover::before { opacity: 1; }
+.mmw-btn-aura:hover { opacity: 1; transform: translateY(-1px); }
+.mmw-aura-icon { animation: mmwAuraPulse 2s ease-in-out infinite; display: inline-block; }
+@keyframes mmwAuraPulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50%       { transform: scale(1.2); opacity: 0.8; }
+}
+
+/* ── Canvas ───────────────────────────────────────── */
+.mmw-canvas {
+    position: relative;
+    height: 256px;
+    background: #FFFFFF;
+    /* noktalı grid — çok hafif */
+    background-image: radial-gradient(circle, #EBEBEB 1px, transparent 1px);
+    background-size: 20px 20px;
+}
+/* grid overlay — baskıla */
+.mmw-canvas::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(255,255,255,0.52);
+    pointer-events: none;
+    z-index: 0;
+}
+#{{ wid }}-svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+    position: relative;
+    z-index: 1;
+}
+
+/* ── Boş Durum ────────────────────────────────────── */
+.mmw-empty {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    text-align: center;
+    padding: 20px;
+}
+.mmw-empty-icon {
+    font-size: 22px;
+    opacity: 0.35;
+    line-height: 1;
+}
+.mmw-empty-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-h, #0a0a0a);
+}
+.mmw-empty-sub {
+    font-size: 12px;
+    color: var(--text-muted, #9A9A9A);
+    line-height: 1.5;
+    max-width: 240px;
+}
+
+/* ── Loading ──────────────────────────────────────── */
+.mmw-loading {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    background: rgba(255,255,255,0.88);
+    backdrop-filter: blur(4px);
+}
+.mmw-loading.active { display: flex; }
+.mmw-spinner {
+    width: 20px;
+    height: 20px;
+    border: 2px solid #E8E8E8;
+    border-top-color: #0A0A0A;
+    border-radius: 50%;
+    animation: mmwSpin 0.7s linear infinite;
+}
+@keyframes mmwSpin { to { transform: rotate(360deg); } }
+.mmw-loading-txt { font-size: 12px; color: var(--text-muted, #9A9A9A); }
+
+/* ── Lejant satırı ────────────────────────────────── */
+.mmw-legend-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 16px;
+    border-top: 1px solid var(--border, #E8E8E8);
+    background: var(--bg-subtle, #F9F9F9);
+    flex-wrap: wrap;
+}
+.mmw-cat {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 10.5px;
+    color: var(--text-muted, #9A9A9A);
+}
+.mmw-cat-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    display: inline-block;
+}
+</style>
+
+<div class="mmw-section" id="{{ wid }}-section">
+
+    <!-- ── Header ─────────────────────────────────── -->
+    <div class="mmw-header">
+        <div class="mmw-header-left">
+            <span class="mmw-title">Düşünce Haritası</span>
+            <div class="mmw-meta-row">
+                <span class="mmw-badge">AI</span>
+                {% if has_data %}
+                <span class="mmw-sep"></span>
+                <span class="mmw-version">v{{ mind_map.version }}</span>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="mmw-header-right">
+            {# Aura butonu: başkasının profilindeyiz + harita var + giriş yapılmış #}
+            {% if has_data and not is_own and current_user.is_authenticated %}
+            <button class="mmw-btn mmw-btn-aura" onclick="openAura()" title="Aura Analizi Başlat">
+                <span class="mmw-aura-icon">✦</span> Aura
+            </button>
+            {% endif %}
+            {% if has_data %}
+            <a href="{{ url_for('mindmap.view_map', user_id=target.id) }}"
+               class="mmw-btn mmw-btn-ghost">
+                Tam ekran ↗
+            </a>
+            {% endif %}
+            {% if is_own %}
+            <button class="mmw-btn mmw-btn-solid"
+                    id="{{ wid }}-gen-btn"
+                    onclick="mmwGenerate('{{ wid }}', '{{ url_for('mindmap.generate') }}', {{ target.id }})">
+                {{ '↺ Yeniden Üret' if has_data else '✦ Oluştur' }}
+            </button>
+            {% elif not has_data %}
+            <a href="{{ url_for('mindmap.view_map', user_id=target.id) }}"
+               class="mmw-btn mmw-btn-ghost">
+                Haritaya git →
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- ── Canvas ─────────────────────────────────── -->
+    <div class="mmw-canvas">
+
+        <!-- Loading -->
+        <div class="mmw-loading" id="{{ wid }}-loading">
+            <div class="mmw-spinner"></div>
+            <p class="mmw-loading-txt">AI analiz ediyor…</p>
+        </div>
+
+        <!-- Boş durum -->
+        {% if not has_data %}
+        <div class="mmw-empty" id="{{ wid }}-empty">
+            <span class="mmw-empty-icon">🧠</span>
+            <p class="mmw-empty-title">
+                {% if is_own %}Henüz oluşturulmadı{% else %}Harita yok{% endif %}
+            </p>
+            <p class="mmw-empty-sub">
+                {% if is_own %}
+                    AI'nın seni nasıl gördüğünü keşfetmek için "Oluştur" butonuna tıkla.
+                {% else %}
+                    {{ target.full_name }} henüz zihin haritasını oluşturmamış.
+                {% endif %}
+            </p>
+        </div>
+        {% endif %}
+
+        <!-- SVG -->
+        <svg id="{{ wid }}-svg"
+             {% if not has_data %}style="display:none"{% endif %}>
+        </svg>
+
+    </div>
+
+    <!-- ── Lejant Satırı ───────────────────────────── -->
+    <div class="mmw-legend-row"
+         id="{{ wid }}-legend"
+         {% if not has_data %}style="display:none"{% endif %}>
+        <span class="mmw-cat"><span class="mmw-cat-dot" style="background:#0A0A0A"></span>Kimlik</span>
+        <span class="mmw-cat"><span class="mmw-cat-dot" style="background:#7C3AED"></span>Uzmanlık</span>
+        <span class="mmw-cat"><span class="mmw-cat-dot" style="background:#2563EB"></span>Değer</span>
+        <span class="mmw-cat"><span class="mmw-cat-dot" style="background:#16A34A"></span>Hedef</span>
+        <span class="mmw-cat"><span class="mmw-cat-dot" style="background:#D97706"></span>İlgi</span>
+    </div>
+
+</div>
+
+<script>
+/* ═══ Zihin Haritası Widget JS ═══ */
+(function () {
+    const WID = '{{ wid }}';
+
+    const CAT_COLORS_W = {
+        identity:  '#0A0A0A',
+        expertise: '#7C3AED',
+        value:     '#2563EB',
+        goal:      '#16A34A',
+        interest:  '#D97706',
+    };
+
+    // Node boyut sabitleri
+    const CHAR_W_W = 6.5;
+    const H_PAD_W  = 13;
+    const NODE_H_W = 27;
+    const CENT_H_W = 33;
+
+    function nw(label, isCentral) {
+        return Math.max(isCentral ? 82 : 62, label.length * CHAR_W_W + H_PAD_W * 2);
+    }
+
+    // İlk yükleme — mevcut veri varsa çiz
+    const initialData = {{ (mind_map.data | tojson) if has_data else 'null' }};
+    if (initialData && initialData.nodes) {
+        window.addEventListener('DOMContentLoaded', () => {
+            mmwRender(WID, initialData);
+        });
+    }
+
+    // ── Generate ────────────────────────────────────
+    window.mmwGenerate = window.mmwGenerate || async function (wid, url, userId) {
+        const btn     = document.getElementById(`${wid}-gen-btn`);
+        const loading = document.getElementById(`${wid}-loading`);
+        const empty   = document.getElementById(`${wid}-empty`);
+        const svgEl   = document.getElementById(`${wid}-svg`);
+        const legend  = document.getElementById(`${wid}-legend`);
+
+        if (btn)    { btn.disabled = true; btn.textContent = '…'; }
+        if (empty)  empty.style.display  = 'none';
+        if (svgEl)  svgEl.style.display  = 'none';
+        if (legend) legend.style.display = 'none';
+        if (loading) loading.classList.add('active');
+
+        try {
+            const res  = await fetch(url, { method: 'POST' });
+            const data = await res.json();
+            if (!data.ok) throw new Error(data.error || 'Hata');
+
+            if (loading) loading.classList.remove('active');
+            if (svgEl)   svgEl.style.display  = '';
+            if (legend)  legend.style.display = '';
+
+            mmwRender(wid, data.data);
+
+            if (btn) {
+                btn.textContent = '↺ Yeniden Üret';
+                btn.disabled    = false;
+            }
+
+            // Versiyon güncelle
+            const metaRow = document.querySelector(`#${wid}-section .mmw-version`);
+            if (metaRow) metaRow.textContent = `v${data.version}`;
+
+            // Ayraç + versiyon görünür yap
+            const sepEl = document.querySelector(`#${wid}-section .mmw-sep`);
+            if (sepEl) sepEl.style.display = '';
+
+        } catch (err) {
+            if (loading) loading.classList.remove('active');
+            if (empty)   empty.style.display = '';
+            if (btn)     { btn.textContent = '✦ Oluştur'; btn.disabled = false; }
+            console.error('mmwGenerate error:', err.message);
+        }
+    };
+
+    // ── Render ──────────────────────────────────────
+    window.mmwRender = window.mmwRender || function (wid, data) {
+        if (!data || !data.nodes) return;
+        if (typeof d3 === 'undefined') return;
+
+        const svgEl = document.getElementById(`${wid}-svg`);
+        if (!svgEl) return;
+
+        const svg = d3.select(`#${wid}-svg`);
+        svg.selectAll('*').remove();
+
+        const W = svgEl.clientWidth  || 400;
+        const H = svgEl.clientHeight || 256;
+
+        // Drop shadow filtresi
+        const defs = svg.append('defs');
+        const filt = defs.append('filter')
+            .attr('id', `${wid}-sh`)
+            .attr('x', '-20%').attr('y', '-50%')
+            .attr('width', '140%').attr('height', '200%');
+        filt.append('feDropShadow')
+            .attr('dx', 0).attr('dy', 1)
+            .attr('stdDeviation', 1.5)
+            .attr('flood-color', '#0A0A0A')
+            .attr('flood-opacity', 0.06);
+
+        // Zoom
+        const zoom = d3.zoom()
+            .scaleExtent([0.35, 2.5])
+            .on('zoom', e => g.attr('transform', e.transform));
+        svg.call(zoom);
+
+        const g = svg.append('g');
+
+        // Simülasyon
+        const sim = d3.forceSimulation(data.nodes)
+            .force('link', d3.forceLink(data.edges)
+                .id(d => d.id)
+                .distance(d => 105 - (d.strength || 0.5) * 38)
+                .strength(d => (d.strength || 0.5) * 0.5)
+            )
+            .force('charge', d3.forceManyBody().strength(-250))
+            .force('center', d3.forceCenter(W / 2, H / 2))
+            .force('collision', d3.forceCollide(d =>
+                nw(d.label, d.id === data.central_node) / 2 + 10
+            ));
+
+        // Kenarlar
+        const linkLine = g.append('g').selectAll('line')
+            .data(data.edges).enter().append('line')
+            .attr('stroke', '#DCDCDC')
+            .attr('stroke-width', d => Math.max(0.8, (d.strength || 0.5) * 1.6))
+            .attr('opacity', 0.38);
+
+        // Düğümler
+        const nodeG = g.append('g').selectAll('.wmn')
+            .data(data.nodes).enter().append('g')
+            .attr('class', 'wmn')
+            .style('cursor', 'grab')
+            .call(d3.drag()
+                .on('start', (e, d) => { if (!e.active) sim.alphaTarget(0.3).restart(); d.fx = d.x; d.fy = d.y; })
+                .on('drag',  (e, d) => { d.fx = e.x; d.fy = e.y; })
+                .on('end',   (e, d) => { if (!e.active) sim.alphaTarget(0); d.fx = null; d.fy = null; })
+            );
+
+        // Kart rect
+        nodeG.append('rect')
+            .attr('width',  d => nw(d.label, d.id === data.central_node))
+            .attr('height', d => d.id === data.central_node ? CENT_H_W : NODE_H_W)
+            .attr('x', d => -nw(d.label, d.id === data.central_node) / 2)
+            .attr('y', d => d.id === data.central_node ? -CENT_H_W / 2 : -NODE_H_W / 2)
+            .attr('rx', 7)
+            .attr('fill',   d => d.id === data.central_node ? '#0A0A0A' : '#FFFFFF')
+            .attr('stroke', d => d.id === data.central_node ? '#0A0A0A' : '#E2E2E2')
+            .attr('stroke-width', 1)
+            .attr('filter', `url(#${wid}-sh)`)
+            .attr('opacity', 0)
+            .transition()
+            .delay((_, i) => i * 25).duration(350)
+            .attr('opacity', 1);
+
+        // Label
+        nodeG.append('text')
+            .attr('text-anchor', 'middle')
+            .attr('dominant-baseline', 'middle')
+            .attr('x', 0).attr('y', 0)
+            .attr('fill', d => d.id === data.central_node ? '#FFFFFF' : '#0A0A0A')
+            .attr('font-size', '10px')
+            .attr('font-weight', d => d.id === data.central_node ? 600 : 450)
+            .attr('font-family', 'Inter, -apple-system, sans-serif')
+            .text(d => d.label)
+            .attr('opacity', 0)
+            .transition()
+            .delay((_, i) => i * 25 + 150).duration(280)
+            .attr('opacity', 1);
+
+        // Kategori noktası
+        nodeG.filter(d => d.id !== data.central_node)
+            .append('circle')
+            .attr('r', 3)
+            .attr('cx', d =>  nw(d.label, false) / 2 - 5)
+            .attr('cy', d => -NODE_H_W / 2 + 5)
+            .attr('fill', d => CAT_COLORS_W[d.category] || '#999')
+            .attr('opacity', 0)
+            .transition()
+            .delay((_, i) => i * 25 + 210).duration(200)
+            .attr('opacity', 0.85);
+
+        // Tick
+        sim.on('tick', () => {
+            linkLine
+                .attr('x1', d => d.source.x).attr('y1', d => d.source.y)
+                .attr('x2', d => d.target.x).attr('y2', d => d.target.y);
+            nodeG.attr('transform', d => `translate(${d.x},${d.y})`);
+        });
+    };
+})();
+</script>

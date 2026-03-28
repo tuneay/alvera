@@ -1,0 +1,2858 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Başlayın — Alvera</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&family=JetBrains+Mono:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg:          #09090b;
+            --bg-subtle:   rgba(255,255,255,0.025);
+            --border:      rgba(255,255,255,0.08);
+            --border-h:    rgba(255,255,255,0.14);
+            --text-h:      #f4f4f5;
+            --text-body:   #d4d4d8;
+            --text-muted:  #a1a1aa;
+            --purple:      rgba(124,58,237,0.07);
+            --purple-acc:  #7c3aed;
+            --radius:      14px;
+            --ease:        cubic-bezier(0.4,0,0.2,1);
+            --spring:      cubic-bezier(0.22,1,0.36,1);
+        }
+
+        html { scroll-behavior: smooth; }
+        html, body { min-height: 100%; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg);
+            color: var(--text-body);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ── Grain ── */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
+            opacity: 0.025;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+            background-size: 256px 256px;
+        }
+
+        /* ═══════════════════════════════════════════════════════════
+           PRICING PAGE  (Step 0) — design.html system
+        ═══════════════════════════════════════════════════════════ */
+
+        /* Design-system variables (scoped to pricing) */
+        #pricingPage {
+            --d-black:       #050507;
+            --d-dark:        #07070d;
+            --d-dark-2:      rgba(12,12,20,0.6);
+            --d-dark-3:      #11111c;
+            --d-dark-4:      #181826;
+            --d-border:      rgba(255,255,255,0.06);
+            --d-border-md:   rgba(255,255,255,0.12);
+            --d-text:        #eeeef5;
+            --d-text-2:      #8888a8;
+            --d-text-3:      #44445a;
+            --d-green:       #22c55e;
+            --d-green-dim:   rgba(34,197,94,0.1);
+            --d-green-bright:#4ade80;
+            --d-purple:      #a855f7;
+            --d-purple-dim:  rgba(168,85,247,0.1);
+            --d-purple-bright:#c084fc;
+            --d-r:           16px;
+            --d-r-sm:        12px;
+            --d-r-lg:        24px;
+            --d-ease:        cubic-bezier(0.16,1,0.3,1);
+
+            position: relative;
+            z-index: 1;
+            min-height: 100vh;
+            padding-bottom: 100px;
+            background: var(--d-black);
+            font-family: 'DM Sans', sans-serif;
+            color: var(--d-text);
+            overflow-x: hidden;
+        }
+
+        /* Digital grid overlay */
+        #pricingPage::after {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image:
+                linear-gradient(to right, rgba(255,255,255,0.02) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255,255,255,0.02) 1px, transparent 1px);
+            background-size: 50px 50px;
+            mask-image: radial-gradient(circle at center, black 20%, transparent 75%);
+            -webkit-mask-image: radial-gradient(circle at center, black 20%, transparent 75%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* Breathing glow */
+        .pkg-bg-glow {
+            position: absolute;
+            width: 900px; height: 900px;
+            border-radius: 50%;
+            filter: blur(150px);
+            pointer-events: none;
+            opacity: 0.07;
+            top: 0; left: 50%;
+            transform: translateX(-50%);
+            background: #a855f7;
+            animation: breatheGlow 8s ease-in-out infinite alternate;
+            z-index: 0;
+        }
+
+        @keyframes breatheGlow {
+            0%   { opacity: 0.05; transform: translateX(-50%) scale(0.9); }
+            100% { opacity: 0.1;  transform: translateX(-50%) scale(1.1); }
+        }
+
+        /* Container */
+        .pkg-container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 clamp(20px,5vw,48px);
+            position: relative;
+            z-index: 2;
+        }
+
+        /* Fixed topbar */
+        .pkg-topbar {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            z-index: 100;
+            height: 58px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 clamp(20px,5vw,40px);
+            background: rgba(5,5,7,0.82);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--d-border);
+        }
+
+        .pkg-logo {
+            font-family: 'Syne', sans-serif;
+            font-size: 17px;
+            font-weight: 800;
+            letter-spacing: -0.04em;
+            color: var(--d-text);
+            text-decoration: none;
+        }
+
+        .pkg-topbar-badge {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--d-text-3);
+            padding: 4px 12px;
+            border: 1px solid var(--d-border);
+            border-radius: 100px;
+        }
+
+        /* ── HERO ── */
+        .pkg-hero-section {
+            min-height: 100vh;
+            min-height: 100dvh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+            padding: 0;
+        }
+
+        .pkg-hero-content {
+            text-align: center;
+            transform: translateY(-4vh);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* Product badge */
+        .pkg-product-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 20px;
+            border-radius: 100px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            letter-spacing: 0.15em;
+            font-weight: 600;
+            margin-bottom: 28px;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            background: rgba(168,85,247,0.08);
+            border: 1px solid rgba(168,85,247,0.25);
+            color: var(--d-purple-bright);
+            box-shadow: 0 0 24px rgba(168,85,247,0.1);
+        }
+
+        .pkg-pulse-dot {
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            animation: pulseBig 2s infinite;
+        }
+
+        .pkg-pulse-dot.purple {
+            background: var(--d-purple);
+            box-shadow: 0 0 10px var(--d-purple);
+        }
+
+        .pkg-pulse-dot.green {
+            background: var(--d-green);
+            box-shadow: 0 0 10px var(--d-green);
+        }
+
+        @keyframes pulseBig {
+            0%,100% { opacity:1; transform:scale(1); }
+            50%      { opacity:.4; transform:scale(.75); }
+        }
+
+        .pkg-hero-title {
+            font-family: 'Syne', sans-serif;
+            font-size: clamp(2.6rem,6vw,4.8rem);
+            font-weight: 800;
+            letter-spacing: -0.04em;
+            line-height: 1.05;
+            color: var(--d-text);
+            margin-bottom: 22px;
+        }
+
+        .pkg-gradient-purple {
+            background: linear-gradient(135deg, var(--d-purple-bright), #e9d5ff, var(--d-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            background-size: 200% auto;
+            animation: textShine 4s linear infinite;
+        }
+
+        @keyframes textShine { to { background-position: 200% center; } }
+
+        .pkg-hero-sub {
+            font-size: clamp(1rem,1.5vw,1.1rem);
+            color: var(--d-text-2);
+            line-height: 1.7;
+            max-width: 560px;
+            margin: 0 auto 0;
+        }
+
+        /* Scroll indicator */
+        .pkg-scroll-wrapper {
+            position: absolute;
+            bottom: 40px; left: 0;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            z-index: 10;
+        }
+
+        .pkg-scroll-indicator {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            color: var(--d-text-3);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.72rem;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.4s var(--d-ease);
+        }
+
+        .pkg-scroll-indicator:hover {
+            color: var(--d-purple-bright);
+            transform: translateY(-3px);
+        }
+
+        .pkg-scroll-arrow {
+            width: 22px; height: 22px;
+            animation: bounce 2.5s var(--d-ease) infinite;
+            opacity: 0.6;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 1.5;
+        }
+
+        .pkg-scroll-indicator:hover .pkg-scroll-arrow { opacity: 1; }
+
+        @keyframes bounce {
+            0%,20%,50%,80%,100% { transform: translateY(0); }
+            40% { transform: translateY(-8px); }
+            60% { transform: translateY(-4px); }
+        }
+
+        /* ── SECTIONS ── */
+        .pkg-py-section {
+            padding: clamp(80px,10vw,120px) 0;
+            position: relative;
+        }
+
+        .pkg-section-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            letter-spacing: 0.25em;
+            text-transform: uppercase;
+            color: var(--d-text-3);
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .pkg-section-title {
+            font-family: 'Syne', sans-serif;
+            font-size: clamp(2rem,4.5vw,3.4rem);
+            font-weight: 800;
+            line-height: 1.05;
+            letter-spacing: -0.04em;
+            text-align: center;
+            margin-bottom: 18px;
+            color: var(--d-text);
+        }
+
+        .pkg-section-sub {
+            text-align: center;
+            color: var(--d-text-2);
+            font-size: clamp(0.95rem,1.4vw,1.05rem);
+            line-height: 1.7;
+            max-width: 600px;
+            margin: 0 auto 52px;
+        }
+
+        /* ── TIER CARDS ── */
+        .pkg-tiers-grid {
+            display: grid;
+            grid-template-columns: 1fr 1.1fr;
+            gap: clamp(20px,4vw,36px);
+            align-items: center;
+        }
+
+        .pkg-tier-card {
+            padding: clamp(32px,5vw,48px);
+            background: rgba(12,12,20,0.4);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255,255,255,0.04);
+            border-radius: var(--d-r-lg);
+            position: relative;
+            transition: all 0.5s var(--d-ease);
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 4px 28px rgba(0,0,0,0.25);
+            overflow: hidden;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        /* Gradient border via mask */
+        .pkg-tier-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            padding: 1px;
+            background: linear-gradient(to bottom, rgba(255,255,255,0.14), rgba(255,255,255,0.01));
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            pointer-events: none;
+            transition: background 0.5s var(--d-ease);
+        }
+
+        .pkg-tier-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 24px 48px rgba(0,0,0,0.45), 0 0 0 1px rgba(255,255,255,0.08);
+            background: rgba(16,16,28,0.65);
+        }
+
+        /* Free card green tint */
+        .pkg-tier-free::before {
+            background: linear-gradient(to bottom, rgba(34,197,94,0.32), rgba(255,255,255,0.02));
+        }
+
+        .pkg-tier-free:hover::before {
+            background: linear-gradient(to bottom, rgba(34,197,94,0.45), rgba(255,255,255,0.03));
+        }
+
+        /* Pro card purple */
+        .pkg-tier-pro {
+            background: linear-gradient(180deg, rgba(168,85,247,0.04) 0%, rgba(12,12,20,0.5) 100%);
+            box-shadow: 0 4px 28px rgba(168,85,247,0.06);
+        }
+
+        .pkg-tier-pro::before {
+            background: linear-gradient(to bottom, rgba(168,85,247,0.55), rgba(255,255,255,0.02));
+        }
+
+        .pkg-tier-pro:hover {
+            box-shadow: 0 24px 48px rgba(168,85,247,0.18), 0 0 80px rgba(168,85,247,0.06);
+            background: linear-gradient(180deg, rgba(168,85,247,0.07) 0%, rgba(12,12,20,0.7) 100%);
+        }
+
+        .pkg-tier-pro:hover::before {
+            background: linear-gradient(to bottom, rgba(168,85,247,0.75), rgba(255,255,255,0.03));
+        }
+
+        /* Selected overlay ring */
+        .pkg-tier-card.selected {
+            box-shadow: 0 0 0 2px rgba(168,85,247,0.6), 0 20px 48px rgba(168,85,247,0.15);
+        }
+
+        .pkg-tier-free.selected {
+            box-shadow: 0 0 0 2px rgba(34,197,94,0.5), 0 20px 48px rgba(34,197,94,0.1);
+        }
+
+        /* Card inner */
+        .pkg-tier-inner {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .pkg-tier-badge-row {
+            margin-bottom: 22px;
+        }
+
+        .pkg-tier-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 7px 18px;
+            border-radius: 100px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+            letter-spacing: 0.14em;
+            font-weight: 600;
+            backdrop-filter: blur(10px);
+        }
+
+        .pkg-tier-badge.green {
+            background: rgba(34,197,94,0.08);
+            border: 1px solid rgba(34,197,94,0.25);
+            color: var(--d-green-bright);
+        }
+
+        .pkg-tier-badge.purple {
+            background: rgba(168,85,247,0.08);
+            border: 1px solid rgba(168,85,247,0.25);
+            color: var(--d-purple-bright);
+            box-shadow: 0 0 20px rgba(168,85,247,0.1);
+        }
+
+        .pkg-tier-icon {
+            font-size: 1.7rem;
+            margin-bottom: 16px;
+            display: block;
+        }
+
+        .pkg-tier-name {
+            font-family: 'Syne', sans-serif;
+            font-size: 1.55rem;
+            font-weight: 700;
+            color: var(--d-text);
+            margin-bottom: 10px;
+            letter-spacing: -0.02em;
+        }
+
+        .pkg-tier-desc {
+            font-size: 0.9rem;
+            color: var(--d-text-3);
+            line-height: 1.65;
+            margin-bottom: 28px;
+            min-height: 48px;
+        }
+
+        .pkg-tier-price {
+            font-family: 'Syne', sans-serif;
+            font-size: 2.6rem;
+            font-weight: 800;
+            color: var(--d-text);
+            margin-bottom: 28px;
+            display: flex;
+            align-items: baseline;
+            gap: 8px;
+            letter-spacing: -0.03em;
+        }
+
+        .pkg-tier-price span {
+            font-size: 0.95rem;
+            font-weight: 400;
+            color: var(--d-text-2);
+            font-family: 'DM Sans', sans-serif;
+            letter-spacing: 0;
+        }
+
+        .pkg-tier-list {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            margin-bottom: 36px;
+            flex: 1;
+        }
+
+        .pkg-tier-list li {
+            font-size: 0.9rem;
+            color: var(--d-text-2);
+            display: flex;
+            align-items: flex-start;
+            gap: 11px;
+            line-height: 1.55;
+        }
+
+        .pkg-tier-list li.muted { color: var(--d-text-3); opacity: 0.65; }
+
+        .pkg-chk-icon {
+            color: var(--d-green-bright);
+            font-weight: bold;
+            flex-shrink: 0;
+            font-size: 1.05rem;
+            margin-top: 1px;
+        }
+
+        .pkg-cross-icon {
+            color: var(--d-text-3);
+            font-weight: bold;
+            flex-shrink: 0;
+            font-size: 1.05rem;
+        }
+
+        .pkg-purple-chk {
+            color: var(--d-purple-bright);
+            text-shadow: 0 0 10px rgba(168,85,247,0.4);
+        }
+
+        /* Tier CTA button */
+        .pkg-tier-btn {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 16px 28px;
+            border: 1px solid var(--d-border-md);
+            border-radius: 100px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--d-text);
+            background: transparent;
+            overflow: hidden;
+            transition: all 0.45s var(--d-ease);
+            cursor: pointer;
+            z-index: 1;
+            text-decoration: none;
+        }
+
+        .pkg-tier-btn::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: rgba(255,255,255,0.06);
+            opacity: 0;
+            transition: opacity 0.4s var(--d-ease);
+            z-index: -1;
+        }
+
+        .pkg-tier-btn:hover {
+            border-color: rgba(255,255,255,0.22);
+            box-shadow: 0 4px 18px rgba(0,0,0,0.12);
+        }
+
+        .pkg-tier-btn:hover::after { opacity: 1; }
+
+        .pkg-tier-btn-pro {
+            background: linear-gradient(135deg, var(--d-purple), #8b31e0);
+            border: none;
+            color: #fff;
+            box-shadow: inset 0 1px 1px rgba(255,255,255,0.4), 0 4px 18px rgba(168,85,247,0.32);
+            text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+        }
+
+        .pkg-tier-btn-pro::after {
+            background: linear-gradient(135deg, var(--d-purple-bright), var(--d-purple));
+        }
+
+        .pkg-tier-btn-pro:hover {
+            transform: translateY(-2px);
+            box-shadow: inset 0 1px 1px rgba(255,255,255,0.5), 0 14px 30px rgba(168,85,247,0.45);
+        }
+
+        .pkg-tier-btn-pro:hover::after { opacity: 1; }
+
+        /* ── STEPS ── */
+        .pkg-steps-grid {
+            display: grid;
+            grid-template-columns: repeat(4,1fr);
+            gap: 24px;
+            margin-top: 48px;
+        }
+
+        .pkg-step-card {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            padding: 30px 22px;
+            background: var(--d-dark-2);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--d-border);
+            border-radius: var(--d-r);
+            transition: all 0.4s var(--d-ease);
+        }
+
+        .pkg-step-card:hover {
+            border-color: rgba(168,85,247,0.32);
+            transform: translateY(-6px);
+            background: rgba(16,16,24,0.8);
+            box-shadow: 0 12px 32px rgba(0,0,0,0.25);
+        }
+
+        .pkg-step-icon-wrap {
+            width: 48px; height: 48px;
+            border-radius: 12px;
+            background: var(--d-purple-dim);
+            border: 1px solid rgba(168,85,247,0.25);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--d-purple-bright);
+            box-shadow: inset 0 0 12px rgba(168,85,247,0.1);
+        }
+
+        .pkg-step-icon-wrap svg {
+            width: 20px; height: 20px;
+            fill: none; stroke: currentColor; stroke-width: 1.5;
+        }
+
+        .pkg-step-title {
+            font-family: 'Syne', sans-serif;
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: var(--d-text);
+            letter-spacing: -0.01em;
+        }
+
+        .pkg-step-desc {
+            font-size: 0.85rem;
+            color: var(--d-text-3);
+            line-height: 1.65;
+        }
+
+        /* ── COMPARE TABLE (column-based) ── */
+        .pkg-compare-outer {
+            overflow-x: auto;
+            border-radius: var(--d-r-lg);
+            border: 1px solid var(--d-border);
+            margin-top: 48px;
+            background: var(--d-dark-2);
+            backdrop-filter: blur(12px);
+        }
+
+        .pkg-compare-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr;
+            min-width: 680px;
+        }
+
+        .pkg-compare-col { display: flex; flex-direction: column; }
+        .pkg-compare-col.c-header { background: rgba(0,0,0,0.18); }
+        .pkg-compare-col.c-green  { background: rgba(34,197,94,0.02);   border-left: 1px solid rgba(34,197,94,0.1); }
+        .pkg-compare-col.c-purple { background: rgba(168,85,247,0.03);  border-left: 1px solid rgba(168,85,247,0.15); }
+
+        .pkg-compare-cell {
+            padding: 18px 24px;
+            border-bottom: 1px solid var(--d-border);
+            font-size: 0.9rem;
+            color: var(--d-text-2);
+            display: flex;
+            align-items: center;
+            min-height: 62px;
+            transition: background 0.2s;
+        }
+
+        .pkg-compare-cell:last-child { border-bottom: none; }
+        .pkg-compare-cell:hover      { background: rgba(255,255,255,0.012); }
+
+        .pkg-compare-col.c-header .pkg-compare-cell { color: var(--d-text); font-weight: 500; }
+
+        .pkg-col-head {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.78rem;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            font-weight: 600;
+            justify-content: center;
+            background: transparent !important;
+        }
+
+        .pkg-col-head.green-txt  { color: var(--d-green-bright); }
+        .pkg-col-head.purple-txt { color: var(--d-purple-bright); }
+        .pkg-cell-center { justify-content: center; }
+
+        /* ── STATS ── */
+        .pkg-stats-wrap {
+            display: flex;
+            justify-content: center;
+            gap: clamp(20px,4vw,36px);
+            flex-wrap: wrap;
+            margin-top: 48px;
+        }
+
+        .pkg-stat-box {
+            background: var(--d-dark-2);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--d-border);
+            border-radius: var(--d-r-lg);
+            padding: 40px 32px;
+            text-align: center;
+            flex: 1;
+            min-width: 220px;
+            transition: all 0.4s var(--d-ease);
+        }
+
+        .pkg-stat-box:hover {
+            border-color: var(--d-purple-dim);
+            transform: translateY(-6px);
+            box-shadow: 0 12px 32px rgba(0,0,0,0.22);
+        }
+
+        .pkg-stat-val {
+            font-family: 'Syne', sans-serif;
+            font-size: 3.5rem;
+            font-weight: 800;
+            color: var(--d-text);
+            margin-bottom: 8px;
+            line-height: 1;
+            letter-spacing: -0.03em;
+        }
+
+        .pkg-stat-val span { font-size: 1.5rem; color: var(--d-purple-bright); font-weight: 700; }
+
+        .pkg-stat-label {
+            font-size: 0.92rem;
+            color: var(--d-text-3);
+            line-height: 1.55;
+        }
+
+        /* ── FAQ ── */
+        .pkg-faq-wrap {
+            max-width: 780px;
+            margin: 48px auto 0;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .pkg-faq-item {
+            background: var(--d-dark-2);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--d-border);
+            border-radius: var(--d-r-sm);
+            overflow: hidden;
+            transition: all 0.35s var(--d-ease);
+        }
+
+        .pkg-faq-item:hover { border-color: rgba(255,255,255,0.1); }
+
+        .pkg-faq-item.open {
+            border-color: rgba(168,85,247,0.42);
+            background: rgba(168,85,247,0.03);
+            box-shadow: 0 8px 28px rgba(0,0,0,0.22);
+        }
+
+        .pkg-faq-header {
+            padding: 22px 28px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 1rem;
+            user-select: none;
+            transition: color 0.3s;
+            color: var(--d-text);
+        }
+
+        .pkg-faq-item.open .pkg-faq-header { color: var(--d-purple-bright); }
+
+        .pkg-faq-chevron {
+            width: 22px; height: 22px;
+            display: flex; align-items: center; justify-content: center;
+            color: var(--d-text-3);
+            transition: transform 0.4s var(--d-ease), color 0.3s;
+            flex-shrink: 0;
+        }
+
+        .pkg-faq-chevron svg {
+            width: 18px; height: 18px;
+            fill: none; stroke: currentColor; stroke-width: 1.8;
+        }
+
+        .pkg-faq-item.open .pkg-faq-chevron {
+            transform: rotate(180deg);
+            color: var(--d-purple-bright);
+        }
+
+        .pkg-faq-body {
+            padding: 0 28px;
+            max-height: 0;
+            overflow: hidden;
+            transition: all 0.42s var(--d-ease);
+            color: var(--d-text-2);
+            font-size: 0.93rem;
+            line-height: 1.75;
+            opacity: 0;
+        }
+
+        .pkg-faq-item.open .pkg-faq-body {
+            padding: 0 28px 22px;
+            max-height: 280px;
+            opacity: 1;
+        }
+
+        /* ── Sticky CTA bar ── */
+        .pkg-sticky {
+            position: fixed;
+            bottom: 0; left: 0; right: 0;
+            z-index: 200;
+            padding: 14px clamp(20px,5vw,40px);
+            background: rgba(5,5,7,0.92);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border-top: 1px solid var(--d-border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            transform: translateY(100%);
+            transition: transform 0.5s var(--d-ease);
+        }
+
+        .pkg-sticky.show { transform: translateY(0); }
+
+        .pkg-sticky-info { display: flex; align-items: center; gap: 12px; }
+
+        .pkg-sticky-pkg-dot {
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            background: var(--d-purple);
+            box-shadow: 0 0 8px var(--d-purple);
+            flex-shrink: 0;
+            animation: pulseBig 2s infinite;
+        }
+
+        .pkg-sticky-pkg-dot.free {
+            background: var(--d-green);
+            box-shadow: 0 0 8px var(--d-green);
+        }
+
+        .pkg-sticky-name {
+            font-family: 'Syne', sans-serif;
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--d-text);
+            letter-spacing: -0.02em;
+        }
+
+        .pkg-sticky-price {
+            font-size: 12px;
+            color: var(--d-text-3);
+        }
+
+        .pkg-sticky-btns { display: flex; align-items: center; gap: 10px; }
+
+        .sticky-btn {
+            padding: 11px 28px;
+            border-radius: 100px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.4s var(--d-ease);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .sticky-btn::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            transition: opacity 0.4s var(--d-ease);
+            z-index: -1;
+        }
+
+        .sticky-btn.free {
+            background: transparent;
+            border: 1px solid var(--d-border-md);
+            color: var(--d-text);
+        }
+
+        .sticky-btn.free::after { background: rgba(255,255,255,0.06); }
+        .sticky-btn.free:hover::after { opacity: 1; }
+        .sticky-btn.free:hover { border-color: rgba(255,255,255,0.22); }
+
+        .sticky-btn.pro {
+            background: linear-gradient(135deg, var(--d-purple), #8b31e0);
+            border: none;
+            color: #fff;
+            box-shadow: inset 0 1px 1px rgba(255,255,255,0.35), 0 4px 16px rgba(168,85,247,0.35);
+        }
+
+        .sticky-btn.pro::after { background: linear-gradient(135deg, var(--d-purple-bright), var(--d-purple)); }
+        .sticky-btn.pro:hover { transform: translateY(-2px); box-shadow: inset 0 1px 1px rgba(255,255,255,0.5), 0 12px 28px rgba(168,85,247,0.45); }
+        .sticky-btn.pro:hover::after { opacity: 1; }
+
+        /* ── Reveal animations ── */
+        .pkg-reveal {
+            opacity: 0;
+            transform: translateY(28px);
+            transition: opacity 0.75s var(--d-ease), transform 0.75s var(--d-ease);
+        }
+
+        .pkg-reveal.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* ── Responsive ── */
+        @media (max-width: 900px) {
+            .pkg-tiers-grid { grid-template-columns: 1fr; max-width: 520px; margin: 0 auto; }
+            .pkg-steps-grid { grid-template-columns: repeat(2,1fr); }
+        }
+
+        @media (max-width: 600px) {
+            .pkg-steps-grid { grid-template-columns: 1fr; }
+            .pkg-stats-wrap { flex-direction: column; }
+            .pkg-compare-grid { min-width: 100%; }
+            .pkg-sticky { flex-wrap: wrap; }
+        }
+
+        /* ═══════════════════════════════════════════════════════════
+           ONBOARDING PAGE  (Steps 1–6, Ücretli / Pro)
+        ═══════════════════════════════════════════════════════════ */
+
+        #onboardingPage {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 300;
+            background: var(--bg);
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            overflow-y: auto;
+            overflow-x: hidden;
+            -webkit-overflow-scrolling: touch;
+            scroll-behavior: smooth;
+            padding-bottom: 80px;
+        }
+
+        #onboardingPage.visible { display: flex; }
+
+        /* Orbs */
+        .orb-static {
+            position: fixed;
+            top: -120px; left: -80px;
+            width: 520px; height: 520px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(124,58,237,0.09) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .orb-moving {
+            position: fixed;
+            width: 600px; height: 600px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255,255,255,0.018) 0%, rgba(9,9,11,0) 70%);
+            pointer-events: none;
+            z-index: 0;
+            animation: moveOrb 28s infinite alternate ease-in-out;
+        }
+
+        @keyframes moveOrb {
+            0%   { transform: translate(-10%, 10%); }
+            25%  { transform: translate(60%, -5%); }
+            50%  { transform: translate(40%, 55%); }
+            75%  { transform: translate(-5%, 70%); }
+            100% { transform: translate(70%, 30%); }
+        }
+
+        /* Progress header — sticky so it stays visible while scrolling */
+        .ob-header {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            width: 100%;
+            max-width: 540px;
+            padding: 28px 8px 16px;
+            background: var(--bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            margin-bottom: 0;
+        }
+
+        /* Subtle bottom border when scrolled (added via JS class) */
+        .ob-header.scrolled {
+            border-bottom: 1px solid var(--border);
+        }
+
+        .ob-header-meta {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+
+        .ob-header-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .ob-logo {
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            color: var(--text-h);
+            text-transform: uppercase;
+        }
+
+        .ob-badge {
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: #a78bfa;
+            padding: 3px 9px;
+            border: 1px solid rgba(167,139,250,0.3);
+            background: rgba(124,58,237,0.1);
+            border-radius: 100px;
+        }
+
+        .ob-step-counter {
+            font-size: 12px;
+            color: var(--text-muted);
+            font-variant-numeric: tabular-nums;
+        }
+
+        .ob-step-counter span { color: var(--text-h); font-weight: 600; }
+
+        .ob-progress-bar {
+            width: 100%;
+            height: 2px;
+            background: var(--border);
+            border-radius: 2px;
+            overflow: visible;
+            position: relative;
+            margin-bottom: 12px;
+        }
+
+        .ob-progress-fill {
+            height: 100%;
+            background: rgba(167,139,250,0.8);
+            border-radius: 2px;
+            transition: width 0.5s var(--spring);
+            position: relative;
+        }
+
+        .ob-progress-fill::after {
+            content: '';
+            position: absolute;
+            right: -3px; top: 50%;
+            transform: translateY(-50%);
+            width: 7px; height: 7px;
+            border-radius: 50%;
+            background: #a78bfa;
+            box-shadow: 0 0 8px 3px rgba(167,139,250,0.4);
+        }
+
+        .ob-dots {
+            display: flex;
+            gap: 5px;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .ob-dot {
+            height: 5px; width: 5px;
+            border-radius: 3px;
+            background: rgba(255,255,255,0.12);
+            transition: all 0.35s var(--spring);
+        }
+
+        .ob-dot.active { width: 20px; background: rgba(167,139,250,0.85); }
+        .ob-dot.done   { background: rgba(255,255,255,0.35); }
+
+        /* Main card */
+        .ob-card {
+            width: 100%;
+            max-width: 540px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            overflow: clip;          /* clips glow but lets content grow naturally */
+            position: relative;
+            z-index: 1;
+            transition: border-color 0.3s var(--ease);
+            margin-top: 0;
+        }
+
+        .ob-card:hover { border-color: var(--border-h); }
+
+        /* Mouse-tracking shine */
+        .ob-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            background: radial-gradient(
+                480px circle at var(--mx, 50%) var(--my, 30%),
+                rgba(167,139,250,0.06),
+                transparent 45%
+            );
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.4s var(--ease);
+            z-index: 0;
+        }
+
+        .ob-card:hover::before { opacity: 1; }
+
+        /* Panels */
+        .ob-panel {
+            display: none;
+            flex-direction: column;
+            gap: 22px;
+            padding: 38px 40px 30px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .ob-panel.active { display: flex; }
+
+        /* Step head */
+        .ob-step-head { display: flex; flex-direction: column; gap: 5px; }
+
+        .ob-eyebrow {
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: #a78bfa;
+            opacity: 0;
+            transform: translateY(6px);
+        }
+
+        .ob-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--text-h);
+            letter-spacing: -0.025em;
+            line-height: 1.25;
+            opacity: 0;
+            transform: translateY(8px);
+        }
+
+        .ob-sub {
+            font-size: 13px;
+            color: var(--text-muted);
+            line-height: 1.55;
+            margin-top: 2px;
+            opacity: 0;
+            transform: translateY(8px);
+        }
+
+        /* Field groups */
+        .ob-field {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        .ob-label {
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-muted);
+            letter-spacing: 0.02em;
+        }
+
+        input[type="text"], input[type="url"],
+        textarea, select {
+            width: 100%;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--text-h);
+            font-family: inherit;
+            font-size: 14px;
+            padding: 11px 14px;
+            outline: none;
+            transition: border-color 0.2s var(--ease), background 0.2s var(--ease), box-shadow 0.2s var(--ease);
+            resize: none;
+            -webkit-appearance: none;
+        }
+
+        input:focus, textarea:focus, select:focus {
+            border-color: rgba(167,139,250,0.45);
+            background: rgba(167,139,250,0.04);
+            box-shadow: 0 0 0 3px rgba(124,58,237,0.08);
+        }
+
+        input::placeholder, textarea::placeholder { color: rgba(255,255,255,0.18); }
+
+        .ob-char-count {
+            font-size: 11px;
+            color: var(--text-muted);
+            text-align: right;
+            opacity: 0.7;
+        }
+
+        /* Category grid */
+        .cat-grid-ob {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 7px;
+        }
+
+        .cat-card-ob {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 10px 7px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s var(--ease);
+            opacity: 0;
+            transform: translateY(8px) scale(0.97);
+        }
+
+        .cat-card-ob:hover {
+            background: rgba(255,255,255,0.06);
+            border-color: var(--border-h);
+        }
+
+        .cat-card-ob.selected {
+            background: rgba(124,58,237,0.1);
+            border-color: rgba(167,139,250,0.45);
+        }
+
+        .cat-emoji-ob { font-size: 20px; display: block; margin-bottom: 4px; }
+        .cat-name-ob { font-size: 10.5px; font-weight: 500; color: var(--text-body); line-height: 1.3; }
+        .cat-card-ob.selected .cat-name-ob { color: #c4b5fd; }
+
+        /* Audience pills */
+        .audience-pills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .audience-pill {
+            border: 1px solid var(--border);
+            border-radius: 100px;
+            padding: 7px 16px;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.2s var(--ease);
+            user-select: none;
+        }
+
+        .audience-pill:hover {
+            border-color: var(--border-h);
+            color: var(--text-body);
+        }
+
+        .audience-pill.selected {
+            border-color: rgba(167,139,250,0.5);
+            background: rgba(124,58,237,0.1);
+            color: #c4b5fd;
+        }
+
+        /* Tag input */
+        .tag-wrap {
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 8px 10px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            cursor: text;
+            transition: border-color 0.2s var(--ease), box-shadow 0.2s var(--ease);
+            min-height: 48px;
+            align-items: center;
+        }
+
+        .tag-wrap:focus-within {
+            border-color: rgba(167,139,250,0.45);
+            box-shadow: 0 0 0 3px rgba(124,58,237,0.08);
+        }
+
+        .ob-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            background: rgba(124,58,237,0.12);
+            border: 1px solid rgba(167,139,250,0.25);
+            padding: 3px 10px;
+            border-radius: 100px;
+            font-size: 12.5px;
+            font-weight: 500;
+            color: #c4b5fd;
+            white-space: nowrap;
+            animation: tagIn 0.2s var(--ease) both;
+        }
+
+        @keyframes tagIn {
+            from { opacity: 0; transform: scale(0.85); }
+            to   { opacity: 1; transform: scale(1); }
+        }
+
+        .tag-remove-btn {
+            background: none; border: none; cursor: pointer;
+            color: rgba(196,181,253,0.5); font-size: 14px;
+            line-height: 1; padding: 0; display: flex; align-items: center;
+            transition: color 0.15s;
+        }
+
+        .tag-remove-btn:hover { color: #f87171; }
+
+        .tag-text-input {
+            border: none; outline: none;
+            font-family: inherit; font-size: 14px;
+            color: var(--text-h); background: transparent;
+            flex: 1; min-width: 120px; padding: 2px 4px;
+        }
+
+        .tag-text-input::placeholder { color: rgba(255,255,255,0.18); }
+
+        /* Vibe cards */
+        .vibe-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+
+        .vibe-card {
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 18px 14px;
+            cursor: pointer;
+            transition: all 0.25s var(--ease);
+            position: relative;
+            overflow: hidden;
+            user-select: none;
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        .vibe-card:hover { border-color: var(--border-h); transform: translateY(-2px); }
+
+        .vibe-card.selected {
+            border-color: rgba(167,139,250,0.5);
+            background: rgba(124,58,237,0.08);
+        }
+
+        .vibe-check {
+            position: absolute;
+            top: 9px; right: 9px;
+            width: 18px; height: 18px;
+            background: var(--purple-acc);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            color: #fff;
+            opacity: 0;
+            transform: scale(0.5);
+            transition: all 0.25s var(--spring);
+        }
+
+        .vibe-card.selected .vibe-check { opacity: 1; transform: scale(1); }
+
+        .vibe-preview {
+            height: 48px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .vibe-card[data-vibe="minimal"] .vibe-preview {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            font-weight: 300;
+            letter-spacing: 2px;
+        }
+
+        .vibe-card[data-vibe="bold"] .vibe-preview {
+            background: var(--text-h);
+            color: var(--bg);
+            letter-spacing: -0.3px;
+            font-size: 12px;
+            font-weight: 800;
+        }
+
+        .vibe-card[data-vibe="warm"] .vibe-preview {
+            background: rgba(251,191,36,0.08);
+            border: 1px solid rgba(251,191,36,0.15);
+            color: #fbbf24;
+            font-weight: 500;
+        }
+
+        .vibe-name {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-h);
+            margin-bottom: 3px;
+        }
+
+        .vibe-desc { font-size: 11.5px; color: var(--text-muted); line-height: 1.45; }
+
+        /* Link rows */
+        .link-rows {
+            display: flex;
+            flex-direction: column;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .link-row {
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+            transition: background 0.15s var(--ease);
+        }
+
+        .link-row:last-child { border-bottom: none; }
+        .link-row:focus-within { background: rgba(167,139,250,0.03); }
+
+        .link-prefix {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-muted);
+            padding: 0 12px;
+            white-space: nowrap;
+            letter-spacing: 0.03em;
+            border-right: 1px solid var(--border);
+            height: 44px;
+            display: flex;
+            align-items: center;
+            min-width: 50px;
+            justify-content: center;
+        }
+
+        .link-row input {
+            flex: 1; border: none; border-radius: 0;
+            background: transparent; padding: 11px 14px;
+            box-shadow: none !important;
+        }
+
+        .link-row input:focus { border: none; box-shadow: none !important; background: transparent; }
+
+        /* AI expand button */
+        .ai-btn-wrap { display: flex; align-items: center; gap: 8px; margin-top: 6px; }
+
+        .btn-ai {
+            display: inline-flex; align-items: center; gap: 5px;
+            padding: 6px 13px; font-size: 12px; font-weight: 500;
+            font-family: inherit; color: #a78bfa;
+            background: rgba(124,58,237,0.08);
+            border: 1px solid rgba(167,139,250,0.2);
+            border-radius: 100px; cursor: pointer;
+            transition: all 0.2s var(--ease); flex-shrink: 0;
+        }
+
+        .btn-ai:hover { background: rgba(124,58,237,0.14); border-color: rgba(167,139,250,0.35); }
+        .btn-ai:disabled { opacity: 0.4; pointer-events: none; }
+
+        .btn-ai.loading::after {
+            content: '';
+            display: inline-block;
+            width: 10px; height: 10px;
+            border: 1.5px solid rgba(167,139,250,0.3);
+            border-top-color: #a78bfa;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+            margin-left: 2px;
+        }
+
+        .ai-status { font-size: 11.5px; color: var(--text-muted); transition: opacity 0.3s; }
+        .ai-status.success { color: #4ade80; }
+        .ai-status.error   { color: #f87171; }
+
+        /* Optional tag */
+        .opt-tag {
+            display: inline-block;
+            font-size: 10px; font-weight: 600;
+            letter-spacing: 0.08em; text-transform: uppercase;
+            color: var(--text-muted);
+            background: rgba(255,255,255,0.04);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 2px 6px;
+            margin-left: 6px;
+            vertical-align: middle;
+        }
+
+        /* Action row */
+        .ob-actions {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            opacity: 0;
+            transform: translateY(6px);
+        }
+
+        .ob-btn-back {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            font-family: inherit;
+            font-size: 13px;
+            font-weight: 500;
+            padding: 10px 18px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s var(--ease);
+        }
+
+        .ob-btn-back:hover { border-color: var(--border-h); color: var(--text-body); }
+
+        .ob-btn-next {
+            flex: 1;
+            background: var(--text-h);
+            color: var(--bg);
+            border: none;
+            font-family: inherit;
+            font-size: 14px;
+            font-weight: 600;
+            padding: 12px 24px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s var(--ease);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .ob-btn-next:hover { background: #e4e4e7; }
+        .ob-btn-next:active { transform: scale(0.98); }
+        .ob-btn-next:disabled { opacity: 0.45; cursor: not-allowed; }
+
+        .ob-btn-next .ob-spinner {
+            display: none; width: 14px; height: 14px;
+            border: 2px solid rgba(9,9,11,0.2);
+            border-top-color: var(--bg);
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+            margin: 0 auto;
+        }
+
+        .ob-btn-next.loading .btn-text { display: none; }
+        .ob-btn-next.loading .ob-spinner { display: block; }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Error toast */
+        .ob-err {
+            display: none; align-items: center; gap: 8px;
+            background: rgba(239,68,68,0.1);
+            border: 1px solid rgba(239,68,68,0.22);
+            color: #fca5a5;
+            font-size: 12px; padding: 9px 13px;
+            border-radius: 8px;
+        }
+
+        .ob-err.show { display: flex; }
+
+        /* Flash */
+        #ob-flash {
+            position: fixed; inset: 0;
+            background: rgba(167,139,250,0);
+            pointer-events: none; z-index: 999;
+            transition: background 0.5s var(--ease);
+        }
+
+        #ob-flash.go { background: rgba(167,139,250,0.06); }
+
+        /* Stagger anim */
+        .stagger { animation: fadeUp 0.45s var(--spring) both; }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(12px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .cat-do-stagger {
+            animation: cardPop 0.38s var(--spring) both;
+        }
+
+        @keyframes cardPop {
+            from { opacity: 0; transform: translateY(8px) scale(0.95); }
+            to   { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        /* Select wrap */
+        .select-wrap { position: relative; }
+        .select-wrap::after {
+            content: '↓'; position: absolute;
+            right: 13px; top: 50%;
+            transform: translateY(-50%);
+            pointer-events: none; color: var(--text-muted); font-size: 12px;
+        }
+
+        select option { background: #1a1a1e; color: var(--text-h); }
+
+        /* Responsive */
+        @media (max-width: 540px) {
+            #onboardingPage { padding-left: 12px; padding-right: 12px; padding-bottom: 60px; }
+            .ob-header { padding-top: 20px; }
+            .ob-panel { padding: 26px 22px 28px; }
+            .ob-title { font-size: 19px; }
+            .cat-grid-ob { grid-template-columns: repeat(3, 1fr); }
+        }
+
+        @media (max-height: 600px) {
+            .ob-header { padding-top: 16px; padding-bottom: 10px; }
+            .ob-panel { padding: 22px 28px 24px; gap: 16px; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ═══════════════ PRICING PAGE ═══════════════ -->
+<div id="pricingPage">
+
+    <!-- Topbar -->
+    <nav class="pkg-topbar">
+        <a href="{{ url_for('main.index') }}" class="pkg-logo">alvera</a>
+        <div>
+            <span class="pkg-topbar-badge">Adım 1 / {{ total_steps }}</span>
+        </div>
+    </nav>
+
+    <!-- Breathing glow orb -->
+    <div class="pkg-bg-glow"></div>
+
+    <!-- ── HERO ── -->
+    <section class="pkg-hero-section">
+        <div class="pkg-hero-content">
+            <div class="pkg-product-badge pkg-reveal">
+                <span class="pkg-pulse-dot purple"></span>
+                Dijital Kimlik Atölyesi
+            </div>
+            <h1 class="pkg-hero-title pkg-reveal">
+                İki yol,<br>
+                <span class="pkg-gradient-purple">bir dijital kimlik.</span>
+            </h1>
+            <p class="pkg-hero-sub pkg-reveal">
+                Alvera topluluğuna ücretsiz katıl ya da size özel AI destekli prestijli kişisel sayfanı oluştur. Her iki yolun da kendi gücü var.
+            </p>
+        </div>
+        <div class="pkg-scroll-wrapper">
+            <a href="#pkgPlans" class="pkg-scroll-indicator">
+                <svg class="pkg-scroll-arrow" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+                Keşfet
+            </a>
+        </div>
+    </section>
+
+    <!-- ── PLANS ── -->
+    <section id="pkgPlans" class="pkg-py-section">
+        <div class="pkg-container">
+            <div class="pkg-section-label pkg-reveal">Paket Seçimi</div>
+            <h2 class="pkg-section-title pkg-reveal">Yolculuğunuzu seçin.</h2>
+            <p class="pkg-section-sub pkg-reveal">Her profesyonelin ihtiyacına göre iki farklı yol. İkisi de Alvera kalitesini taşır.</p>
+
+            <div class="pkg-tiers-grid">
+
+                <!-- Free Card -->
+                <div class="pkg-tier-card pkg-tier-free pkg-reveal {% if not user_package or user_package == '1' %}selected{% endif %}" data-package="1">
+                    <div class="pkg-tier-inner">
+                        <div class="pkg-tier-badge-row">
+                            <span class="pkg-tier-badge green">
+                                <span class="pkg-pulse-dot green"></span>
+                                Ücretsiz
+                            </span>
+                        </div>
+                        <span class="pkg-tier-icon">✦</span>
+                        <div class="pkg-tier-name">Alvera Social</div>
+                        <p class="pkg-tier-desc">Topluluğa katıl, keşfet, bağlantı kur. AI tarafından şekillendirilmiş profilinle öne çık.</p>
+                        <div class="pkg-tier-price">₺0 <span>/ daima ücretsiz</span></div>
+                        <ul class="pkg-tier-list">
+                            <li><span class="pkg-chk-icon">✓</span>Alvera Social akışına tam erişim</li>
+                            <li><span class="pkg-chk-icon">✓</span>AI destekli profil & biyografi oluşturma</li>
+                            <li><span class="pkg-chk-icon">✓</span>Metin, proje, kod & fotoğraf paylaşımı</li>
+                            <li><span class="pkg-chk-icon">✓</span>Takip, keşif ve özel mesajlaşma</li>
+                            <li><span class="pkg-chk-icon">✓</span>Aura analizi & bağlantı içgörüleri</li>
+                            <li class="muted"><span class="pkg-cross-icon">—</span>Kişisel alan adı (alvera.me/siz)</li>
+                            <li class="muted"><span class="pkg-cross-icon">—</span>AI ile üretilmiş landing page</li>
+                            <li class="muted"><span class="pkg-cross-icon">—</span>İçerik yönetim paneli</li>
+                        </ul>
+                        <button class="pkg-tier-btn" onclick="selectAndContinue('1')">Ücretsiz Başla →</button>
+                    </div>
+                </div>
+
+                <!-- Pro Card -->
+                <div class="pkg-tier-card pkg-tier-pro pkg-reveal {% if user_package == '2' %}selected{% endif %}" data-package="2">
+                    <div class="pkg-tier-inner">
+                        <div class="pkg-tier-badge-row">
+                            <span class="pkg-tier-badge purple">
+                                <span class="pkg-pulse-dot purple"></span>
+                                ✦ Önerilen
+                            </span>
+                        </div>
+                        <span class="pkg-tier-icon">◈</span>
+                        <div class="pkg-tier-name">Dijital Kimlik</div>
+                        <p class="pkg-tier-desc">Kişisel siteniz. AI ile üretilmiş, sadece size ait bir dijital imza. Binlerce profesyonelden sıyrılın.</p>
+                        <div class="pkg-tier-price">₺299 <span>/ ay</span></div>
+                        <ul class="pkg-tier-list">
+                            <li><span class="pkg-purple-chk pkg-chk-icon">✓</span>Social paketin tüm özellikleri</li>
+                            <li><span class="pkg-purple-chk pkg-chk-icon">✓</span>Kişisel alan adı — <strong style="color:#c4b5fd">alvera.me/siz</strong></li>
+                            <li><span class="pkg-purple-chk pkg-chk-icon">✓</span>AI anlatı: Sadece size özel 2 varyant</li>
+                            <li><span class="pkg-purple-chk pkg-chk-icon">✓</span>Concierge onboarding — AI sizi tanır</li>
+                            <li><span class="pkg-purple-chk pkg-chk-icon">✓</span>İçerik yönetim paneli & anlık güncelleme</li>
+                            <li><span class="pkg-purple-chk pkg-chk-icon">✓</span>Arama motorlarına özel SEO meta</li>
+                            <li><span class="pkg-purple-chk pkg-chk-icon">✓</span>Analitik: kim gördü, nereden geldi</li>
+                            <li><span class="pkg-purple-chk pkg-chk-icon">✓</span>Öncelikli destek & yeni özellik erişimi</li>
+                        </ul>
+                        <button class="pkg-tier-btn pkg-tier-btn-pro" onclick="selectAndContinue('2')">Dijital Kimliğimi Kur →</button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- ── HOW IT WORKS ── -->
+    <section class="pkg-py-section">
+        <div class="pkg-container">
+            <div class="pkg-section-label pkg-reveal">Dijital Kimlik Nasıl Çalışır?</div>
+            <h2 class="pkg-section-title pkg-reveal">Dört adımda sayfanız hazır.</h2>
+            <p class="pkg-section-sub pkg-reveal">Alvera'nın Concierge süreci sizi tanımak için tasarlandı — sadece form doldurmak için değil.</p>
+
+            <div class="pkg-steps-grid">
+                <div class="pkg-step-card pkg-reveal">
+                    <div class="pkg-step-icon-wrap">
+                        <svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                    </div>
+                    <div class="pkg-step-title">Sizi Tanıyoruz</div>
+                    <p class="pkg-step-desc">Dinamik sorular aracılığıyla kimliğinizi, vibenizi ve hedef kitlenizi keşfediyoruz.</p>
+                </div>
+                <div class="pkg-step-card pkg-reveal">
+                    <div class="pkg-step-icon-wrap">
+                        <svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+                    </div>
+                    <div class="pkg-step-title">AI Üretiyor</div>
+                    <p class="pkg-step-desc">LLAMA modeli verilerinizi işleyip sadece size ait 2 farklı sayfa varyantı oluşturuyor.</p>
+                </div>
+                <div class="pkg-step-card pkg-reveal">
+                    <div class="pkg-step-icon-wrap">
+                        <svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/></svg>
+                    </div>
+                    <div class="pkg-step-title">Siz Seçiyorsunuz</div>
+                    <p class="pkg-step-desc">İki varyantı canlı önizleme ile karşılaştırın, size en uygun tasarımı seçin.</p>
+                </div>
+                <div class="pkg-step-card pkg-reveal">
+                    <div class="pkg-step-icon-wrap">
+                        <svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    </div>
+                    <div class="pkg-step-title">Yayına Alınıyor</div>
+                    <p class="pkg-step-desc">Sayfanız alvera.me/siz adresinizde anında yayına girer. Admin panelden içeriği güncelleyin.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ── COMPARE ── -->
+    <section class="pkg-py-section">
+        <div class="pkg-container">
+            <div class="pkg-section-label pkg-reveal">Karşılaştırma</div>
+            <h2 class="pkg-section-title pkg-reveal">Her özelliğe tek bakış.</h2>
+
+            <div class="pkg-compare-outer pkg-reveal">
+                <div class="pkg-compare-grid">
+
+                    <!-- Feature labels column -->
+                    <div class="pkg-compare-col c-header">
+                        <div class="pkg-compare-cell pkg-col-head" style="min-height:72px;">Özellik</div>
+                        <div class="pkg-compare-cell" style="color:var(--d-text-3);font-size:.75rem;font-weight:600;text-transform:uppercase;letter-spacing:.12em;">Topluluk &amp; Sosyal</div>
+                        <div class="pkg-compare-cell">Alvera Social akışı</div>
+                        <div class="pkg-compare-cell">Gönderi, proje, kod paylaşımı</div>
+                        <div class="pkg-compare-cell">Takip &amp; keşif</div>
+                        <div class="pkg-compare-cell">Özel mesajlaşma (DM)</div>
+                        <div class="pkg-compare-cell">Aura bağlantı analizi</div>
+                        <div class="pkg-compare-cell" style="color:var(--d-text-3);font-size:.75rem;font-weight:600;text-transform:uppercase;letter-spacing:.12em;">AI Profil &amp; Kimlik</div>
+                        <div class="pkg-compare-cell">AI destekli profil biyografisi</div>
+                        <div class="pkg-compare-cell">Kişisel alan adı (alvera.me/siz)</div>
+                        <div class="pkg-compare-cell">AI anlatı — 2 varyant seçimi</div>
+                        <div class="pkg-compare-cell">Concierge onboarding süreci</div>
+                        <div class="pkg-compare-cell" style="color:var(--d-text-3);font-size:.75rem;font-weight:600;text-transform:uppercase;letter-spacing:.12em;">Yönetim &amp; Analitik</div>
+                        <div class="pkg-compare-cell">İçerik yönetim paneli</div>
+                        <div class="pkg-compare-cell">SEO meta &amp; Open Graph</div>
+                        <div class="pkg-compare-cell">Sayfa analitikleri</div>
+                        <div class="pkg-compare-cell">Öncelikli destek</div>
+                    </div>
+
+                    <!-- Social column -->
+                    <div class="pkg-compare-col c-green">
+                        <div class="pkg-compare-cell pkg-col-head green-txt" style="min-height:72px;flex-direction:column;gap:4px;">
+                            Social<br><span style="font-size:.82rem;color:var(--d-green);font-family:'DM Sans',sans-serif;text-transform:none;letter-spacing:0;font-weight:400;">₺0</span>
+                        </div>
+                        <div class="pkg-compare-cell pkg-cell-center" style="border-bottom:none;min-height:46px;"></div>
+                        <div class="pkg-compare-cell pkg-cell-center"><span class="pkg-chk-icon">✓</span></div>
+                        <div class="pkg-compare-cell pkg-cell-center"><span class="pkg-chk-icon">✓</span></div>
+                        <div class="pkg-compare-cell pkg-cell-center"><span class="pkg-chk-icon">✓</span></div>
+                        <div class="pkg-compare-cell pkg-cell-center"><span class="pkg-chk-icon">✓</span></div>
+                        <div class="pkg-compare-cell pkg-cell-center"><span class="pkg-chk-icon">✓</span></div>
+                        <div class="pkg-compare-cell pkg-cell-center" style="border-bottom:none;min-height:46px;"></div>
+                        <div class="pkg-compare-cell pkg-cell-center"><span class="pkg-chk-icon">✓</span></div>
+                        <div class="pkg-compare-cell pkg-cell-center"><span class="pkg-cross-icon">—</span></div>
+                        <div class="pkg-compare-cell pkg-cell-center"><span class="pkg-cross-icon">—</span></div>
+                        <div class="pkg-compare-cell pkg-cell-center"><span class="pkg-cross-icon">—</span></div>
+                        <div class="pkg-compare-cell pkg-cell-center" style="border-bottom:none;min-height:46px;"></div>
+                        <div class="pkg-compare-cell pkg-cell-center"><span class="pkg-cross-icon">—</span></div>
+                        <div class="pkg-compare-cell pkg-cell-center"><span class="pkg-cross-icon">—</span></div>
+                        <div class="pkg-compare-cell pkg-cell-center"><span class="pkg-cross-icon">—</span></div>
+                        <div class="pkg-compare-cell pkg-cell-center"><span class="pkg-cross-icon">—</span></div>
+                    </div>
+
+                    <!-- Pro column -->
+                    <div class="pkg-compare-col c-purple">
+                        <div class="pkg-compare-cell pkg-col-head purple-txt" style="min-height:72px;flex-direction:column;gap:4px;">
+                            Dijital Kimlik<br><span style="font-size:.82rem;color:var(--d-purple);font-family:'DM Sans',sans-serif;text-transform:none;letter-spacing:0;font-weight:400;">₺299/ay</span>
+                        </div>
+                        <div class="pkg-compare-cell pkg-cell-center" style="border-bottom:none;min-height:46px;"></div>
+                        <div class="pkg-compare-cell pkg-cell-center"><span class="pkg-purple-chk pkg-chk-icon">✓</span></div>
+                        <div class="pkg-compare-cell pkg-cell-center"><span class="pkg-purple-chk pkg-chk-icon">✓</span></div>
+                        <div class="pkg-compare-cell pkg-cell-center"><span class="pkg-purple-chk pkg-chk-icon">✓</span></div>
+                        <div class="pkg-compare-cell pkg-cell-center"><span class="pkg-purple-chk pkg-chk-icon">✓</span></div>
+                        <div class="pkg-compare-cell pkg-cell-center"><span class="pkg-purple-chk pkg-chk-icon">✓</span></div>
+                        <div class="pkg-compare-cell pkg-cell-center" style="border-bottom:none;min-height:46px;"></div>
+                        <div class="pkg-compare-cell pkg-cell-center"><span class="pkg-purple-chk pkg-chk-icon">✓</span></div>
+                        <div class="pkg-compare-cell pkg-cell-center"><span class="pkg-purple-chk pkg-chk-icon">✓</span></div>
+                        <div class="pkg-compare-cell pkg-cell-center"><span class="pkg-purple-chk pkg-chk-icon">✓</span></div>
+                        <div class="pkg-compare-cell pkg-cell-center"><span class="pkg-purple-chk pkg-chk-icon">✓</span></div>
+                        <div class="pkg-compare-cell pkg-cell-center" style="border-bottom:none;min-height:46px;"></div>
+                        <div class="pkg-compare-cell pkg-cell-center"><span class="pkg-purple-chk pkg-chk-icon">✓</span></div>
+                        <div class="pkg-compare-cell pkg-cell-center"><span class="pkg-purple-chk pkg-chk-icon">✓</span></div>
+                        <div class="pkg-compare-cell pkg-cell-center"><span class="pkg-purple-chk pkg-chk-icon">✓</span></div>
+                        <div class="pkg-compare-cell pkg-cell-center"><span class="pkg-purple-chk pkg-chk-icon">✓</span></div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ── STATS ── -->
+    <section class="pkg-py-section">
+        <div class="pkg-container">
+            <div class="pkg-section-label pkg-reveal">Neden Alvera?</div>
+            <h2 class="pkg-section-title pkg-reveal">Rakamlar konuşuyor.</h2>
+            <div class="pkg-stats-wrap">
+                <div class="pkg-stat-box pkg-reveal">
+                    <div class="pkg-stat-val">3<span>dk</span></div>
+                    <div class="pkg-stat-label">Ortalama onboarding süresi</div>
+                </div>
+                <div class="pkg-stat-box pkg-reveal">
+                    <div class="pkg-stat-val">2<span>×</span></div>
+                    <div class="pkg-stat-label">AI üretilen sayfa varyantı</div>
+                </div>
+                <div class="pkg-stat-box pkg-reveal">
+                    <div class="pkg-stat-val">∞</div>
+                    <div class="pkg-stat-label">İçerik güncellemesi — her zaman</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ── FAQ ── -->
+    <section class="pkg-py-section">
+        <div class="pkg-container">
+            <div class="pkg-section-label pkg-reveal">Sorular</div>
+            <h2 class="pkg-section-title pkg-reveal">Merak edilenler.</h2>
+            <div class="pkg-faq-wrap">
+
+                <div class="pkg-faq-item pkg-reveal">
+                    <div class="pkg-faq-header" onclick="toggleFaq(this)">
+                        <span>AI sayfamı nasıl üretiyor?</span>
+                        <span class="pkg-faq-chevron"><svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></span>
+                    </div>
+                    <div class="pkg-faq-body">Concierge onboarding sırasında verdiğiniz cevaplar — mesleğiniz, vibeniz, başarılarınız ve hedef kitleniz — Groq altyapısındaki LLAMA 3 modeline aktarılır. Model bu verileri kullanarak sadece size ait bir anlatı ve iki farklı sayfa tasarımı üretir.</div>
+                </div>
+
+                <div class="pkg-faq-item pkg-reveal">
+                    <div class="pkg-faq-header" onclick="toggleFaq(this)">
+                        <span>Sayfamı sonradan değiştirebilir miyim?</span>
+                        <span class="pkg-faq-chevron"><svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></span>
+                    </div>
+                    <div class="pkg-faq-body">Evet. Admin panelinden biyografi, başlıklar, linkler ve görselleri istediğiniz zaman güncelleyebilirsiniz. Tasarım kısıtları Alvera estetiğini korumak için devrededir — fontlar ve genel düzen değiştirilemez.</div>
+                </div>
+
+                <div class="pkg-faq-item pkg-reveal">
+                    <div class="pkg-faq-header" onclick="toggleFaq(this)">
+                        <span>Ücretsiz paketten Pro'ya geçebilir miyim?</span>
+                        <span class="pkg-faq-chevron"><svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></span>
+                    </div>
+                    <div class="pkg-faq-body">Evet, istediğiniz zaman yükseltebilirsiniz. Sosyal profiliniz ve tüm gönderileriniz korunur; Dijital Kimlik akışı baştan çalışır.</div>
+                </div>
+
+                <div class="pkg-faq-item pkg-reveal">
+                    <div class="pkg-faq-header" onclick="toggleFaq(this)">
+                        <span>Alan adım ne olacak?</span>
+                        <span class="pkg-faq-chevron"><svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></span>
+                    </div>
+                    <div class="pkg-faq-body">Dijital Kimlik paketinde sayfanız <strong>alvera.me/kullaniciadi</strong> adresinde yayına girer. Bu adresi dilediğiniz zaman paylaşabilir, e-posta imzanıza ekleyebilirsiniz.</div>
+                </div>
+
+                <div class="pkg-faq-item pkg-reveal">
+                    <div class="pkg-faq-header" onclick="toggleFaq(this)">
+                        <span>Ödeme güvenli mi?</span>
+                        <span class="pkg-faq-chevron"><svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></span>
+                    </div>
+                    <div class="pkg-faq-body">Tüm ödemeler Iyzico altyapısı üzerinden işlenir. Kart bilgileriniz Alvera sunucularında saklanmaz. Iyzico, Türkiye'nin önde gelen lisanslı ödeme kuruluşudur.</div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <input type="hidden" id="packageHidden" value="{{ user_package or '1' }}">
+
+</div><!-- /#pricingPage -->
+
+<!-- Sticky CTA -->
+<div class="pkg-sticky" id="pkgSticky">
+    <div class="pkg-sticky-info">
+        <div class="pkg-sticky-pkg-dot" id="stickyDot"></div>
+        <div>
+            <div class="pkg-sticky-name" id="stickyName">Alvera Social</div>
+            <div class="pkg-sticky-price" id="stickyPrice">Ücretsiz — daima</div>
+        </div>
+    </div>
+    <div class="pkg-sticky-btns">
+        <button class="sticky-btn free" onclick="selectAndContinue('1')">Ücretsiz Başla</button>
+        <button class="sticky-btn pro" onclick="selectAndContinue('2')">Dijital Kimlik →</button>
+    </div>
+</div>
+
+<!-- ═══════════════ ONBOARDING PAGE (Steps 1-6) ═══════════════ -->
+<div id="onboardingPage" role="dialog" aria-modal="true" aria-label="Dijital Kimlik Onboarding Adımları">
+    <div class="orb-static" aria-hidden="true"></div>
+    <div class="orb-moving" aria-hidden="true"></div>
+    <div id="ob-flash" aria-hidden="true"></div>
+
+    <!-- Progress header -->
+    <div class="ob-header" role="banner">
+        <div class="ob-header-meta">
+            <div class="ob-header-left">
+                <span class="ob-logo">Alvera</span>
+                <span class="ob-badge" aria-hidden="true">Dijital Kimlik</span>
+            </div>
+            <div class="ob-step-counter" aria-live="polite" aria-atomic="true">
+                Adım <span id="ob-step-num">1</span> / {{ total_steps - 1 }}
+            </div>
+        </div>
+        <div class="ob-progress-bar" role="progressbar"
+             aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"
+             aria-label="Onboarding ilerlemesi" id="ob-progress-bar-wrap">
+            <div class="ob-progress-fill" id="ob-progress-fill" style="width:0%"></div>
+        </div>
+        <div class="ob-dots" id="ob-dots" aria-hidden="true"></div>
+    </div>
+
+    <!-- Main card -->
+    <div class="ob-card" id="ob-main-card">
+
+        <!-- ── Step 1: Kimlik ── -->
+        <div class="ob-panel" id="ob-panel-1">
+            <div class="ob-step-head">
+                <div class="ob-eyebrow stagger">01 — Kimlik</div>
+                <div class="ob-title stagger">Alanınız nedir?</div>
+                <div class="ob-sub stagger">Alvera herkese açık — bir profesyonel, sanatçı, sporcu ya da başka biri olabilirsiniz.</div>
+            </div>
+
+            <div class="ob-err" id="ob-err-1" role="alert" aria-live="assertive"><span aria-hidden="true">⚠</span><span id="ob-err-1-msg"></span></div>
+
+            <div class="ob-field stagger">
+                <div class="ob-label">Kendinizi en iyi tanımlayan alan</div>
+                <div class="cat-grid-ob" id="obCategoryGrid">
+                    {% set cats = [
+                        ('is-profesyoneli',   '💼', 'İş Profesyoneli'),
+                        ('sanatci-tasarimci', '🎨', 'Sanatçı & Tasarımcı'),
+                        ('muzisyen',          '🎵', 'Müzisyen'),
+                        ('fotograf-video',    '📸', 'Fotoğrafçı & Video'),
+                        ('sporcu-koc',        '🏋️', 'Sporcu & Koç'),
+                        ('akademisyen',       '🎓', 'Akademisyen'),
+                        ('icerik-uretici',    '📱', 'İçerik Üretici'),
+                        ('sef-gurme',         '🍳', 'Şef & Gurme'),
+                        ('muhendis-mimar',    '🏗️', 'Mühendis & Mimar'),
+                        ('saglik-wellness',   '⚕️', 'Sağlık & Wellness'),
+                        ('girisimci',         '🚀', 'Girişimci'),
+                        ('yazar-icerik',      '✍️', 'Yazar'),
+                    ] %}
+                    {% for val, emoji, label in cats %}
+                    <div class="cat-card-ob {% if data.profession_category == val %}selected{% endif %}" data-val="{{ val }}">
+                        <span class="cat-emoji-ob">{{ emoji }}</span>
+                        <span class="cat-name-ob">{{ label }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+                <input type="hidden" id="professionCategoryHidden" value="{{ data.profession_category or '' }}">
+            </div>
+
+            <div class="ob-field stagger">
+                <div class="ob-label" id="jobTitleLabel">Unvan / Başlık <span style="color:#f87171">*</span></div>
+                <input type="text" id="job_title"
+                    placeholder="Örn: Product Designer, Fotoğrafçı, Yüzücü…"
+                    maxlength="120"
+                    value="{{ data.job_title or '' }}">
+            </div>
+            <div class="ob-field stagger">
+                <div class="ob-label" id="companyLabel">Kurum / Marka / Takım <span class="opt-tag">opsiyonel</span></div>
+                <input type="text" id="company"
+                    placeholder="Örn: Trendyol, Bağımsız, Fenerbahçe…"
+                    maxlength="120"
+                    value="{{ data.company or '' }}">
+            </div>
+
+            <div class="ob-actions stagger">
+                <button class="ob-btn-next" onclick="obNext()">
+                    <span class="btn-text">Devam Et →</span>
+                    <span class="ob-spinner"></span>
+                </button>
+            </div>
+        </div>
+
+        <!-- ── Step 2: Bio ── -->
+        <div class="ob-panel" id="ob-panel-2">
+            <div class="ob-step-head">
+                <div class="ob-eyebrow stagger">02 — Anlatı</div>
+                <div class="ob-title stagger">Kendinizden bahsedin.</div>
+                <div class="ob-sub stagger">Özgeçmiş değil, bir anlatı. Sizi en iyi anlatan 2–3 cümleyi yazın.</div>
+            </div>
+
+            <div class="ob-err" id="ob-err-2" role="alert" aria-live="assertive"><span aria-hidden="true">⚠</span><span id="ob-err-2-msg"></span></div>
+
+            <div class="ob-field stagger">
+                <textarea id="bio"
+                    placeholder="7 yıldır fotoğrafçıyım… / Ürünlerin insan tarafını tasarlıyorum… / 3 sezon üst üste şampiyon olan takımda oynadım…"
+                    maxlength="600"
+                    style="height:120px;">{{ data.bio or '' }}</textarea>
+                <div class="ob-char-count"><span id="bioCount">0</span> / 600</div>
+                <div class="ai-btn-wrap">
+                    <button class="btn-ai" onclick="obExpandField('bio','bio')">✦ AI ile Genişlet</button>
+                    <span class="ai-status" id="obExpandStatus-bio"></span>
+                </div>
+            </div>
+
+            <div class="ob-actions stagger">
+                <button class="ob-btn-back" onclick="obBack()">← Geri</button>
+                <button class="ob-btn-next" onclick="obNext()">
+                    <span class="btn-text">Devam Et →</span>
+                    <span class="ob-spinner"></span>
+                </button>
+            </div>
+        </div>
+
+        <!-- ── Step 3: Özgünlük Sinyalleri ── -->
+        <div class="ob-panel" id="ob-panel-3">
+            <div class="ob-step-head">
+                <div class="ob-eyebrow stagger">03 — Özgünlük</div>
+                <div class="ob-title stagger">Sizi siz yapan nedir?</div>
+                <div class="ob-sub stagger">Bu adım sayfanızı binlerce profilden ayırt eden şeyi ortaya çıkarır.</div>
+            </div>
+
+            <div class="ob-err" id="ob-err-3" role="alert" aria-live="assertive"><span aria-hidden="true">⚠</span><span id="ob-err-3-msg"></span></div>
+
+            <div class="ob-field stagger">
+                <div class="ob-label" id="audienceLabel">Sitenizi kim görmeli?</div>
+                <div class="audience-pills" id="audienceGrid">
+                    {% set audiences = [
+                        ('potansiyel-musteri', '🤝 Potansiyel Müşteriler'),
+                        ('isveren', '🏢 İşverenler'),
+                        ('yatirimci', '💡 Yatırımcılar'),
+                        ('is-ortagi', '🔗 İş Ortakları'),
+                        ('profesyonel-ag', '🌐 Profesyonel Ağım'),
+                        ('hepsi', '✨ Herkes'),
+                    ] %}
+                    {% for val, label in audiences %}
+                    <div class="audience-pill {% if data.target_audience == val %}selected{% endif %}" data-val="{{ val }}">{{ label }}</div>
+                    {% endfor %}
+                </div>
+                <input type="hidden" id="targetAudienceHidden" value="{{ data.target_audience or '' }}">
+            </div>
+
+            <div class="ob-field stagger">
+                <div class="ob-label">
+                    En gurur duyduğunuz başarı veya an <span class="opt-tag">opsiyonel</span>
+                </div>
+                <textarea id="achievement"
+                    placeholder="Örn: 3 yılda 0'dan 120 kişilik bir ürün ekibini kurdum… / Ulusal şampiyonluk kazandım…"
+                    maxlength="250"
+                    style="height:80px;">{{ data.achievement or '' }}</textarea>
+                <div class="ob-char-count"><span id="achievementCount">0</span> / 250</div>
+                <div class="ai-btn-wrap">
+                    <button class="btn-ai" onclick="obExpandField('achievement','achievement')">✦ AI ile Güçlendir</button>
+                    <span class="ai-status" id="obExpandStatus-achievement"></span>
+                </div>
+            </div>
+
+            <div class="ob-field stagger">
+                <div class="ob-label">
+                    Sizi rakiplerinizden ayıran tek şey <span class="opt-tag">opsiyonel</span>
+                </div>
+                <input type="text" id="differentiator"
+                    placeholder="Örn: Sadece tasarım değil, iş sonuçlarını da sahipleniyorum."
+                    maxlength="180"
+                    value="{{ data.differentiator or '' }}">
+                <div class="ai-btn-wrap" style="margin-top:4px;">
+                    <button class="btn-ai" onclick="obExpandField('differentiator','differentiator')">✦ AI ile Keskinleştir</button>
+                    <span class="ai-status" id="obExpandStatus-differentiator"></span>
+                </div>
+            </div>
+
+            <div class="ob-actions stagger">
+                <button class="ob-btn-back" onclick="obBack()">← Geri</button>
+                <button class="ob-btn-next" onclick="obNext()">
+                    <span class="btn-text">Devam Et →</span>
+                    <span class="ob-spinner"></span>
+                </button>
+            </div>
+        </div>
+
+        <!-- ── Step 4: Uzmanlık ── -->
+        <div class="ob-panel" id="ob-panel-4">
+            <div class="ob-step-head">
+                <div class="ob-eyebrow stagger">04 — Uzmanlık</div>
+                <div class="ob-title stagger">Ne konusunda iyisiniz?</div>
+                <div class="ob-sub stagger">Etiket ekleyin ve Enter'a basın. En fazla 6 alan.</div>
+            </div>
+
+            <div class="ob-err" id="ob-err-4" role="alert" aria-live="assertive"><span aria-hidden="true">⚠</span><span id="ob-err-4-msg"></span></div>
+
+            <div class="ob-field stagger">
+                <div class="tag-wrap" id="tagWrap">
+                    <input class="tag-text-input" id="tagInput"
+                        placeholder="Uzmanlık alanı yazın ve Enter'a basın…"
+                        maxlength="40">
+                </div>
+                <div style="font-size:12px;color:var(--text-muted);margin-top:6px;">Örn: UX Design · React · Marka Stratejisi · SEO</div>
+                <input type="hidden" id="skillsHidden" value="{{ data.skills or '' }}">
+            </div>
+
+            <div class="ob-actions stagger">
+                <button class="ob-btn-back" onclick="obBack()">← Geri</button>
+                <button class="ob-btn-next" onclick="obNext()">
+                    <span class="btn-text">Devam Et →</span>
+                    <span class="ob-spinner"></span>
+                </button>
+            </div>
+        </div>
+
+        <!-- ── Step 5: Vibe ── -->
+        <div class="ob-panel" id="ob-panel-5">
+            <div class="ob-step-head">
+                <div class="ob-eyebrow stagger">05 — His</div>
+                <div class="ob-title stagger">Nasıl bir his vermeli?</div>
+                <div class="ob-sub stagger">Sayfanızın tonu. AI bu seçime göre hem kopyanızı hem tasarımınızı şekillendirecek.</div>
+            </div>
+
+            <div class="ob-err" id="ob-err-5" role="alert" aria-live="assertive"><span aria-hidden="true">⚠</span><span id="ob-err-5-msg"></span></div>
+
+            <div class="ob-field stagger">
+                <div class="vibe-grid">
+                    <div class="vibe-card {% if data.vibe == 'minimal' %}selected{% endif %}" data-vibe="minimal">
+                        <div class="vibe-check">✓</div>
+                        <div class="vibe-preview">MINIMAL</div>
+                        <div class="vibe-name">Minimal & Temiz</div>
+                        <div class="vibe-desc">Sade, boşluk ağırlıklı, zamansız prestij.</div>
+                    </div>
+                    <div class="vibe-card {% if data.vibe == 'bold' %}selected{% endif %}" data-vibe="bold">
+                        <div class="vibe-check">✓</div>
+                        <div class="vibe-preview">BOLD</div>
+                        <div class="vibe-name">Bold & Güçlü</div>
+                        <div class="vibe-desc">Güçlü tipografi, cesur ve iddialı bir ses.</div>
+                    </div>
+                    <div class="vibe-card {% if data.vibe == 'warm' %}selected{% endif %}" data-vibe="warm">
+                        <div class="vibe-check">✓</div>
+                        <div class="vibe-preview">WARM</div>
+                        <div class="vibe-name">Sıcak & Samimi</div>
+                        <div class="vibe-desc">Ulaşılabilir, insani, sıcak tonlar.</div>
+                    </div>
+                </div>
+                <input type="hidden" id="vibeHidden" value="{{ data.vibe or '' }}">
+            </div>
+
+            <div class="ob-actions stagger">
+                <button class="ob-btn-back" onclick="obBack()">← Geri</button>
+                <button class="ob-btn-next" onclick="obNext()">
+                    <span class="btn-text">Devam Et →</span>
+                    <span class="ob-spinner"></span>
+                </button>
+            </div>
+        </div>
+
+        <!-- ── Step 6: Linkler ── -->
+        <div class="ob-panel" id="ob-panel-6">
+            <div class="ob-step-head">
+                <div class="ob-eyebrow stagger">06 — Bağlantılar</div>
+                <div class="ob-title stagger">Sizi nerede bulalım?</div>
+                <div class="ob-sub stagger">Sitenize ve profilinize eklenecek. İstediğinizi doldurun, istemediğinizi boş bırakın.</div>
+            </div>
+
+            <div class="ob-err" id="ob-err-6" role="alert" aria-live="assertive"><span aria-hidden="true">⚠</span><span id="ob-err-6-msg"></span></div>
+
+            <div class="ob-field stagger">
+                <div class="link-rows">
+                    <div class="link-row">
+                        <span class="link-prefix">in</span>
+                        <input type="url" id="linkedin" placeholder="linkedin.com/in/adınız" value="{{ data.linkedin or '' }}">
+                    </div>
+                    <div class="link-row">
+                        <span class="link-prefix">gh</span>
+                        <input type="url" id="github" placeholder="github.com/adınız" value="{{ data.github or '' }}">
+                    </div>
+                    <div class="link-row">
+                        <span class="link-prefix">𝕏</span>
+                        <input type="url" id="twitter" placeholder="x.com/adınız" value="{{ data.twitter or '' }}">
+                    </div>
+                    <div class="link-row">
+                        <span class="link-prefix">↗</span>
+                        <input type="url" id="website" placeholder="adınız.com" value="{{ data.website or '' }}">
+                    </div>
+                </div>
+            </div>
+
+            <div class="ob-actions stagger">
+                <button class="ob-btn-back" onclick="obBack()">← Geri</button>
+                <button class="ob-btn-next" onclick="obNext()">
+                    <span class="btn-text">Tamamla ✦</span>
+                    <span class="ob-spinner"></span>
+                </button>
+            </div>
+        </div>
+
+    </div><!-- /.ob-card -->
+</div><!-- /#onboardingPage -->
+
+<script>
+    /* ─────────────────────────────────────────────────────────────
+       Globals
+    ───────────────────────────────────────────────────────────── */
+    const TOTAL = {{ total_steps }};           // 7 (step 0 + steps 1-6)
+    let currentStep  = {{ current_step }};
+    let selectedPkg  = '{{ user_package or "1" }}';
+
+    /* ─────────────────────────────────────────────────────────────
+       Init
+    ───────────────────────────────────────────────────────────── */
+    function init() {
+        if (currentStep === 0) {
+            showPricingPage();
+        } else {
+            showOnboardingPage();
+            buildObDots();
+            showObStep(currentStep, null);
+            initObTagInput();
+            initObVibeCards();
+            initObCategoryCards();
+            initBioCounter();
+            initAchievementCounter();
+            initObAudiencePills();
+        }
+        initPkgCardClicks();
+        initStickyVisibility();
+        initRevealAnimations();
+        initCardShine();
+        initKeyboardNav();
+    }
+
+    /* ─────────────────────────────────────────────────────────────
+       Pricing Page
+    ───────────────────────────────────────────────────────────── */
+    function showPricingPage() {
+        document.getElementById('pricingPage').style.display = 'block';
+        document.getElementById('onboardingPage').classList.remove('visible');
+        document.body.style.overflow = '';
+    }
+
+    function hidePricingPage() {
+        const pg = document.getElementById('pricingPage');
+        pg.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+        pg.style.opacity = '0';
+        pg.style.transform = 'scale(0.98)';
+        document.getElementById('pkgSticky').classList.remove('show');
+    }
+
+    function initPkgCardClicks() {
+        document.querySelectorAll('.pkg-tier-card').forEach(card => {
+            card.addEventListener('click', () => {
+                document.querySelectorAll('.pkg-tier-card').forEach(c => c.classList.remove('selected'));
+                card.classList.add('selected');
+                const pkg = card.dataset.package;
+                selectedPkg = pkg;
+                document.getElementById('packageHidden').value = pkg;
+                updateStickyInfo(pkg);
+            });
+        });
+    }
+
+    function initStickyVisibility() {
+        const sentinel = document.getElementById('pkgPlans');
+        const sticky   = document.getElementById('pkgSticky');
+        if (!sentinel || !sticky) return;
+
+        const observer = new IntersectionObserver(([entry]) => {
+            sticky.classList.toggle('show', !entry.isIntersecting);
+        }, { threshold: 0.15 });
+
+        observer.observe(sentinel);
+    }
+
+    function initRevealAnimations() {
+        const items = document.querySelectorAll('.pkg-reveal');
+        if (!items.length) return;
+        const obs = new IntersectionObserver((entries) => {
+            entries.forEach((entry, i) => {
+                if (entry.isIntersecting) {
+                    // stagger siblings within same parent
+                    const siblings = Array.from(entry.target.parentElement.querySelectorAll('.pkg-reveal'));
+                    const idx = siblings.indexOf(entry.target);
+                    entry.target.style.transitionDelay = (idx * 80) + 'ms';
+                    entry.target.classList.add('visible');
+                    obs.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+        items.forEach(el => obs.observe(el));
+    }
+
+    function updateStickyInfo(pkg) {
+        const dot   = document.getElementById('stickyDot');
+        const name  = document.getElementById('stickyName');
+        const price = document.getElementById('stickyPrice');
+        if (!dot) return;
+        if (pkg === '2') {
+            dot.classList.remove('free');
+            name.textContent  = 'Dijital Kimlik';
+            price.textContent = '₺299 / ay';
+        } else {
+            dot.classList.add('free');
+            name.textContent  = 'Alvera Social';
+            price.textContent = 'Ücretsiz — daima';
+        }
+    }
+
+    async function selectAndContinue(pkg) {
+        selectedPkg = pkg;
+        document.getElementById('packageHidden').value = pkg;
+        document.querySelectorAll('.pkg-tier-card').forEach(c => {
+            c.classList.toggle('selected', c.dataset.package === pkg);
+        });
+
+        const result = await saveStep0(pkg);
+        if (!result || !result.ok) return;
+
+        if (result.next_url) {
+            hidePricingPage();
+            await delay(400);
+            window.location.href = result.next_url;
+        } else {
+            // Package 2 → show onboarding steps
+            hidePricingPage();
+            await delay(500);
+            document.getElementById('pricingPage').style.display = 'none';
+            showOnboardingPage();
+            currentStep = 1;
+            buildObDots();
+            showObStep(1, 'next');
+            initObTagInput();
+            initObVibeCards();
+            initObCategoryCards();
+            initBioCounter();
+            initAchievementCounter();
+            initObAudiencePills();
+        }
+    }
+
+    async function saveStep0(pkg) {
+        try {
+            const res = await fetch('/onboarding/save', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ step: 0, data: { package: pkg } }),
+            });
+            return await res.json();
+        } catch (e) { return null; }
+    }
+
+    function toggleFaq(headerEl) {
+        const item = headerEl.closest('.pkg-faq-item');
+        if (!item) return;
+        const isOpen = item.classList.contains('open');
+        // Close all others
+        document.querySelectorAll('.pkg-faq-item.open').forEach(i => i.classList.remove('open'));
+        // Toggle current
+        if (!isOpen) item.classList.add('open');
+    }
+
+    /* ─────────────────────────────────────────────────────────────
+       Onboarding Page (Steps 1-6)
+    ───────────────────────────────────────────────────────────── */
+    function showOnboardingPage() {
+        const page = document.getElementById('onboardingPage');
+        page.classList.add('visible');
+        document.body.style.overflow = 'hidden'; // prevent double scrollbar on body
+
+        // Sticky header scroll-shadow
+        page.addEventListener('scroll', () => {
+            const header = page.querySelector('.ob-header');
+            if (header) header.classList.toggle('scrolled', page.scrollTop > 8);
+        }, { passive: true });
+    }
+
+    function buildObDots() {
+        const container = document.getElementById('ob-dots');
+        container.innerHTML = '';
+        for (let i = 1; i < TOTAL; i++) {
+            const d = document.createElement('div');
+            d.className = 'ob-dot';
+            container.appendChild(d);
+        }
+    }
+
+    function showObStep(step, direction) {
+        // Hide all panels
+        document.querySelectorAll('.ob-panel').forEach(p => {
+            p.classList.remove('active');
+        });
+
+        // Show target panel
+        const panel = document.getElementById(`ob-panel-${step}`);
+        if (!panel) return;
+
+        if (direction === 'next') {
+            panel.style.transform = 'translateX(44px)';
+        } else if (direction === 'back') {
+            panel.style.transform = 'translateX(-44px)';
+        } else {
+            panel.style.transform = 'translateX(0)';
+        }
+        panel.style.opacity = '0';
+        panel.classList.add('active');
+        panel.offsetHeight; // reflow
+        panel.style.transition = 'opacity 0.42s cubic-bezier(0.4,0,0.2,1), transform 0.42s cubic-bezier(0.4,0,0.2,1)';
+        panel.style.transform  = '';
+        panel.style.opacity    = '';
+
+        // Animate stagger children
+        panel.querySelectorAll('.ob-eyebrow, .ob-title, .ob-sub, .ob-field, .ob-actions').forEach((el, i) => {
+            el.style.animation = 'none';
+            el.offsetHeight;
+            el.style.animation = `fadeUp 0.42s cubic-bezier(0.22,1,0.36,1) ${i * 60}ms both`;
+        });
+
+        // Category cards stagger
+        panel.querySelectorAll('.cat-card-ob').forEach((c, i) => {
+            c.style.animation = 'none';
+            c.offsetHeight;
+            c.style.animation = `cardPop 0.38s cubic-bezier(0.22,1,0.36,1) ${i * 30}ms both`;
+        });
+
+        // Vibe cards stagger
+        panel.querySelectorAll('.vibe-card').forEach((c, i) => {
+            c.style.animation = 'none';
+            c.offsetHeight;
+            c.style.animation = `cardPop 0.38s cubic-bezier(0.22,1,0.36,1) ${i * 55}ms both`;
+        });
+
+        // Progress bar: steps 1-6 map to 1/6 … 6/6
+        const stepsTotal = TOTAL - 1; // 6 steps
+        const pct = ((step - 1) / stepsTotal) * 100;
+        document.getElementById('ob-progress-fill').style.width = pct + '%';
+        const barWrap = document.getElementById('ob-progress-bar-wrap');
+        if (barWrap) barWrap.setAttribute('aria-valuenow', Math.round(pct));
+
+        // Step counter
+        document.getElementById('ob-step-num').textContent = step;
+
+        // Dots
+        document.querySelectorAll('.ob-dot').forEach((d, i) => {
+            d.classList.remove('active', 'done');
+            const dotStep = i + 1;
+            if (dotStep === step) d.classList.add('active');
+            else if (dotStep < step) d.classList.add('done');
+        });
+
+        // Scroll to top of the onboarding page on every step change
+        const obPage = document.getElementById('onboardingPage');
+        if (obPage) obPage.scrollTo({ top: 0, behavior: 'smooth' });
+
+        // Focus
+        if (direction !== null) {
+            const firstInput = panel.querySelector('input:not([type=hidden]), textarea');
+            if (firstInput) setTimeout(() => firstInput.focus(), 460);
+        }
+    }
+
+    /* ── Collect step data ── */
+    function obCollect(step) {
+        if (step === 1) return {
+            profession_category: document.getElementById('professionCategoryHidden').value,
+            job_title:           document.getElementById('job_title').value.trim(),
+            company:             document.getElementById('company').value.trim(),
+        };
+        if (step === 2) return { bio: document.getElementById('bio').value.trim() };
+        if (step === 3) return {
+            target_audience: document.getElementById('targetAudienceHidden').value,
+            achievement:     document.getElementById('achievement').value.trim(),
+            differentiator:  document.getElementById('differentiator').value.trim(),
+        };
+        if (step === 4) return { skills: document.getElementById('skillsHidden').value };
+        if (step === 5) return { vibe: document.getElementById('vibeHidden').value };
+        if (step === 6) return {
+            linkedin: document.getElementById('linkedin').value.trim(),
+            github:   document.getElementById('github').value.trim(),
+            twitter:  document.getElementById('twitter').value.trim(),
+            website:  document.getElementById('website').value.trim(),
+        };
+        return {};
+    }
+
+    function obShowErr(step, msg) {
+        const el  = document.getElementById(`ob-err-${step}`);
+        const msg_el = document.getElementById(`ob-err-${step}-msg`);
+        if (!el || !msg_el) return;
+        msg_el.textContent = msg;
+        el.classList.add('show');
+        setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 50);
+    }
+
+    function obClearErr(step) {
+        const el = document.getElementById(`ob-err-${step}`);
+        if (el) el.classList.remove('show');
+    }
+
+    async function obNext() {
+        obClearErr(currentStep);
+        const btn = document.querySelector(`#ob-panel-${currentStep} .ob-btn-next`);
+        if (btn) { btn.classList.add('loading'); btn.disabled = true; }
+
+        try {
+            const stepData = obCollect(currentStep);
+            const res = await fetch('/onboarding/save', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ step: currentStep, data: stepData }),
+            });
+            const result = await res.json();
+
+            if (!result.ok) {
+                obShowErr(currentStep, result.error || 'Bir hata oluştu.');
+                return;
+            }
+
+            if (result.next_url) {
+                document.getElementById('ob-progress-fill').style.width = '100%';
+                const flash = document.getElementById('ob-flash');
+                flash.classList.add('go');
+                await delay(600);
+                window.location.href = result.next_url;
+                return;
+            }
+
+            currentStep++;
+            showObStep(currentStep, 'next');
+        } catch (e) {
+            obShowErr(currentStep, 'Bağlantı hatası. Lütfen tekrar deneyin.');
+        } finally {
+            if (btn) { btn.classList.remove('loading'); btn.disabled = false; }
+        }
+    }
+
+    function obBack() {
+        if (currentStep <= 1) return;
+        obClearErr(currentStep);
+        currentStep--;
+        showObStep(currentStep, 'back');
+    }
+
+    /* ── Mouse shine on ob-card ── */
+    function initCardShine() {
+        const card = document.getElementById('ob-main-card');
+        if (!card) return;
+        card.addEventListener('mousemove', (e) => {
+            const rect = card.getBoundingClientRect();
+            const x = ((e.clientX - rect.left) / rect.width)  * 100;
+            const y = ((e.clientY - rect.top)  / rect.height) * 100;
+            card.style.setProperty('--mx', x + '%');
+            card.style.setProperty('--my', y + '%');
+        });
+    }
+
+    /* ── Keyboard Navigation ── */
+    function initKeyboardNav() {
+        document.addEventListener('keydown', (e) => {
+            const page = document.getElementById('onboardingPage');
+            if (!page || !page.classList.contains('visible')) return;
+
+            // Enter → next step (but not inside textarea or select)
+            if (e.key === 'Enter' && !e.shiftKey) {
+                const tag = document.activeElement ? document.activeElement.tagName : '';
+                // Allow Enter in single-line inputs to advance, but block for textarea
+                if (tag === 'TEXTAREA') return;
+                // Tag input: Enter is handled by its own listener
+                if (document.activeElement && document.activeElement.id === 'tagInput') return;
+                e.preventDefault();
+                obNext();
+                return;
+            }
+
+            // Alt+← → back
+            if (e.key === 'ArrowLeft' && e.altKey) {
+                e.preventDefault();
+                obBack();
+            }
+        });
+    }
+
+    /* ── Bio counter ── */
+    function initBioCounter() {
+        const bio = document.getElementById('bio');
+        const cnt = document.getElementById('bioCount');
+        if (!bio || !cnt) return;
+        const upd = () => { const l = bio.value.length; cnt.textContent = l; cnt.parentElement.style.color = l > 550 ? '#f87171' : ''; };
+        bio.addEventListener('input', upd);
+        upd();
+    }
+
+    /* ── Achievement counter ── */
+    function initAchievementCounter() {
+        const ta  = document.getElementById('achievement');
+        const cnt = document.getElementById('achievementCount');
+        if (!ta || !cnt) return;
+        const upd = () => { const l = ta.value.length; cnt.textContent = l; };
+        ta.addEventListener('input', upd);
+        upd();
+    }
+
+    /* ── Category cards (step 1) ── */
+    const CAT_LABELS = {
+        'is-profesyoneli':   { job: 'Unvan / Pozisyon *',    company: 'Şirket / Kurum (opsiyonel)' },
+        'sanatci-tasarimci': { job: 'Uzmanlık Başlığı *',    company: 'Stüdyo / Ajans (opsiyonel)' },
+        'muzisyen':          { job: 'Sanatçı / Tür Tanımı *', company: 'Plak Şirketi / Bant (opsiyonel)' },
+        'fotograf-video':    { job: 'Uzmanlık Alanı *',       company: 'Ajans / Stüdyo (opsiyonel)' },
+        'sporcu-koc':        { job: 'Branş / Unvan *',        company: 'Takım / Kulüp (opsiyonel)' },
+        'akademisyen':       { job: 'Akademik Unvan *',       company: 'Üniversite / Enstitü (opsiyonel)' },
+        'icerik-uretici':    { job: 'İçerik Alanı / Niş *',  company: 'Platform / Marka (opsiyonel)' },
+        'sef-gurme':         { job: 'Mutfak / Uzmanlık *',   company: 'Restoran / Marka (opsiyonel)' },
+        'muhendis-mimar':    { job: 'Uzmanlık Alanı *',       company: 'Şirket / Büro (opsiyonel)' },
+        'saglik-wellness':   { job: 'Uzmanlık / Unvan *',    company: 'Klinik / Merkez (opsiyonel)' },
+        'girisimci':         { job: 'Rol / Tanım *',          company: 'Girişim Adı (opsiyonel)' },
+        'yazar-icerik':      { job: 'Yazarlık Alanı *',       company: 'Yayınevi / Platform (opsiyonel)' },
+    };
+
+    function initObCategoryCards() {
+        const grid   = document.getElementById('obCategoryGrid');
+        const hidden = document.getElementById('professionCategoryHidden');
+        if (!grid || !hidden) return;
+
+        function updateLabels(val) {
+            const lbl = CAT_LABELS[val];
+            if (!lbl) return;
+            const jl = document.getElementById('jobTitleLabel');
+            const cl = document.getElementById('companyLabel');
+            if (jl) jl.innerHTML = `${lbl.job}`;
+            if (cl) cl.innerHTML = `${lbl.company}`;
+        }
+
+        if (hidden.value) updateLabels(hidden.value);
+
+        grid.querySelectorAll('.cat-card-ob').forEach(card => {
+            card.addEventListener('click', () => {
+                const wasSelected = card.classList.contains('selected');
+                grid.querySelectorAll('.cat-card-ob').forEach(c => c.classList.remove('selected'));
+                if (!wasSelected) {
+                    card.classList.add('selected');
+                    hidden.value = card.dataset.val;
+                    updateLabels(card.dataset.val);
+                } else {
+                    hidden.value = '';
+                }
+            });
+        });
+    }
+
+    /* ── Audience pills ── */
+    function initObAudiencePills() {
+        const grid   = document.getElementById('audienceGrid');
+        const hidden = document.getElementById('targetAudienceHidden');
+        if (!grid || !hidden) return;
+        grid.querySelectorAll('.audience-pill').forEach(pill => {
+            pill.addEventListener('click', () => {
+                const wasSelected = pill.classList.contains('selected');
+                grid.querySelectorAll('.audience-pill').forEach(p => p.classList.remove('selected'));
+                if (!wasSelected) {
+                    pill.classList.add('selected');
+                    hidden.value = pill.dataset.val;
+                } else {
+                    hidden.value = '';
+                }
+            });
+        });
+    }
+
+    /* ── Tag input ── */
+    function initObTagInput() {
+        const wrap   = document.getElementById('tagWrap');
+        const input  = document.getElementById('tagInput');
+        const hidden = document.getElementById('skillsHidden');
+        if (!wrap || !input || !hidden) return;
+
+        let tags = hidden.value ? hidden.value.split(',').map(t => t.trim()).filter(Boolean) : [];
+
+        function render() {
+            wrap.querySelectorAll('.ob-tag').forEach(t => t.remove());
+            tags.forEach((tag, i) => {
+                const el = document.createElement('div');
+                el.className = 'ob-tag';
+                el.innerHTML = `${tag} <button class="tag-remove-btn" type="button">×</button>`;
+                el.querySelector('.tag-remove-btn').addEventListener('click', () => {
+                    tags.splice(i, 1);
+                    hidden.value = tags.join(',');
+                    render();
+                });
+                wrap.insertBefore(el, input);
+            });
+            hidden.value = tags.join(',');
+            input.placeholder = tags.length >= 6 ? 'Maksimum 6 alan' : 'Uzmanlık alanı yazın…';
+            input.disabled = tags.length >= 6;
+        }
+
+        input.addEventListener('keydown', (e) => {
+            if ((e.key === 'Enter' || e.key === ',') && input.value.trim()) {
+                e.preventDefault();
+                const val = input.value.trim().replace(/,/g, '');
+                if (val && tags.length < 6 && !tags.includes(val)) { tags.push(val); render(); }
+                input.value = '';
+            }
+            if (e.key === 'Backspace' && !input.value && tags.length) { tags.pop(); render(); }
+        });
+
+        wrap.addEventListener('click', () => input.focus());
+        render();
+    }
+
+    /* ── Vibe cards ── */
+    function initObVibeCards() {
+        document.querySelectorAll('.vibe-card').forEach(card => {
+            card.addEventListener('click', () => {
+                document.querySelectorAll('.vibe-card').forEach(c => c.classList.remove('selected'));
+                card.classList.add('selected');
+                document.getElementById('vibeHidden').value = card.dataset.vibe;
+            });
+        });
+    }
+
+    /* ── AI expand ── */
+    async function obExpandField(field, targetId) {
+        const target = document.getElementById(targetId);
+        if (!target || target.value.trim().length < 5) {
+            obSetStatus(field, 'Önce bir şeyler yazın.', 'error');
+            return;
+        }
+        const btn = document.querySelector(`[onclick="obExpandField('${field}','${targetId}')"]`);
+        if (btn) { btn.classList.add('loading'); btn.disabled = true; }
+        obSetStatus(field, '', '');
+
+        try {
+            const res = await fetch('/ai/expand-text', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    field,
+                    text:                target.value.trim(),
+                    job_title:           document.getElementById('job_title')?.value?.trim() || '',
+                    profession_category: document.getElementById('professionCategoryHidden')?.value || '',
+                }),
+            });
+            const data = await res.json();
+            if (data.ok && data.expanded) {
+                target.style.opacity = '0.4';
+                await delay(180);
+                target.value = data.expanded;
+                target.style.opacity = '1';
+                target.dispatchEvent(new Event('input'));
+                obSetStatus(field, '✓ Genişletildi', 'success');
+                setTimeout(() => obSetStatus(field, '', ''), 3000);
+            } else {
+                obSetStatus(field, data.error || 'Bir hata oluştu.', 'error');
+            }
+        } catch (e) {
+            obSetStatus(field, 'Bağlantı hatası.', 'error');
+        } finally {
+            if (btn) { btn.classList.remove('loading'); btn.disabled = false; }
+        }
+    }
+
+    function obSetStatus(field, msg, type) {
+        const el = document.getElementById(`obExpandStatus-${field}`);
+        if (!el) return;
+        el.textContent = msg;
+        el.className = 'ai-status' + (type ? ` ${type}` : '');
+    }
+
+    /* ── Utility ── */
+    function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+    /* ─────────────────────────────────────────────────────────────
+       Start
+    ───────────────────────────────────────────────────────────── */
+    init();
+
+    // If page loaded already past step 0, ensure sticky never shows
+    if (currentStep > 0) {
+        document.getElementById('pkgSticky').style.display = 'none';
+        document.getElementById('pricingPage').style.display = 'none';
+    }
+</script>
+
+</body>
+</html>

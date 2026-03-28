@@ -1,0 +1,1762 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flow — Alvera Social</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+        --bg:          #09090b;
+        --bg-subtle:   rgba(255,255,255,0.025);
+        --border:      rgba(255,255,255,0.08);
+        --text-h:      #f4f4f5;
+        --text-body:   #d4d4d8;
+        --text-muted:  #a1a1aa;
+        --flow:        #7c3aed;
+        --flow-2:      #6d28d9;
+        --flow-soft:   rgba(124,58,237,0.12);
+        --flow-glow:   rgba(124,58,237,0.25);
+        --rose:        #e879f9;
+        --indigo:      #818cf8;
+        --ease:        cubic-bezier(0.4,0,0.2,1);
+        --spring:      cubic-bezier(0.16,1,0.3,1);
+        --r:           14px;
+    }
+
+    html { scroll-behavior: smooth; }
+    html, body { height: 100%; background: var(--bg); }
+
+    body {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        color: var(--text-body);
+        -webkit-font-smoothing: antialiased;
+        overflow: hidden; /* snap scroll body'de değil center'da */
+    }
+
+    /* Grain texture */
+    body::before {
+        content: "";
+        position: fixed; inset: 0;
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+        opacity: 0.022; z-index: -2; pointer-events: none;
+    }
+
+    /* ── Arka plan orbları ── */
+    .orb {
+        position: fixed; border-radius: 50%;
+        filter: blur(120px); z-index: -1; pointer-events: none;
+    }
+    .orb-1 {
+        width: 60vw; height: 60vh;
+        top: -15%; left: -10%;
+        background: radial-gradient(circle, rgba(124,58,237,0.12) 0%, transparent 70%);
+        animation: orb1move 22s ease-in-out infinite alternate;
+    }
+    .orb-2 {
+        width: 50vw; height: 50vh;
+        bottom: -10%; right: -5%;
+        background: radial-gradient(circle, rgba(232,121,249,0.07) 0%, transparent 70%);
+        animation: orb2move 18s ease-in-out infinite alternate;
+    }
+    .orb-3 {
+        width: 30vw; height: 30vh;
+        top: 40%; left: 40%;
+        background: radial-gradient(circle, rgba(129,140,248,0.06) 0%, transparent 70%);
+        animation: orb3move 30s ease-in-out infinite alternate;
+    }
+    @keyframes orb1move { 0%{transform:translate(0,0)} 100%{transform:translate(8vw,6vh)} }
+    @keyframes orb2move { 0%{transform:translate(0,0)} 100%{transform:translate(-6vw,-8vh)} }
+    @keyframes orb3move { 0%{transform:translate(0,0)} 100%{transform:translate(10vw,-5vh)} }
+
+    /* ═══════════════════════════════════════════
+       NAV
+    ═══════════════════════════════════════════ */
+    @keyframes navReveal {
+        from { opacity:0; transform:translateY(-12px); }
+        to   { opacity:1; transform:translateY(0); }
+    }
+
+    .topnav {
+        position: relative; z-index: 200; height: 64px; flex-shrink: 0;
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 0 28px;
+        background: rgba(9,9,11,0.75);
+        backdrop-filter: blur(28px); -webkit-backdrop-filter: blur(28px);
+        border-bottom: 1px solid rgba(255,255,255,0.06);
+        animation: navReveal 0.5s var(--spring) both;
+    }
+
+    .nav-left  { display:flex; align-items:center; gap:22px; }
+    .nav-brand { display:flex; align-items:center; gap:6px; text-decoration:none; }
+
+    .nav-brand-word {
+        font-size: 15px; font-weight: 700; letter-spacing: -0.5px; color: var(--text-h);
+    }
+    /* "Social" — animasyonlu gradient */
+    .nav-brand-social {
+        font-size: 11px; font-weight: 600; letter-spacing: 0.2px;
+        background: linear-gradient(90deg, #a78bfa, #e879f9, #818cf8, #a78bfa);
+        background-size: 200% auto;
+        -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        background-clip: text;
+        animation: gradShift 4s linear infinite;
+    }
+    @keyframes gradShift { to { background-position: 200% center; } }
+
+    .nav-links { display:flex; align-items:center; gap:2px; }
+    .nav-link {
+        display:flex; align-items:center; gap:6px;
+        padding: 6px 11px; border-radius: 8px;
+        font-size: 13px; font-weight: 500; color: var(--text-muted);
+        text-decoration: none; transition: all 0.2s var(--ease);
+        position: relative;
+    }
+    .nav-link:hover { color: var(--text-h); background: var(--bg-subtle); }
+
+    /* Flow nav link — gradient aktif hali */
+    .nav-link-flow {
+        color: #a78bfa !important;
+        background: rgba(124,58,237,0.1) !important;
+    }
+    .nav-link-flow::after {
+        content: '';
+        position: absolute; bottom: -1px; left: 8px; right: 8px; height: 2px;
+        background: linear-gradient(90deg, var(--flow), var(--rose));
+        border-radius: 1px;
+        animation: barIn 0.3s var(--spring);
+    }
+    @keyframes barIn { from{opacity:0;transform:scaleX(0)} to{opacity:1;transform:scaleX(1)} }
+
+    .nav-right { display:flex; align-items:center; gap:8px; }
+
+    .nav-avatar {
+        width: 32px; height: 32px; border-radius: 50%;
+        background: linear-gradient(135deg, rgba(124,58,237,0.5), rgba(232,121,249,0.3));
+        display: flex; align-items: center; justify-content: center;
+        font-size: 12px; font-weight: 700; color: var(--text-h);
+        text-decoration: none; overflow: hidden; flex-shrink: 0;
+        border: 1.5px solid rgba(167,139,250,0.25);
+        transition: border-color 0.2s var(--ease), box-shadow 0.2s;
+    }
+    .nav-avatar:hover {
+        border-color: rgba(167,139,250,0.55);
+        box-shadow: 0 0 0 3px rgba(124,58,237,0.12);
+    }
+    .nav-avatar img { width:100%; height:100%; object-fit:cover; }
+
+    /* ═══════════════════════════════════════════
+       SAYFA GÖVDE — 3 KOLON
+    ═══════════════════════════════════════════ */
+    .flow-shell {
+        display: flex;
+        height: calc(100vh - 64px);
+        overflow: hidden;
+    }
+
+    /* ── Sol Panel ── */
+    .flow-left {
+        width: 230px; flex-shrink: 0;
+        overflow-y: auto; overflow-x: hidden;
+        padding: 24px 16px 24px 20px;
+        border-right: 1px solid rgba(255,255,255,0.05);
+        display: flex; flex-direction: column; gap: 12px;
+    }
+    .flow-left::-webkit-scrollbar { width: 3px; }
+    .flow-left::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.07); border-radius: 2px; }
+
+    /* ── Orta — Snap Scroll Feed ── */
+    .flow-center {
+        flex: 1; min-width: 0;
+        overflow-y: scroll;
+        scroll-snap-type: y proximity;
+        scroll-behavior: smooth;
+        padding: 0;
+    }
+    .flow-center::-webkit-scrollbar { width: 0; }
+
+    /* ── Sağ Panel ── */
+    .flow-right {
+        width: 268px; flex-shrink: 0;
+        overflow-y: auto; overflow-x: hidden;
+        padding: 24px 20px 24px 16px;
+        border-left: 1px solid rgba(255,255,255,0.05);
+        display: flex; flex-direction: column; gap: 12px;
+    }
+    .flow-right::-webkit-scrollbar { width: 3px; }
+    .flow-right::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.07); border-radius: 2px; }
+
+    /* ═══════════════════════════════════════════
+       SOL PANEL — içerik
+    ═══════════════════════════════════════════ */
+    .panel-box {
+        background: rgba(255,255,255,0.02);
+        border: 1px solid rgba(255,255,255,0.07);
+        border-radius: 12px; padding: 16px;
+    }
+    .panel-box-title {
+        font-size: 10px; font-weight: 700;
+        text-transform: uppercase; letter-spacing: 1px;
+        color: var(--text-muted); margin-bottom: 12px;
+    }
+    .filter-group { display:flex; flex-direction:column; gap:2px; }
+    .filter-btn {
+        display:flex; align-items:center; gap:9px;
+        padding: 7px 9px; border-radius: 8px;
+        font-size: 13px; font-weight: 500; color: var(--text-muted);
+        border: none; background: transparent; cursor: pointer;
+        transition: all 0.18s var(--ease); width: 100%; text-align: left;
+    }
+    .filter-btn:hover { color: var(--text-h); background: rgba(255,255,255,0.05); }
+    .filter-btn.active { color: var(--text-h); background: rgba(255,255,255,0.07); }
+    .filter-dot { width:6px; height:6px; border-radius:50%; flex-shrink:0; opacity:0.7; }
+    .filter-btn.active .filter-dot { opacity:1; box-shadow: 0 0 6px currentColor; }
+
+    /* Renk noktaları */
+    .dot-all     { background:#9ca3af; }
+    .dot-text    { background:#d1d5db; }
+    .dot-code    { background:#6ee7b7; }
+    .dot-project { background:#93c5fd; }
+    .dot-image   { background:#c4b5fd; }
+    .dot-video   { background:#f87171; }
+    .dot-article { background:#fcd34d; }
+    .dot-social  { background:#93c5fd; }
+    .dot-pro     { background:#fcd34d; }
+    .dot-explore { background:#6ee7b7; }
+
+    .interest-tags { display:flex; flex-wrap:wrap; gap:5px; margin-top:8px; }
+    .interest-tag {
+        font-size: 11px; font-weight: 500;
+        padding: 3px 9px; border-radius: 20px;
+        border: 1px solid rgba(167,139,250,0.25);
+        color: rgba(167,139,250,0.85);
+        background: rgba(124,58,237,0.08);
+        transition: all 0.15s;
+    }
+    .interest-tag:hover { background: rgba(124,58,237,0.18); border-color: rgba(167,139,250,0.5); }
+
+    /* ═══════════════════════════════════════════
+       SNAP-SCROLL FEED KARTLARI
+    ═══════════════════════════════════════════ */
+
+    /* Flow başlık kartı (ilk eleman) */
+    .flow-hero {
+        scroll-snap-align: start;
+        min-height: 30vh;
+        display: flex; align-items: center; justify-content: center;
+        padding: 48px 40px 36px;
+        background: linear-gradient(180deg,
+            rgba(124,58,237,0.05) 0%,
+            transparent 100%);
+        border-bottom: 1px solid rgba(255,255,255,0.05);
+        position: relative; overflow: hidden;
+    }
+    .flow-hero::before {
+        content: '';
+        position: absolute; top: 0; left: 0; right: 0; height: 1px;
+        background: linear-gradient(90deg, transparent, rgba(167,139,250,0.4), transparent);
+    }
+    .flow-hero-inner { text-align: center; }
+
+    .flow-hero-title {
+        font-size: 28px; font-weight: 800; letter-spacing: -1px;
+        background: linear-gradient(135deg, #f4f4f5 0%, #a78bfa 50%, #e879f9 100%);
+        -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 6px;
+    }
+    .flow-hero-sub {
+        font-size: 13px; color: var(--text-muted);
+        display: flex; align-items: center; justify-content: center; gap: 12px;
+        flex-wrap: wrap;
+    }
+    .flow-hero-pill {
+        display: inline-flex; align-items: center; gap: 5px;
+        padding: 4px 10px; border-radius: 20px;
+        background: rgba(124,58,237,0.12);
+        border: 1px solid rgba(124,58,237,0.25);
+        font-size: 11px; font-weight: 600; color: #a78bfa;
+    }
+    @keyframes pulseDot { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(0.7)} }
+    .flow-live-dot {
+        width:6px; height:6px; border-radius:50%;
+        background: #4ade80; animation: pulseDot 2s ease infinite;
+    }
+
+    /* View mode toggle */
+    .flow-view-toggle {
+        display: flex; align-items: center; gap: 6px;
+        margin-top: 16px; justify-content: center;
+    }
+    .view-toggle-btn {
+        display: flex; align-items: center; gap: 6px;
+        padding: 6px 14px; border-radius: 8px;
+        font-size: 12px; font-weight: 600;
+        border: 1px solid var(--border); background: transparent;
+        color: var(--text-muted); cursor: pointer;
+        transition: all 0.18s var(--ease);
+    }
+    .view-toggle-btn.active {
+        color: #a78bfa;
+        border-color: rgba(167,139,250,0.4);
+        background: rgba(124,58,237,0.1);
+    }
+    .view-toggle-btn:hover:not(.active) { color: var(--text-h); background: var(--bg-subtle); }
+
+    /* ── Post kartı ── */
+    .flow-card {
+        scroll-snap-align: start;
+        min-height: 72vh;
+        padding: 32px 40px 28px;
+        border-bottom: 1px solid rgba(255,255,255,0.05);
+        position: relative;
+        transition: background 0.3s var(--ease);
+        display: flex; flex-direction: column;
+    }
+
+    /* Aktif kart vurgusu — gradient sol çizgi */
+    .flow-card.fc-active {
+        background: rgba(124,58,237,0.025);
+    }
+    .flow-card.fc-active::before {
+        content: '';
+        position: absolute; left: 0; top: 20%; bottom: 20%; width: 2px;
+        background: linear-gradient(180deg, transparent, #7c3aed, #e879f9, transparent);
+        border-radius: 1px;
+        animation: glowIn 0.4s var(--spring);
+    }
+    @keyframes glowIn { from{opacity:0;transform:scaleY(0.3)} to{opacity:1;transform:scaleY(1)} }
+
+    /* Kart içeriği */
+    .flow-card-inner { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+
+    /* Header */
+    .fc-header {
+        display:flex; align-items:flex-start; justify-content:space-between;
+        margin-bottom: 20px;
+    }
+    .fc-author { display:flex; align-items:center; gap:12px; }
+    .fc-avatar {
+        width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0;
+        background: linear-gradient(135deg, rgba(124,58,237,0.45), rgba(232,121,249,0.2));
+        display: flex; align-items: center; justify-content: center;
+        font-size: 14px; font-weight: 700; color: var(--text-h);
+        text-decoration: none; overflow: hidden;
+        border: 1.5px solid rgba(167,139,250,0.2);
+        transition: border-color 0.18s, box-shadow 0.18s;
+    }
+    .fc-avatar:hover {
+        border-color: rgba(167,139,250,0.5);
+        box-shadow: 0 0 0 3px rgba(124,58,237,0.1);
+    }
+    .fc-avatar img { width:100%; height:100%; object-fit:cover; }
+
+    .fc-author-name {
+        font-size: 14px; font-weight: 600; color: var(--text-h);
+        text-decoration: none; transition: color 0.15s;
+        display: block; margin-bottom: 3px;
+    }
+    .fc-author-name:hover { color: #a78bfa; }
+
+    .fc-author-meta {
+        font-size: 12px; color: var(--text-muted);
+        display:flex; align-items:center; gap:6px; flex-wrap:wrap;
+    }
+    .fc-sep { opacity:0.35; font-size:10px; }
+
+    /* Tip badge — gradient borderlı */
+    .fc-type-badge {
+        display:inline-flex; align-items:center; gap:4px;
+        font-size: 10px; font-weight: 700;
+        padding: 2px 8px; border-radius: 20px;
+        letter-spacing: 0.3px; text-transform: uppercase;
+        border: 1px solid transparent;
+    }
+    .fc-type-text    { background:rgba(209,213,219,0.07); border-color:rgba(209,213,219,0.12); color:#9ca3af; }
+    .fc-type-project { background:rgba(147,197,253,0.08); border-color:rgba(147,197,253,0.18); color:#93c5fd; }
+    .fc-type-code    { background:rgba(110,231,183,0.08); border-color:rgba(110,231,183,0.18); color:#6ee7b7; }
+    .fc-type-image   { background:rgba(196,181,253,0.08); border-color:rgba(196,181,253,0.18); color:#c4b5fd; }
+    .fc-type-video   { background:rgba(248,113,113,0.08); border-color:rgba(248,113,113,0.18); color:#f87171; }
+    .fc-type-article { background:rgba(252,211,77,0.07);  border-color:rgba(252,211,77,0.15);  color:#fcd34d; }
+
+    /* Menü */
+    .fc-menu { position:relative; }
+    .fc-menu-btn {
+        width:30px; height:30px; border-radius:8px;
+        border:none; background:transparent; color:var(--text-muted);
+        cursor:pointer; display:flex; align-items:center; justify-content:center;
+        transition: all 0.15s var(--ease);
+    }
+    .fc-menu-btn:hover { background:rgba(255,255,255,0.07); color:var(--text-h); }
+
+    .fc-dropdown {
+        position:absolute; right:0; top:34px; min-width:190px; z-index:100;
+        background: rgba(18,18,20,0.97);
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 11px; padding: 5px;
+        box-shadow: 0 12px 48px rgba(0,0,0,0.5), 0 0 0 1px rgba(124,58,237,0.1);
+        display:none; backdrop-filter: blur(16px);
+    }
+    .fc-dropdown.open { display:block; animation: dropIn 0.18s var(--spring); }
+    @keyframes dropIn {
+        from{opacity:0;transform:translateY(-8px) scale(0.96)}
+        to  {opacity:1;transform:translateY(0)    scale(1)}
+    }
+    .fc-drop-item {
+        display:flex; align-items:center; gap:9px;
+        padding: 8px 10px; border-radius: 8px;
+        font-size: 13px; color: var(--text-muted);
+        cursor:pointer; transition: all 0.12s; border:none;
+        background:transparent; width:100%; text-align:left;
+    }
+    .fc-drop-item:hover { color:var(--text-h); background:rgba(255,255,255,0.06); }
+    .fc-drop-item.danger:hover { color:#f87171; background:rgba(248,113,113,0.08); }
+
+    /* İçerik body */
+    .fc-body {
+        font-size: 15px; line-height: 1.7; color: var(--text-body);
+        margin-bottom: 18px; flex: 1;
+        white-space: pre-wrap; word-break: break-word;
+    }
+
+    /* Kod blok */
+    .fc-code-wrap {
+        border-radius: 11px; overflow: hidden;
+        border: 1px solid rgba(255,255,255,0.08);
+        margin-bottom: 18px; flex: 1;
+        box-shadow: inset 0 0 0 1px rgba(110,231,183,0.05);
+    }
+    .fc-code-lang {
+        background: rgba(110,231,183,0.06);
+        padding: 7px 14px; font-size: 11px; font-weight: 700;
+        color: #6ee7b7; letter-spacing: 0.4px;
+        border-bottom: 1px solid rgba(110,231,183,0.1);
+        text-transform: uppercase;
+    }
+    .fc-code-pre {
+        margin:0; max-height: 340px; overflow-y:auto;
+        min-width:0; max-width:100%;
+    }
+    .fc-code-pre code { font-size:13px !important; line-height:1.65 !important; }
+    .fc-code-pre::-webkit-scrollbar { width:4px; height:4px; }
+    .fc-code-pre::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.08); border-radius:2px; }
+
+    /* Resim grid */
+    .fc-images { display:grid; gap:4px; border-radius:11px; overflow:hidden; margin-bottom:18px; flex:1; max-height:400px; }
+    .fc-images.count-1 { grid-template-columns:1fr; }
+    .fc-images.count-2 { grid-template-columns:1fr 1fr; }
+    .fc-images.count-3 { grid-template-columns:1fr 1fr; }
+    .fc-images.count-3 .fc-img-item:first-child { grid-column:1/-1; }
+    .fc-images.count-4 { grid-template-columns:1fr 1fr; }
+    .fc-img-item { overflow:hidden; }
+    .fc-img-item img { width:100%; height:100%; object-fit:cover; display:block; transition: transform 0.3s; }
+    .fc-img-item:hover img { transform: scale(1.02); }
+
+    /* Video player */
+    .fc-video-wrap { border-radius: 12px; overflow: hidden; margin-bottom: 8px; background: #000; }
+    .fc-video-player { width: 100%; max-height: 400px; display: block; border-radius: 12px; outline: none; }
+
+    /* Semantic tags */
+    .fc-tags { display:flex; flex-wrap:wrap; gap:5px; margin-top:auto; padding-top:14px; }
+    .fc-tag {
+        font-size: 11px; font-weight: 500;
+        padding: 3px 9px; border-radius: 20px;
+        background: rgba(124,58,237,0.1);
+        border: 1px solid rgba(124,58,237,0.2);
+        color: #a78bfa; transition: all 0.15s;
+    }
+    .fc-tag:hover { background: rgba(124,58,237,0.2); border-color: rgba(167,139,250,0.4); }
+
+    /* Aksiyonlar */
+    .fc-footer {
+        display:flex; align-items:center; gap:4px;
+        padding-top: 16px;
+        border-top: 1px solid rgba(255,255,255,0.05);
+        margin-top: 16px;
+    }
+    .fc-action-btn {
+        display:flex; align-items:center; gap:6px;
+        padding: 6px 11px; border-radius: 8px;
+        border:none; background:transparent;
+        font-size: 12px; font-weight: 500; color: var(--text-muted);
+        cursor:pointer; transition: all 0.15s var(--ease);
+    }
+    .fc-action-btn:hover { color:var(--text-h); background:rgba(255,255,255,0.06); }
+    .fc-action-btn.liked  { color:#f43f5e; }
+    .fc-action-btn.saved  { color:#a78bfa; }
+    .fc-action-btn.liked:hover { background:rgba(244,63,94,0.1); }
+    .fc-action-btn.saved:hover { background:rgba(167,139,250,0.1); }
+
+    .fc-views {
+        margin-left:auto; display:flex; align-items:center; gap:4px;
+        font-size: 11px; color: var(--text-muted);
+    }
+
+    /* ── Navigasyon okları (snap için) ── */
+    .snap-nav {
+        position: fixed; right: 290px; top: 50%;
+        transform: translateY(-50%);
+        display: flex; flex-direction: column; gap: 10px;
+        z-index: 100;
+    }
+    .snap-nav-btn {
+        width: 32px; height: 32px; border-radius: 50%;
+        background: rgba(255,255,255,0.06);
+        border: 1px solid rgba(255,255,255,0.1);
+        color: var(--text-muted); cursor: pointer;
+        display: flex; align-items: center; justify-content: center;
+        transition: all 0.18s var(--ease);
+        backdrop-filter: blur(8px);
+    }
+    .snap-nav-btn:hover {
+        background: rgba(124,58,237,0.2);
+        border-color: rgba(167,139,250,0.4);
+        color: #a78bfa;
+    }
+
+    /* ── İlerleme indikatörü ── */
+    .snap-progress {
+        position: fixed; right: 278px; top: 50%;
+        transform: translateY(-50%);
+        display: flex; flex-direction: column; gap: 6px;
+        z-index: 100;
+    }
+    .snap-dot {
+        width: 5px; height: 5px; border-radius: 50%;
+        background: rgba(255,255,255,0.15); cursor: pointer;
+        transition: all 0.25s var(--ease);
+    }
+    .snap-dot.active {
+        background: #a78bfa;
+        box-shadow: 0 0 8px rgba(167,139,250,0.6);
+        transform: scale(1.4);
+    }
+
+    /* Boş durum */
+    .flow-empty {
+        scroll-snap-align: start; min-height: 80vh;
+        display: flex; flex-direction: column;
+        align-items: center; justify-content: center;
+        text-align: center; padding: 40px;
+        color: var(--text-muted); gap: 12px;
+    }
+    .flow-empty svg { opacity:0.2; }
+    .flow-empty-title { font-size:18px; font-weight:700; color:var(--text-h); }
+    .flow-empty-sub { font-size:13px; max-width:280px; }
+
+    /* Load more */
+    .flow-load-more {
+        scroll-snap-align: start; min-height: 20vh;
+        display:flex; align-items:center; justify-content:center;
+        padding: 32px;
+    }
+    .load-more-btn {
+        display:flex; align-items:center; gap:8px;
+        padding: 10px 24px; border-radius: 10px;
+        border: 1px solid rgba(167,139,250,0.3);
+        background: rgba(124,58,237,0.08);
+        font-size: 13px; font-weight: 600; color: #a78bfa;
+        cursor:pointer; transition: all 0.2s var(--ease);
+    }
+    .load-more-btn:hover { background:rgba(124,58,237,0.18); border-color:rgba(167,139,250,0.5); }
+    .load-more-btn.loading { opacity:0.5; pointer-events:none; }
+
+    /* PRISM notu */
+    .prism-note {
+        padding: 24px 40px; text-align:center;
+        font-size: 11px; color: rgba(161,161,170,0.5);
+        border-top: 1px solid rgba(255,255,255,0.04);
+    }
+    .prism-note strong {
+        background: linear-gradient(90deg, #a78bfa, #e879f9);
+        -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    /* ═══ SAĞ PANEL ═══ */
+    .right-box {
+        background: rgba(255,255,255,0.02);
+        border: 1px solid rgba(255,255,255,0.07);
+        border-radius: 12px; padding: 16px;
+    }
+    .right-box-title {
+        font-size: 10px; font-weight: 700;
+        text-transform: uppercase; letter-spacing: 1px;
+        color: var(--text-muted); margin-bottom: 12px;
+    }
+
+    /* Trending topics */
+    .topic-item {
+        display:flex; align-items:center;
+        padding: 8px 0;
+        border-bottom: 1px solid rgba(255,255,255,0.04);
+        cursor:pointer; transition: all 0.15s; gap:8px;
+    }
+    .topic-item:last-child { border-bottom:none; }
+    .topic-item:hover .topic-name { color:#a78bfa; }
+    .topic-rank { font-size:10px; color:var(--text-muted); width:14px; flex-shrink:0; text-align:right; }
+    .topic-name { font-size:13px; font-weight:500; color:var(--text-body); flex:1; }
+    .topic-count {
+        font-size:10px; font-weight:600;
+        padding: 2px 7px; border-radius:20px;
+        background:rgba(124,58,237,0.1); color:#a78bfa;
+    }
+
+    /* Önerilen kişiler */
+    .suggest-item {
+        display:flex; align-items:center; gap:10px;
+        padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.04);
+    }
+    .suggest-item:last-child { border-bottom:none; }
+    .suggest-avatar {
+        width:32px; height:32px; border-radius:50%;
+        background: linear-gradient(135deg, rgba(124,58,237,0.4), rgba(232,121,249,0.2));
+        display:flex; align-items:center; justify-content:center;
+        font-size:11px; font-weight:700; color:var(--text-h);
+        text-decoration:none; flex-shrink:0; overflow:hidden;
+        border: 1.5px solid rgba(255,255,255,0.08);
+    }
+    .suggest-avatar img { width:100%; height:100%; object-fit:cover; }
+    .suggest-info { flex:1; min-width:0; }
+    .suggest-name { font-size:13px; font-weight:600; color:var(--text-h); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .suggest-role { font-size:11px; color:var(--text-muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .suggest-follow-btn {
+        font-size:11px; font-weight:700;
+        padding: 4px 11px; border-radius: 7px;
+        border: 1px solid rgba(167,139,250,0.35);
+        background: rgba(124,58,237,0.08); color: #a78bfa;
+        cursor:pointer; flex-shrink:0;
+        transition: all 0.15s var(--ease);
+    }
+    .suggest-follow-btn:hover { background:rgba(124,58,237,0.2); border-color:rgba(167,139,250,0.6); }
+    .suggest-follow-btn.following { background:rgba(255,255,255,0.05); border-color:var(--border); color:var(--text-muted); }
+
+    /* ═══ "NEDEN?" MODAL ═══ */
+    .why-overlay {
+        position:fixed; inset:0; z-index:1000;
+        background:rgba(0,0,0,0.65);
+        backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px);
+        display:none; align-items:center; justify-content:center; padding:20px;
+    }
+    .why-overlay.open { display:flex; animation:fadeIn 0.2s var(--ease); }
+    @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+
+    .why-modal {
+        background: rgba(15,15,17,0.98);
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 18px; padding: 26px;
+        max-width: 380px; width: 100%;
+        box-shadow: 0 24px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(124,58,237,0.15);
+        animation: modalIn 0.28s var(--spring);
+    }
+    @keyframes modalIn {
+        from{opacity:0;transform:scale(0.92) translateY(12px)}
+        to  {opacity:1;transform:scale(1) translateY(0)}
+    }
+    /* Gradient top accent */
+    .why-modal::before {
+        content:''; display:block; height:2px; margin:-26px -26px 20px;
+        border-radius:18px 18px 0 0;
+        background: linear-gradient(90deg, var(--flow), var(--rose), var(--indigo));
+    }
+    .why-modal-title { font-size:15px; font-weight:700; color:var(--text-h); margin-bottom:16px; }
+    .why-reasons { display:flex; flex-direction:column; gap:10px; margin-bottom:16px; }
+    .why-reason { display:flex; align-items:flex-start; gap:10px; font-size:13px; color:var(--text-body); }
+    .why-dot {
+        width:8px; height:8px; border-radius:50%; flex-shrink:0; margin-top:4px;
+        background: linear-gradient(135deg, var(--flow), var(--rose));
+        box-shadow: 0 0 8px rgba(124,58,237,0.4);
+    }
+    .why-ai {
+        font-size:12px; color:var(--text-muted); font-style:italic;
+        padding:10px 13px; border-radius:9px;
+        background:rgba(255,255,255,0.03);
+        border: 1px solid rgba(255,255,255,0.07);
+        margin-bottom:16px;
+    }
+    .why-modal-actions { display:flex; gap:8px; }
+    .why-btn {
+        flex:1; padding:9px; border-radius:10px;
+        font-size:13px; font-weight:600; cursor:pointer;
+        transition: all 0.15s var(--ease); border:none;
+    }
+    .why-btn-less {
+        background:rgba(248,113,113,0.1); color:#f87171;
+        border:1px solid rgba(248,113,113,0.2);
+    }
+    .why-btn-less:hover { background:rgba(248,113,113,0.2); }
+    .why-btn-close {
+        background:rgba(255,255,255,0.06); color:var(--text-muted);
+        border:1px solid var(--border);
+    }
+    .why-btn-close:hover { color:var(--text-h); background:rgba(255,255,255,0.1); }
+
+    .why-loading { display:flex; align-items:center; gap:10px; font-size:13px; color:var(--text-muted); }
+    .spinner {
+        width:16px; height:16px;
+        border:2px solid rgba(124,58,237,0.25);
+        border-top-color:var(--flow); border-radius:50%;
+        animation:spin 0.7s linear infinite;
+    }
+    @keyframes spin { to{transform:rotate(360deg)} }
+
+    /* Responsive */
+    @media(max-width:1100px){
+        .flow-right { display:none; }
+        .snap-nav,.snap-progress { right:16px; }
+    }
+    @media(max-width:768px){
+        body { overflow:auto; }
+        .flow-shell { flex-direction:column; height:auto; overflow:visible; }
+        .flow-left { display:none; }
+        .flow-center { overflow:visible; scroll-snap-type:none; }
+        .flow-card { min-height:auto; padding:20px 16px; }
+        .flow-hero { min-height:auto; padding:28px 16px; }
+        .snap-nav,.snap-progress { display:none; }
+    }
+
+    /* ═══ "NEDEN BU?" HOVER CHİP ═══ */
+    .fc-why-chip {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        padding: 4px 9px;
+        border-radius: 6px;
+        border: 1px solid rgba(124,58,237,0.2);
+        background: rgba(124,58,237,0.07);
+        color: #a78bfa;
+        font-size: 11px;
+        font-weight: 500;
+        letter-spacing: 0.01em;
+        cursor: pointer;
+        opacity: 0;
+        transform: translateY(-3px);
+        transition: opacity 0.2s var(--ease), transform 0.2s var(--ease), background 0.15s;
+        pointer-events: none;
+        white-space: nowrap;
+        margin-right: 4px;
+        flex-shrink: 0;
+    }
+    .flow-card:hover .fc-why-chip {
+        opacity: 1;
+        transform: translateY(0);
+        pointer-events: all;
+    }
+    .fc-why-chip:hover {
+        background: rgba(124,58,237,0.16);
+        border-color: rgba(124,58,237,0.42);
+    }
+    @media (max-width: 680px) {
+        .fc-why-chip { display: none; }
+    }
+
+    /* ═══ FLOW MODE BANNER ═══ */
+    .flow-mode-banner {
+        position: relative;
+        z-index: 150;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 9px;
+        height: 0;
+        overflow: hidden;
+        padding: 0 24px;
+        background: linear-gradient(90deg,
+            rgba(124,58,237,0.10) 0%,
+            rgba(232,121,249,0.05) 50%,
+            rgba(129,140,248,0.09) 100%);
+        border-bottom: 1px solid transparent;
+        font-size: 12px;
+        color: #c4b5fd;
+        font-weight: 500;
+        opacity: 0;
+        transition: none;
+    }
+    .flow-mode-banner.banner-visible {
+        animation: bannerSlideIn 0.55s var(--spring) forwards,
+                   bannerSlideOut 0.45s var(--ease) 2.8s forwards;
+        border-bottom-color: rgba(124,58,237,0.13);
+    }
+    @keyframes bannerSlideIn {
+        from { height: 0; opacity: 0; padding-top: 0; padding-bottom: 0; }
+        to   { height: 38px; opacity: 1; padding-top: 9px; padding-bottom: 9px; }
+    }
+    @keyframes bannerSlideOut {
+        from { height: 38px; opacity: 1; padding-top: 9px; padding-bottom: 9px; }
+        to   { height: 0; opacity: 0; padding-top: 0; padding-bottom: 0; }
+    }
+    .banner-dot {
+        width: 6px; height: 6px; border-radius: 50%;
+        background: #a78bfa;
+        box-shadow: 0 0 8px rgba(167,139,250,0.6);
+        flex-shrink: 0;
+        animation: bannerPulse 1.8s ease-in-out infinite;
+    }
+    @keyframes bannerPulse {
+        0%,100% { opacity: 1; transform: scale(1); }
+        50%      { opacity: 0.5; transform: scale(0.7); }
+    }
+
+    /* ═══ SİNYAL ÖĞRENME TOASTI ═══ */
+    .flow-signal-toast {
+        position: fixed;
+        bottom: 28px;
+        left: 50%;
+        transform: translateX(-50%) translateY(20px);
+        z-index: 600;
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        padding: 10px 18px 10px 12px;
+        background: rgba(12,12,14,0.97);
+        border: 1px solid rgba(124,58,237,0.28);
+        border-radius: 40px;
+        font-size: 12.5px;
+        font-weight: 500;
+        color: #c4b5fd;
+        box-shadow: 0 8px 40px rgba(0,0,0,0.55), 0 0 0 1px rgba(124,58,237,0.08);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.38s var(--spring), transform 0.38s var(--spring);
+        white-space: nowrap;
+    }
+    .flow-signal-toast.show {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+    .toast-spark {
+        width: 22px; height: 22px;
+        background: rgba(124,58,237,0.18);
+        border: 1px solid rgba(167,139,250,0.3);
+        border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 11px;
+        flex-shrink: 0;
+    }
+    </style>
+</head>
+<body>
+
+<!-- Arka plan orbları -->
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+<div class="orb orb-3"></div>
+
+<!-- ═══ NAV ═══ -->
+<nav class="topnav">
+    <div class="nav-left">
+        <a href="{{ url_for('main.index') }}" class="nav-brand">
+            <span class="nav-brand-word">alvera</span>
+            <span class="nav-brand-social">Social</span>
+        </a>
+        <div class="nav-links">
+            <a href="{{ url_for('feed.index') }}" class="nav-link">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                Akış
+            </a>
+            <a href="{{ url_for('flow.index') }}" class="nav-link nav-link-flow">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                Flow
+            </a>
+            <a href="{{ url_for('flow.lens') }}" class="nav-link" style="color:#f87171;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+                Lens
+            </a>
+            <a href="{{ url_for('site.dashboard') }}" class="nav-link">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                Sitem
+            </a>
+            <a href="{{ url_for('main.discover') }}" class="nav-link">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                Keşfet
+            </a>
+            <a href="{{ url_for('dm.inbox') }}" class="nav-link">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                Mesajlar
+            </a>
+        </div>
+    </div>
+    <div class="nav-right">
+        <a href="{{ url_for('feed.social_profile', user_id=current_user.id) }}" class="nav-avatar">
+            {% set own_s = current_user.site %}
+            {% if own_s and own_s.avatar_file %}
+                <img src="{{ own_s.avatar_file }}" alt="">
+            {% else %}
+                {{ (current_user.full_name or current_user.email)[0] | upper }}
+            {% endif %}
+        </a>
+    </div>
+</nav>
+
+<!-- ── Flow Mode Banner (ilk 3 ziyarette gösterilir) ── -->
+<div class="flow-mode-banner" id="flowModeBanner">
+    <span class="banner-dot"></span>
+    <span>Flow Moduna Geçiyorsun — PRISM ile kişiselleştirilmiş keşif</span>
+</div>
+
+<!-- ═══ GÖVDE ═══ -->
+<div class="flow-shell">
+
+    <!-- ── Sol Panel ── -->
+    <aside class="flow-left">
+        <div class="panel-box">
+            <div class="panel-box-title">İçerik Tipi</div>
+            <div class="filter-group">
+                <button class="filter-btn {{ 'active' if filter_type == 'all' }}" onclick="setFilter('type','all')">
+                    <span class="filter-dot dot-all"></span>Hepsi
+                </button>
+                <button class="filter-btn {{ 'active' if filter_type == 'text' }}" onclick="setFilter('type','text')">
+                    <span class="filter-dot dot-text"></span>Yazılar
+                </button>
+                <button class="filter-btn {{ 'active' if filter_type == 'code' }}" onclick="setFilter('type','code')">
+                    <span class="filter-dot dot-code"></span>Kod
+                </button>
+                <button class="filter-btn {{ 'active' if filter_type == 'project' }}" onclick="setFilter('type','project')">
+                    <span class="filter-dot dot-project"></span>Projeler
+                </button>
+                <button class="filter-btn {{ 'active' if filter_type == 'image' }}" onclick="setFilter('type','image')">
+                    <span class="filter-dot dot-image"></span>Fotoğraflar
+                </button>
+            </div>
+        </div>
+
+        <div class="panel-box">
+            <div class="panel-box-title">Kaynak</div>
+            <div class="filter-group">
+                <button class="filter-btn {{ 'active' if filter_source == 'all' }}" onclick="setFilter('source','all')">
+                    <span class="filter-dot dot-all"></span>Hepsi
+                </button>
+                <button class="filter-btn {{ 'active' if filter_source == 'social' }}" onclick="setFilter('source','social')">
+                    <span class="filter-dot dot-social"></span>Sosyal çevrem
+                </button>
+                <button class="filter-btn {{ 'active' if filter_source == 'professional' }}" onclick="setFilter('source','professional')">
+                    <span class="filter-dot dot-pro"></span>Benim gibi profesyoneller
+                </button>
+                <button class="filter-btn {{ 'active' if filter_source == 'explore' }}" onclick="setFilter('source','explore')">
+                    <span class="filter-dot dot-explore"></span>Yeni keşifler
+                </button>
+            </div>
+        </div>
+
+        {% if user_onb and user_onb.profession_category %}
+        <div class="panel-box">
+            <div class="panel-box-title">Alanın</div>
+            <div style="font-size:13px; color:var(--text-body);">
+                {{ user_onb.job_title or user_onb.profession_category }}
+            </div>
+            {% set profile = current_user.interest_profile %}
+            {% if profile and profile.interests %}
+                {% set interest_list = profile.interests.items() | sort(attribute='1', reverse=True) | list %}
+                <div class="interest-tags">
+                    {% for tag, score in interest_list %}
+                    {% if loop.index <= 6 %}
+                    <span class="interest-tag">#{{ tag }}</span>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <div class="panel-box" style="text-align:center;">
+            <div class="panel-box-title">Mod</div>
+            <div class="filter-group">
+                <button class="filter-btn active" id="modeSnap" onclick="setViewMode('snap')">
+                    <span class="filter-dot" style="background:#a78bfa;"></span>Kaydırmalı
+                </button>
+                <button class="filter-btn" id="modeList" onclick="setViewMode('list')">
+                    <span class="filter-dot dot-all"></span>Liste
+                </button>
+            </div>
+        </div>
+    </aside>
+
+    <!-- ── Orta: Snap Feed ── -->
+    <main class="flow-center" id="flowCenter">
+
+        <!-- Hero Header -->
+        <div class="flow-hero" id="heroCard">
+            <div class="flow-hero-inner">
+                <div class="flow-hero-title">Flow</div>
+                <div class="flow-hero-sub">
+                    <span class="flow-hero-pill">
+                        <span class="flow-live-dot"></span>
+                        PRISM Aktif
+                    </span>
+                    <span style="opacity:0.6;">{{ total }} içerik · Senin için kişiselleştirildi</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Gönderi Listesi -->
+        <div id="flowList">
+        {% if posts %}
+            {% for post in posts %}
+            {% set author      = post.author %}
+            {% set author_od   = author.onboarding if author else None %}
+            {% set author_site = author.site if author else None %}
+
+            <div class="flow-card" id="fc-{{ post.id }}"
+                 data-post-id="{{ post.id }}"
+                 data-post-type="{{ post.post_type }}"
+                 data-index="{{ loop.index }}">
+                <div class="flow-card-inner">
+
+                    <!-- Header -->
+                    <div class="fc-header">
+                        <div class="fc-author">
+                            <a href="{{ url_for('feed.social_profile', user_id=author.id) }}" class="fc-avatar">
+                                {% if author_site and author_site.avatar_file %}
+                                    <img src="{{ author_site.avatar_file }}" alt="">
+                                {% else %}
+                                    {{ (author.full_name or author.email)[0] | upper }}
+                                {% endif %}
+                            </a>
+                            <div>
+                                <a href="{{ url_for('feed.social_profile', user_id=author.id) }}" class="fc-author-name">
+                                    {{ author.full_name or author.email.split('@')[0] }}
+                                </a>
+                                <div class="fc-author-meta">
+                                    {% if author_od and author_od.job_title %}
+                                        <span>{{ author_od.job_title }}</span>
+                                        <span class="fc-sep">·</span>
+                                    {% endif %}
+                                    <span class="fc-type-badge fc-type-{{ post.post_type }}">
+                                        {% if post.post_type == 'text' %}Not
+                                        {% elif post.post_type == 'project' %}Proje
+                                        {% elif post.post_type == 'code' %}Kod
+                                        {% elif post.post_type == 'image' %}Fotoğraf
+                                        {% elif post.post_type == 'video' %}Video
+                                        {% elif post.post_type == 'article' %}Makale
+                                        {% else %}{{ post.post_type | title }}{% endif %}
+                                    </span>
+                                    <span class="fc-sep">·</span>
+                                    <span class="fc-time" data-ts="{{ post.created_at.isoformat() }}"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="fc-menu">
+                            <button class="fc-why-chip" onclick="openWhy({{ post.id }})" title="Neden bu içerik önerildi?">
+                                ✦ Neden bu?
+                            </button>
+                            <button class="fc-menu-btn" onclick="toggleCardMenu({{ post.id }})">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+                            </button>
+                            <div class="fc-dropdown" id="menu-{{ post.id }}">
+                                <button class="fc-drop-item" onclick="openWhy({{ post.id }}); toggleCardMenu({{ post.id }})">
+                                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                                    Neden gösteriliyor?
+                                </button>
+                                <button class="fc-drop-item danger" onclick="lessLikeThis({{ post.id }}); toggleCardMenu({{ post.id }})">
+                                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+                                    Daha az göster
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- İçerik -->
+                    {% if post.post_type == 'code' %}
+                        {% if post.link_title %}
+                        <div class="fc-body" style="flex:none;margin-bottom:12px;font-size:14px;">{{ post.link_title }}</div>
+                        {% endif %}
+                        <div class="fc-code-wrap">
+                            {% if post.code_language %}
+                            <div class="fc-code-lang">{{ post.code_language }}</div>
+                            {% endif %}
+                            <pre class="fc-code-pre"><code class="language-{{ post.code_language or 'plaintext' }}">{{ post.content }}</code></pre>
+                        </div>
+                    {% elif post.post_type == 'image' and post.media_list %}
+                        {% if post.content %}
+                        <div class="fc-body" style="flex:none;margin-bottom:12px;font-size:14px;">{{ post.content }}</div>
+                        {% endif %}
+                        <div class="fc-images count-{{ post.media_list | length }}">
+                            {% for img in post.media_list %}
+                            <div class="fc-img-item">
+                                <img src="/uploads/{{ post.author.id }}/{{ img.filename }}" alt="" loading="lazy">
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% elif post.post_type == 'video' and post.media_list %}
+                        {% if post.content %}
+                        <div class="fc-body" style="flex:none;margin-bottom:12px;font-size:14px;">{{ post.content }}</div>
+                        {% endif %}
+                        {% set vid = post.media_list[0] %}
+                        <div class="fc-video-wrap">
+                            <video class="fc-video-player"
+                                   src="/uploads/{{ post.author.id }}/{{ vid.filename }}"
+                                   controls
+                                   preload="metadata"
+                                   playsinline
+                                   data-post-id="{{ post.id }}"
+                                   data-slug="{{ post.slug }}"
+                                   style="width:100%;border-radius:12px;max-height:400px;background:#000;display:block;">
+                            </video>
+                        </div>
+                    {% else %}
+                        <div class="fc-body">{{ post.content }}</div>
+                    {% endif %}
+
+                    <!-- Tags -->
+                    {% if post.flow_score and post.flow_score.tags %}
+                    <div class="fc-tags">
+                        {% for tag in post.flow_score.tags %}
+                        {% if loop.index <= 5 %}
+                        <span class="fc-tag">#{{ tag }}</span>
+                        {% endif %}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    <!-- Footer aksiyonlar -->
+                    <div class="fc-footer">
+                        <button class="fc-action-btn {{ 'liked' if post.is_liked_by(current_user) }}"
+                                id="like-btn-{{ post.id }}" onclick="toggleLike({{ post.id }})">
+                            <svg width="15" height="15" viewBox="0 0 24 24"
+                                 fill="{{ 'currentColor' if post.is_liked_by(current_user) else 'none' }}"
+                                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                            </svg>
+                            <span id="like-count-{{ post.id }}">{{ post.like_count }}</span>
+                        </button>
+
+                        <button class="fc-action-btn" onclick="location.href='/feed/post/{{ post.slug }}'">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                            {{ post.comment_count }}
+                        </button>
+
+                        <button class="fc-action-btn {{ 'saved' if post.is_saved_by(current_user) }}"
+                                id="save-btn-{{ post.id }}" onclick="toggleSave({{ post.id }})">
+                            <svg width="15" height="15" viewBox="0 0 24 24"
+                                 fill="{{ 'currentColor' if post.is_saved_by(current_user) else 'none' }}"
+                                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+                            </svg>
+                        </button>
+
+                        {% if post.view_count > 0 %}
+                        <div class="fc-views">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                            {{ post.view_count if post.view_count < 1000 else (post.view_count // 1000)|string + 'K' }}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                </div><!-- /.flow-card-inner -->
+            </div><!-- /.flow-card -->
+            {% endfor %}
+        {% else %}
+            <div class="flow-empty">
+                <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                <div class="flow-empty-title">Henüz içerik yok</div>
+                <div class="flow-empty-sub">Daha fazla kişi takip et, Flow algoritması kişiselleşmeye başlasın.</div>
+            </div>
+        {% endif %}
+        </div><!-- /#flowList -->
+
+        {% if has_more %}
+        <div class="flow-load-more" id="loadMoreWrap">
+            <button class="load-more-btn" id="loadMoreBtn" onclick="loadMore()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                Daha fazla yükle
+            </button>
+        </div>
+        {% endif %}
+
+        <div class="prism-note">
+            <strong>PRISM</strong> · Sinyal toplaniyor · Akışın zamanla kişiselleşiyor
+        </div>
+
+    </main><!-- /.flow-center -->
+
+    <!-- ── Sağ Panel ── -->
+    <aside class="flow-right">
+
+        <div class="right-box">
+            <div class="right-box-title">Yükselen Konular</div>
+            {% if trending_topics %}
+                {% for topic in trending_topics %}
+                <div class="topic-item" onclick="setFilter('type','all')">
+                    <span class="topic-rank">{{ loop.index }}</span>
+                    <span class="topic-name">#{{ topic.tag }}</span>
+                    <span class="topic-count">{{ topic.count }}</span>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div style="font-size:13px;color:var(--text-muted);text-align:center;padding:10px 0;">
+                    Henüz veri yok
+                </div>
+            {% endif %}
+        </div>
+
+        {% if suggested_people %}
+        <div class="right-box">
+            <div class="right-box-title">Önerilen Kişiler</div>
+            {% for person in suggested_people %}
+            {% set p_od   = person.onboarding %}
+            {% set p_site = person.site %}
+            <div class="suggest-item">
+                <a href="{{ url_for('feed.social_profile', user_id=person.id) }}" class="suggest-avatar">
+                    {% if p_site and p_site.avatar_file %}
+                        <img src="{{ p_site.avatar_file }}" alt="">
+                    {% else %}
+                        {{ (person.full_name or person.email)[0] | upper }}
+                    {% endif %}
+                </a>
+                <div class="suggest-info">
+                    <div class="suggest-name">{{ person.full_name or person.email.split('@')[0] }}</div>
+                    <div class="suggest-role">
+                        {% if p_od and p_od.job_title %}{{ p_od.job_title }}{% else %}Alvera üyesi{% endif %}
+                    </div>
+                </div>
+                <button class="suggest-follow-btn" id="sug-{{ person.id }}"
+                        onclick="followUser({{ person.id }}, this)">Takip</button>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- PRISM info kutusu -->
+        <div class="right-box" style="background:linear-gradient(135deg, rgba(124,58,237,0.08), rgba(232,121,249,0.04)); border-color:rgba(124,58,237,0.2);">
+            <div class="right-box-title" style="color:#a78bfa;">PRISM Hakkında</div>
+            <div style="font-size:12px; color:var(--text-muted); line-height:1.65;">
+                Flow, seni sana ait olmayan ama sana hitap eden içeriklerle buluşturan keşif katmanıdır.
+                <br><br>
+                Her kaydırmada bir sinyal bırakırsın. Algoritma seni zamanla öğrenir.
+            </div>
+        </div>
+
+    </aside>
+</div><!-- /.flow-shell -->
+
+<!-- Snap navigasyon okları -->
+<div class="snap-nav" id="snapNav">
+    <button class="snap-nav-btn" onclick="snapNavigate(-1)" title="Önceki (↑)">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
+    </button>
+    <button class="snap-nav-btn" onclick="snapNavigate(1)" title="Sonraki (↓)">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+    </button>
+</div>
+
+<!-- ═══ "NEDEN?" MODAL ═══ -->
+<div class="why-overlay" id="whyOverlay" onclick="closeWhy(event)">
+    <div class="why-modal">
+        <div class="why-modal-title">Bu içerik neden gösteriliyor?</div>
+        <div id="whyContent">
+            <div class="why-loading">
+                <div class="spinner"></div><span>Analiz ediliyor…</span>
+            </div>
+        </div>
+        <div class="why-modal-actions" id="whyActions" style="display:none;">
+            <button class="why-btn why-btn-less" id="whyLessBtn">Daha az göster</button>
+            <button class="why-btn why-btn-close" onclick="closeWhy()">Kapat</button>
+        </div>
+    </div>
+</div>
+
+<!-- ── Sinyal Öğrenme Toastı ── -->
+<div class="flow-signal-toast" id="signalLearnToast">
+    <div class="toast-spark">✦</div>
+    Flow artık seni daha iyi tanıyor
+</div>
+
+<script>
+// ─────────────────────────────────────────────────────────────
+//  Zaman formatı
+// ─────────────────────────────────────────────────────────────
+function fmtTime(iso) {
+    const s = Math.floor((Date.now() - new Date(iso)) / 1000);
+    if (s < 60)   return 'şimdi';
+    if (s < 3600) return Math.floor(s/60)  + 'dk';
+    if (s < 86400) return Math.floor(s/3600) + 'sa';
+    return Math.floor(s/86400) + 'g';
+}
+document.querySelectorAll('.fc-time').forEach(el => { el.textContent = fmtTime(el.dataset.ts); });
+document.querySelectorAll('pre code').forEach(el => hljs.highlightElement(el));
+
+// ─────────────────────────────────────────────────────────────
+//  Filtreler
+// ─────────────────────────────────────────────────────────────
+function setFilter(key, val) {
+    const p = new URLSearchParams(window.location.search);
+    p.set(key, val); p.set('page', 1);
+    window.location.href = '/flow/?' + p.toString();
+}
+
+// ─────────────────────────────────────────────────────────────
+//  VIEW MODE — snap / list
+// ─────────────────────────────────────────────────────────────
+let viewMode = 'snap';
+
+function setViewMode(mode) {
+    viewMode = mode;
+    const center = document.getElementById('flowCenter');
+    const cards  = document.querySelectorAll('.flow-card, .flow-hero, .flow-load-more');
+    const snapBtn = document.getElementById('modeSnap');
+    const listBtn = document.getElementById('modeList');
+
+    if (mode === 'snap') {
+        center.style.scrollSnapType = 'y proximity';
+        cards.forEach(c => c.style.scrollSnapAlign = 'start');
+        snapBtn.classList.add('active'); listBtn.classList.remove('active');
+        document.getElementById('snapNav').style.display = 'flex';
+    } else {
+        center.style.scrollSnapType = 'none';
+        cards.forEach(c => { c.style.scrollSnapAlign = 'none'; c.style.minHeight = 'auto'; });
+        listBtn.classList.add('active'); snapBtn.classList.remove('active');
+        document.getElementById('snapNav').style.display = 'none';
+    }
+}
+
+// ─────────────────────────────────────────────────────────────
+//  SNAP NAVIGASYON
+// ─────────────────────────────────────────────────────────────
+let allCards = [];
+let currentCardIdx = 0;
+
+function initCards() {
+    const hero = document.getElementById('heroCard');
+    const cards = document.querySelectorAll('.flow-card');
+    allCards = [hero, ...cards];
+    updateActiveCard(0);
+}
+
+function snapNavigate(dir) {
+    const next = Math.max(0, Math.min(allCards.length - 1, currentCardIdx + dir));
+    if (allCards[next]) {
+        allCards[next].scrollIntoView({ behavior: 'smooth', block: 'start' });
+        currentCardIdx = next;
+        updateActiveCard(next);
+    }
+}
+
+function updateActiveCard(idx) {
+    allCards.forEach((c, i) => {
+        if (c && c.classList.contains('flow-card')) {
+            c.classList.toggle('fc-active', i === idx);
+        }
+    });
+    currentCardIdx = idx;
+}
+
+// IntersectionObserver — aktif kartı izle + sinyal topla
+const activeObs = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+        if (!entry.isIntersecting) return;
+        const idx = allCards.indexOf(entry.target);
+        if (idx !== -1) updateActiveCard(idx);
+    });
+}, { root: document.getElementById('flowCenter'), threshold: 0.6 });
+
+// ─────────────────────────────────────────────────────────────
+//  SİNYAL SİSTEMİ
+// ─────────────────────────────────────────────────────────────
+let signalQueue = [];
+let viewStart = {};
+
+const viewObs = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+        const pid = parseInt(entry.target.dataset.postId);
+        if (!pid) return;
+        if (entry.isIntersecting) {
+            viewStart[pid] = Date.now();
+        } else {
+            const dur = (Date.now() - (viewStart[pid] || Date.now())) / 1000;
+            delete viewStart[pid];
+            if (dur < 1)   signalQueue.push({post_id:pid, signal_type:'skip',       context:'flow'});
+            else if (dur >= 15) signalQueue.push({post_id:pid, signal_type:'view_long',  context:'flow'});
+            else if (dur >= 5)  signalQueue.push({post_id:pid, signal_type:'view_short', context:'flow'});
+        }
+    });
+}, { root: document.getElementById('flowCenter'), threshold: 0.7 });
+
+document.querySelectorAll('.flow-card').forEach(c => {
+    viewObs.observe(c);
+    activeObs.observe(c);
+});
+if (document.getElementById('heroCard')) activeObs.observe(document.getElementById('heroCard'));
+
+setInterval(() => {
+    if (!signalQueue.length) return;
+    const batch = [...signalQueue]; signalQueue = [];
+    fetch('/flow/signal', {
+        method:'POST',
+        headers:{'Content-Type':'application/json','X-CSRFToken':getCsrf()},
+        body:JSON.stringify(batch)
+    }).catch(()=>{});
+}, 10000);
+
+function getCsrf() {
+    const m = document.cookie.match(/csrftoken=([^;]+)/); return m ? m[1] : '';
+}
+
+// ─────────────────────────────────────────────────────────────
+//  FLOW MODE BANNER — İlk 3 ziyarette gösterilir
+// ─────────────────────────────────────────────────────────────
+(function() {
+    const VISIT_KEY = 'alvera_flow_visits';
+    const visits = parseInt(localStorage.getItem(VISIT_KEY) || '0');
+    if (visits < 3) {
+        localStorage.setItem(VISIT_KEY, visits + 1);
+        const banner = document.getElementById('flowModeBanner');
+        if (banner) {
+            // Kısa bir gecikme ile açılış animasyonunu tetikle
+            setTimeout(() => banner.classList.add('banner-visible'), 120);
+        }
+    }
+})();
+
+// ─────────────────────────────────────────────────────────────
+//  SİNYAL ÖĞRENME TOASTI — 9 etkileşim sonrası, bir kez gösterilir
+// ─────────────────────────────────────────────────────────────
+(function() {
+    const TOAST_KEY = 'alvera_signal_toast_shown';
+    if (localStorage.getItem(TOAST_KEY)) return;
+
+    let interactionCount = 0;
+    const THRESHOLD = 9;
+
+    function checkAndShowToast() {
+        interactionCount++;
+        if (interactionCount >= THRESHOLD) {
+            localStorage.setItem(TOAST_KEY, '1');
+            const toast = document.getElementById('signalLearnToast');
+            if (!toast) return;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 4200);
+            document.removeEventListener('click', handleInteraction);
+        }
+    }
+
+    function handleInteraction(e) {
+        // Beğeni, kaydet, yorum butonları ve "neden bu" chip'i sayılır
+        if (e.target.closest('.fc-action-btn, .fc-why-chip')) checkAndShowToast();
+    }
+
+    document.addEventListener('click', handleInteraction);
+})();
+
+// ── Video İzlenme Sinyali ─────────────────────────────────────────────────
+function initVideoTracking() {
+    document.querySelectorAll('.fc-video-player').forEach(video => {
+        const postId   = parseInt(video.dataset.postId);
+        let reported50 = false;
+        let reported80 = false;
+        let replayed   = false;
+        let playCount  = 0;
+
+        video.addEventListener('play', () => {
+            playCount++;
+            if (playCount > 1) replayed = true;
+        });
+
+        video.addEventListener('timeupdate', () => {
+            if (!video.duration) return;
+            const ratio = video.currentTime / video.duration;
+
+            if (!reported50 && ratio >= 0.5) {
+                reported50 = true;
+                signalQueue.push({post_id: postId, signal_type: 'view_short', context: 'flow_video'});
+            }
+            if (!reported80 && ratio >= 0.8) {
+                reported80 = true;
+                signalQueue.push({post_id: postId, signal_type: 'view_long', context: 'flow_video'});
+                // Ayrıca VideoView kaydı oluştur
+                sendVideoView(postId, video, replayed);
+            }
+        });
+
+        video.addEventListener('ended', () => {
+            sendVideoView(postId, video, replayed);
+        });
+    });
+}
+
+function sendVideoView(postId, video, replayed) {
+    fetch('/feed/video-view', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+            post_id:       postId,
+            watch_seconds: Math.round(video.currentTime),
+            total_seconds: Math.round(video.duration || 1),
+            replayed:      replayed,
+        })
+    }).catch(() => {});
+}
+
+// Klavye navigasyonu
+document.addEventListener('keydown', e => {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+    if (viewMode !== 'snap') return;
+    if (e.key === 'ArrowDown' || e.key === 'j') { e.preventDefault(); snapNavigate(1); }
+    if (e.key === 'ArrowUp'   || e.key === 'k') { e.preventDefault(); snapNavigate(-1); }
+});
+
+initCards();
+initVideoTracking();
+
+// ─────────────────────────────────────────────────────────────
+//  MENÜ
+// ─────────────────────────────────────────────────────────────
+function toggleCardMenu(id) {
+    const m = document.getElementById('menu-' + id);
+    if (!m) return;
+    const wasOpen = m.classList.contains('open');
+    document.querySelectorAll('.fc-dropdown.open').forEach(d => d.classList.remove('open'));
+    if (!wasOpen) m.classList.add('open');
+}
+document.addEventListener('click', e => {
+    if (!e.target.closest('.fc-menu'))
+        document.querySelectorAll('.fc-dropdown.open').forEach(d => d.classList.remove('open'));
+});
+
+// ─────────────────────────────────────────────────────────────
+//  "NEDEN?" MODAL
+// ─────────────────────────────────────────────────────────────
+let whyCurrent = null;
+
+function openWhy(pid) {
+    whyCurrent = pid;
+    const overlay = document.getElementById('whyOverlay');
+    const content = document.getElementById('whyContent');
+    const actions = document.getElementById('whyActions');
+    content.innerHTML = '<div class="why-loading"><div class="spinner"></div><span>Analiz ediliyor…</span></div>';
+    actions.style.display = 'none';
+    overlay.classList.add('open');
+
+    fetch('/flow/why/' + pid)
+        .then(r => r.json())
+        .then(d => {
+            let html = '<div class="why-reasons">';
+            (d.reasons||[]).forEach(r => {
+                html += `<div class="why-reason"><div class="why-dot"></div><span>${r}</span></div>`;
+            });
+            html += '</div>';
+            if (d.ai_explanation) html += `<div class="why-ai">${d.ai_explanation}</div>`;
+            content.innerHTML = html;
+            document.getElementById('whyLessBtn').onclick = () => { lessLikeThis(pid); closeWhy(); };
+            actions.style.display = 'flex';
+        })
+        .catch(() => {
+            content.innerHTML = '<div style="font-size:13px;color:var(--text-muted)">Bilgi alınamadı.</div>';
+            actions.style.display = 'flex';
+        });
+
+    signalQueue.push({post_id:pid, signal_type:'expand', context:'flow'});
+}
+
+function closeWhy(e) {
+    if (e && e.target !== document.getElementById('whyOverlay')) return;
+    document.getElementById('whyOverlay').classList.remove('open');
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeWhy(); });
+
+// ─────────────────────────────────────────────────────────────
+//  DAHA AZ GÖSTER
+// ─────────────────────────────────────────────────────────────
+function lessLikeThis(pid) {
+    fetch('/flow/less-like', {
+        method:'POST',
+        headers:{'Content-Type':'application/json','X-CSRFToken':getCsrf()},
+        body:JSON.stringify({post_id:pid})
+    });
+    const card = document.getElementById('fc-' + pid);
+    if (card) {
+        card.style.transition = 'all 0.4s var(--ease)';
+        card.style.opacity = '0';
+        card.style.transform = 'translateX(-30px)';
+        setTimeout(() => {
+            card.remove();
+            allCards = allCards.filter(c => c && c.id !== 'fc-'+pid);
+        }, 420);
+    }
+}
+
+// ─────────────────────────────────────────────────────────────
+//  BEĞENİ
+// ─────────────────────────────────────────────────────────────
+function toggleLike(pid) {
+    const btn = document.getElementById('like-btn-' + pid);
+    const cnt = document.getElementById('like-count-' + pid);
+    fetch('/feed/post/' + pid + '/like', {
+        method:'POST', headers:{'X-CSRFToken':getCsrf()}
+    }).then(r => r.json()).then(d => {
+        const svg = btn.querySelector('svg');
+        if (d.liked) {
+            btn.classList.add('liked');
+            svg.setAttribute('fill','currentColor');
+            signalQueue.push({post_id:pid, signal_type:'like', context:'flow'});
+        } else {
+            btn.classList.remove('liked');
+            svg.setAttribute('fill','none');
+        }
+        if (cnt && d.like_count !== undefined) cnt.textContent = d.like_count;
+    }).catch(()=>{});
+}
+
+// ─────────────────────────────────────────────────────────────
+//  KAYDET
+// ─────────────────────────────────────────────────────────────
+function toggleSave(pid) {
+    const btn = document.getElementById('save-btn-' + pid);
+    fetch('/feed/post/' + pid + '/save', {
+        method:'POST', headers:{'X-CSRFToken':getCsrf()}
+    }).then(r => r.json()).then(d => {
+        const svg = btn.querySelector('svg');
+        if (d.saved) {
+            btn.classList.add('saved');
+            svg.setAttribute('fill','currentColor');
+            signalQueue.push({post_id:pid, signal_type:'save', context:'flow'});
+        } else {
+            btn.classList.remove('saved');
+            svg.setAttribute('fill','none');
+        }
+    }).catch(()=>{});
+}
+
+// ─────────────────────────────────────────────────────────────
+//  TAKİP
+// ─────────────────────────────────────────────────────────────
+function followUser(uid, btn) {
+    fetch('/feed/follow/' + uid, {
+        method:'POST', headers:{'X-CSRFToken':getCsrf()}
+    }).then(r => r.json()).then(d => {
+        btn.textContent = d.following ? 'Takip Ediliyor' : 'Takip';
+        btn.classList.toggle('following', d.following);
+    }).catch(()=>{});
+}
+
+// ─────────────────────────────────────────────────────────────
+//  DAHA FAZLA YÜKLE
+// ─────────────────────────────────────────────────────────────
+let currentPage = {{ page }};
+let isLoading = false;
+
+function loadMore() {
+    if (isLoading) return;
+    isLoading = true;
+    const btn = document.getElementById('loadMoreBtn');
+    if (btn) { btn.classList.add('loading'); btn.textContent = 'Yükleniyor…'; }
+    currentPage++;
+    const p = new URLSearchParams(window.location.search);
+    p.set('page', currentPage);
+
+    fetch('/flow/posts?' + p.toString())
+        .then(r => r.json())
+        .then(data => {
+            const list = document.getElementById('flowList');
+            (data.posts||[]).forEach((p, i) => {
+                const div = document.createElement('div');
+                div.className = 'flow-card';
+                div.id = 'fc-' + p.id;
+                div.dataset.postId = p.id;
+                div.dataset.postType = p.post_type;
+                div.style.animationDelay = (i * 0.05) + 's';
+                div.innerHTML = buildCardHTML(p);
+                list.appendChild(div);
+                viewObs.observe(div); activeObs.observe(div);
+                allCards.push(div);
+            });
+
+            if (!data.has_more) {
+                const wrap = document.getElementById('loadMoreWrap');
+                if (wrap) wrap.remove();
+            } else if (btn) {
+                btn.classList.remove('loading');
+                btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg> Daha fazla yükle';
+            }
+            document.querySelectorAll('#flowList .fc-code-pre code').forEach(el => hljs.highlightElement(el));
+            document.querySelectorAll('.fc-time:not([data-done])').forEach(el => {
+                el.textContent = fmtTime(el.dataset.ts); el.dataset.done = '1';
+            });
+            initVideoTracking();
+            isLoading = false;
+        })
+        .catch(() => { isLoading = false; });
+}
+
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function buildCardHTML(p) {
+    const name = p.author?.name || 'Bilinmiyor';
+    const av = p.author?.avatar ? `<img src="${p.author.avatar}" alt="">` : name[0].toUpperCase();
+    const tLabel = {text:'Not',project:'Proje',code:'Kod',image:'Fotoğraf',video:'Video',article:'Makale'}[p.post_type]||p.post_type;
+    const time = fmtTime(p.created_at);
+
+    let body = '';
+    if (p.post_type === 'code') {
+        body = `<div class="fc-code-wrap"><pre class="fc-code-pre"><code class="language-${p.code_language||'plaintext'}">${esc(p.content)}</code></pre></div>`;
+    } else if (p.post_type === 'image' && p.media?.length) {
+        const uid = p.author?.id || 0;
+        body = `<div class="fc-images count-${p.media.length}">${p.media.map(m=>`<div class="fc-img-item"><img src="/uploads/${uid}/${m.filename||m}" loading="lazy"></div>`).join('')}</div>`;
+    } else if (p.post_type === 'video' && p.media?.length) {
+        const uid = p.author?.id || 0;
+        const vid = p.media[0];
+        const caption = p.content ? `<div class="fc-body" style="margin-bottom:10px;">${esc(p.content)}</div>` : '';
+        body = `${caption}<div class="fc-video-wrap"><video class="fc-video-player" src="/uploads/${uid}/${vid.filename||vid}" controls preload="metadata" playsinline data-post-id="${p.id}" data-slug="${p.slug||''}" style="width:100%;border-radius:12px;max-height:400px;background:#000;display:block;"></video></div>`;
+    } else {
+        body = `<div class="fc-body">${esc(p.content)}</div>`;
+    }
+
+    const views = p.view_count > 0
+        ? `<div class="fc-views"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>${p.view_count>=1000?Math.floor(p.view_count/1000)+'K':p.view_count}</div>` : '';
+
+    return `<div class="flow-card-inner">
+      <div class="fc-header">
+        <div class="fc-author">
+          <a href="/feed/u/${p.author?.id||0}" class="fc-avatar">${av}</a>
+          <div>
+            <a href="/feed/u/${p.author?.id||0}" class="fc-author-name">${esc(name)}</a>
+            <div class="fc-author-meta">
+              <span class="fc-type-badge fc-type-${p.post_type}">${tLabel}</span>
+              <span class="fc-sep">·</span>
+              <span class="fc-time" data-ts="${p.created_at}" data-done="1">${time}</span>
+            </div>
+          </div>
+        </div>
+        <div class="fc-menu">
+          <button class="fc-why-chip" onclick="openWhy(${p.id})" title="Neden bu içerik önerildi?">✦ Neden bu?</button>
+          <button class="fc-menu-btn" onclick="toggleCardMenu(${p.id})">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+          </button>
+          <div class="fc-dropdown" id="menu-${p.id}">
+            <button class="fc-drop-item" onclick="openWhy(${p.id});toggleCardMenu(${p.id})">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+              Neden gösteriliyor?
+            </button>
+            <button class="fc-drop-item danger" onclick="lessLikeThis(${p.id});toggleCardMenu(${p.id})">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+              Daha az göster
+            </button>
+          </div>
+        </div>
+      </div>
+      ${body}
+      <div class="fc-footer">
+        <button class="fc-action-btn" id="like-btn-${p.id}" onclick="toggleLike(${p.id})">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          <span id="like-count-${p.id}">${p.like_count}</span>
+        </button>
+        <button class="fc-action-btn" onclick="location.href='/feed/post/${p.slug}'">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          ${p.comment_count}
+        </button>
+        <button class="fc-action-btn" id="save-btn-${p.id}" onclick="toggleSave(${p.id})">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+        </button>
+        ${views}
+      </div>
+    </div>`;
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,2068 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mesajlar — Alvera</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    /* ── Reset & Base ─────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --white:       #ffffff;
+      --bg:          #f9f9f9;
+      --border:      #e8e8e8;
+      --border-soft: #f0f0f0;
+      --text-primary:   #111;
+      --text-secondary: #6b7280;
+      --text-muted:     #9ca3af;
+      --accent:      #111;
+      --accent-bg:   #f0f0f0;
+      --bubble-mine: #111;
+      --bubble-theirs: #f3f3f3;
+      --unread-dot:  #ef4444;
+      --radius-sm:   8px;
+      --radius-md:   14px;
+      --radius-bubble: 18px;
+      --font: 'Inter', -apple-system, sans-serif;
+      --sidebar-w: 320px;
+    }
+
+    html, body { height: 100%; overflow: hidden; }
+
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text-primary);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    a { color: inherit; text-decoration: none; }
+
+    /* ── Layout: üç dikey bölge ───────────────────────────────── */
+    .dm-root {
+      display: flex;
+      height: 100vh;
+      background: var(--white);
+    }
+
+    /* ── Sol gezinti çubuğu (sayfalar arası) ──────────────────── */
+    .site-nav {
+      width: 56px;
+      height: 100vh;
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 16px 0;
+      gap: 4px;
+      background: var(--white);
+      flex-shrink: 0;
+    }
+
+    .site-nav .nav-logo {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      color: var(--text-primary);
+      margin-bottom: 16px;
+      writing-mode: vertical-rl;
+      transform: rotate(180deg);
+      opacity: 0.55;
+    }
+
+    .nav-icon-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-secondary);
+      transition: background 0.15s, color 0.15s;
+      position: relative;
+    }
+    .nav-icon-btn:hover { background: var(--accent-bg); color: var(--text-primary); }
+    .nav-icon-btn.active { background: var(--accent-bg); color: var(--text-primary); }
+    .nav-icon-btn svg { width: 18px; height: 18px; stroke-width: 1.7; }
+
+    .nav-badge {
+      position: absolute;
+      top: 2px; right: 2px;
+      min-width: 16px; height: 16px;
+      background: var(--unread-dot);
+      color: white;
+      font-size: 9px;
+      font-weight: 700;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 3px;
+      line-height: 1;
+    }
+
+    /* ── Konuşma listesi paneli ───────────────────────────────── */
+    .conv-panel {
+      width: var(--sidebar-w);
+      height: 100vh;
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      background: var(--white);
+      flex-shrink: 0;
+    }
+
+    .conv-header {
+      padding: 18px 20px 14px;
+      border-bottom: 1px solid var(--border-soft);
+    }
+    .conv-header h1 {
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: -0.3px;
+      color: var(--text-primary);
+    }
+    .conv-header-sub {
+      font-size: 11.5px;
+      color: var(--text-muted);
+      margin-top: 2px;
+      font-weight: 400;
+    }
+
+    .conv-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 8px 0;
+    }
+    .conv-list::-webkit-scrollbar { width: 4px; }
+    .conv-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+    .conv-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 16px;
+      cursor: pointer;
+      transition: background 0.12s;
+      text-decoration: none;
+      border-radius: 0;
+    }
+    .conv-item:hover { background: var(--bg); }
+    .conv-item.active { background: var(--accent-bg); }
+
+    .conv-avatar {
+      width: 40px; height: 40px;
+      border-radius: 50%;
+      background: var(--accent-bg);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-primary);
+      flex-shrink: 0;
+      overflow: hidden;
+    }
+    .conv-avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+    .conv-info { flex: 1; min-width: 0; }
+    .conv-name {
+      font-size: 13.5px;
+      font-weight: 500;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .conv-preview {
+      font-size: 12px;
+      color: var(--text-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-top: 2px;
+    }
+    .conv-preview.unread {
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+
+    .conv-meta {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 4px;
+      flex-shrink: 0;
+    }
+    .conv-time {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+    .conv-unread-badge {
+      width: 18px; height: 18px;
+      background: var(--unread-dot);
+      color: white;
+      font-size: 10px;
+      font-weight: 700;
+      border-radius: 9px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* ── Boş inbox ────────────────────────────────────────────── */
+    .conv-empty {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 32px 24px;
+      text-align: center;
+      gap: 8px;
+    }
+    .conv-empty-icon { font-size: 32px; opacity: 0.4; }
+    .conv-empty-text { font-size: 13px; color: var(--text-muted); line-height: 1.5; }
+
+    /* ── Chat paneli ──────────────────────────────────────────── */
+    .chat-panel {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      min-width: 0;
+      background: var(--white);
+    }
+
+    /* Chat header */
+    .chat-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 13px 20px;
+      border-bottom: 1px solid var(--border-soft);
+      flex-shrink: 0;
+      min-height: 60px;
+    }
+    .chat-header-avatar {
+      width: 38px; height: 38px;
+      border-radius: 50%;
+      background: var(--accent-bg);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: 600;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+    .chat-header-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .chat-header-info { flex: 1; }
+    .chat-header-name {
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: -0.2px;
+    }
+    .chat-header-sub {
+      font-size: 11.5px;
+      color: var(--text-muted);
+      margin-top: 1px;
+    }
+    .chat-header-actions { display: flex; gap: 6px; align-items: center; }
+    .chat-header-link {
+      font-size: 12px;
+      font-weight: 450;
+      color: var(--text-secondary);
+      padding: 5px 11px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: var(--white);
+      transition: background 0.12s, border-color 0.12s;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      white-space: nowrap;
+      letter-spacing: -0.1px;
+    }
+    .chat-header-link:hover { background: var(--bg); border-color: #d0d0d0; color: var(--text-primary); }
+    .chat-header-link svg { width: 12px; height: 12px; stroke-width: 2; flex-shrink: 0; opacity: 0.7; }
+
+    /* Mesaj alanı */
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .chat-messages::-webkit-scrollbar { width: 4px; }
+    .chat-messages::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+    /* Tarih ayırıcı */
+    .dm-date-sep {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 12px 0;
+    }
+    .dm-date-sep::before,
+    .dm-date-sep::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border-soft);
+    }
+    .dm-date-sep span {
+      font-size: 11px;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+
+    /* Mesaj balonları */
+    .dm-msg {
+      display: flex;
+      flex-direction: column;
+      max-width: 72%;
+      animation: msgIn 0.18s ease-out;
+    }
+    @keyframes msgIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .dm-msg--mine {
+      align-self: flex-end;
+      align-items: flex-end;
+    }
+    .dm-msg--theirs {
+      align-self: flex-start;
+      align-items: flex-start;
+    }
+
+    .dm-bubble {
+      padding: 10px 14px;
+      border-radius: var(--radius-bubble);
+      font-size: 14px;
+      line-height: 1.45;
+      word-break: break-word;
+    }
+    .dm-msg--mine .dm-bubble {
+      background: var(--bubble-mine);
+      color: white;
+      border-bottom-right-radius: 6px;
+    }
+    .dm-msg--theirs .dm-bubble {
+      background: var(--bubble-theirs);
+      color: var(--text-primary);
+      border-bottom-left-radius: 6px;
+    }
+
+    /* Ardışık mesajlar arası boşluk */
+    .dm-msg + .dm-msg { margin-top: 2px; }
+    .dm-msg--mine + .dm-msg--theirs,
+    .dm-msg--theirs + .dm-msg--mine { margin-top: 10px; }
+
+    .dm-time {
+      font-size: 10.5px;
+      color: var(--text-muted);
+      margin-top: 3px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .dm-read-tick { opacity: 0.4; }
+    .dm-read-tick--read { opacity: 1; color: #3b82f6; }
+
+    /* ── Aura özel mesaj kartı ── */
+    .dm-aura-msg-card {
+      width: 240px;
+      background: linear-gradient(135deg, #0D0D0D 0%, #1C1C2E 100%);
+      border-radius: 14px; padding: 14px 15px;
+      display: flex; flex-direction: column; gap: 8px;
+    }
+    .dm-aura-msg-header {
+      display: flex; align-items: flex-start; gap: 10px;
+    }
+    .dm-aura-msg-icon {
+      font-size: 16px; color: rgba(255,255,255,0.6);
+      margin-top: 1px; flex-shrink: 0;
+    }
+    .dm-aura-msg-info { flex: 1; }
+    .dm-aura-msg-title {
+      font-size: 11.5px; font-weight: 600; color: #fff;
+      line-height: 1.4; margin: 0 0 3px;
+    }
+    .dm-aura-msg-score {
+      font-size: 11px; color: rgba(255,255,255,0.5); margin: 0;
+    }
+    .dm-aura-msg-score strong { color: rgba(255,255,255,0.85); }
+    .dm-aura-msg-cta {
+      font-size: 10.5px; color: rgba(255,255,255,0.3);
+      border-top: 1px solid rgba(255,255,255,0.07);
+      padding-top: 7px; margin: 0;
+    }
+    .dm-aura-msg-btn {
+      display: inline-flex; align-items: center;
+      font-size: 11.5px; font-weight: 600;
+      background: rgba(255,255,255,0.1); color: #fff;
+      text-decoration: none; padding: 6px 12px;
+      border-radius: 8px; border: 1px solid rgba(255,255,255,0.12);
+      transition: background 0.14s ease; align-self: flex-start;
+    }
+    .dm-aura-msg-btn:hover { background: rgba(255,255,255,0.18); }
+
+    /* .chat-compose ve compose-inner artık "Compose alanı (yeniden)" bloğunda */
+
+    /* Boş chat state */
+    .chat-empty {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      text-align: center;
+      padding: 40px;
+    }
+    .chat-empty-icon { font-size: 48px; opacity: 0.25; }
+    .chat-empty-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      letter-spacing: -0.2px;
+    }
+    .chat-empty-sub {
+      font-size: 13px;
+      color: var(--text-muted);
+      max-width: 280px;
+      line-height: 1.5;
+    }
+
+    /* Yeni konuşma boş panel */
+    .chat-new-hint {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      text-align: center;
+      padding: 40px;
+    }
+
+    /* ── Arama paneli ──────────────────────────────────────────── */
+    .search-panel {
+      display: none;
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: var(--white);
+      z-index: 10;
+      flex-direction: column;
+    }
+    .search-panel.open { display: flex; }
+    .search-panel-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border);
+    }
+    .search-panel-input {
+      flex: 1;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 8px 12px;
+      font-family: var(--font);
+      font-size: 13.5px;
+      outline: none;
+      background: var(--bg);
+      transition: border-color 0.15s;
+    }
+    .search-panel-input:focus { border-color: #aaa; }
+    .search-close-btn {
+      background: none; border: none;
+      font-size: 12px; color: var(--text-muted);
+      cursor: pointer; padding: 6px 10px;
+      border-radius: var(--radius-sm);
+      transition: background 0.12s;
+    }
+    .search-close-btn:hover { background: var(--bg); color: var(--text-primary); }
+    .search-results {
+      flex: 1; overflow-y: auto;
+      padding: 8px 16px;
+    }
+    .search-result-item {
+      padding: 10px 12px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: background 0.12s;
+      border-bottom: 1px solid var(--border-soft);
+    }
+    .search-result-item:hover { background: var(--bg); }
+    .search-result-item:last-child { border-bottom: none; }
+    .search-result-meta {
+      font-size: 10.5px;
+      color: var(--text-muted);
+      margin-bottom: 3px;
+    }
+    .search-result-content {
+      font-size: 13px;
+      color: var(--text-primary);
+      line-height: 1.4;
+    }
+    .search-result-content mark {
+      background: #fef08a;
+      border-radius: 2px;
+      padding: 0 1px;
+    }
+    .search-empty-state {
+      padding: 32px 20px;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 13px;
+    }
+
+    /* ── Compose alanı (yeniden) ───────────────────────────────── */
+    .chat-compose {
+      padding: 12px 20px 18px;
+      border-top: 1px solid var(--border-soft);
+      flex-shrink: 0;
+      background: var(--white);
+    }
+
+    .chat-compose-box {
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: var(--bg);
+      transition: border-color 0.18s, box-shadow 0.18s;
+      overflow: hidden;
+    }
+    .chat-compose-box:focus-within {
+      border-color: #c8c8c8;
+      box-shadow: 0 0 0 3px rgba(0,0,0,0.04);
+    }
+
+    /* Kod modunda arka plan */
+    .chat-compose-box.code-mode {
+      background: #f8f9fa;
+    }
+
+    .chat-compose-textarea {
+      width: 100%;
+      border: none;
+      background: transparent;
+      font-family: var(--font);
+      font-size: 14px;
+      color: var(--text-primary);
+      resize: none;
+      outline: none;
+      max-height: 160px;
+      min-height: 42px;
+      line-height: 1.55;
+      padding: 12px 14px 8px;
+      display: block;
+    }
+    .chat-compose-textarea::placeholder { color: var(--text-muted); }
+
+    /* Kod modu — monospace textarea */
+    .compose-code-input {
+      font-family: 'Menlo', 'JetBrains Mono', 'Fira Code', monospace !important;
+      font-size: 12.5px !important;
+      line-height: 1.65 !important;
+      min-height: 80px !important;
+    }
+
+    /* Compose toolbar — kutunun alt şeridi */
+    .compose-toolbar {
+      display: flex;
+      align-items: center;
+      padding: 5px 10px 8px;
+      gap: 2px;
+    }
+
+    /* Mode toggle — iki küçük ikon butonu */
+    .compose-mode-toggle {
+      display: flex;
+      align-items: center;
+      background: var(--border-soft);
+      border-radius: 7px;
+      padding: 2px;
+      gap: 1px;
+      margin-right: 6px;
+    }
+    .compose-mode-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 26px;
+      height: 22px;
+      border-radius: 5px;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: background 0.12s, color 0.12s;
+    }
+    .compose-mode-btn svg { width: 12px; height: 12px; stroke-width: 2; flex-shrink: 0; }
+    .compose-mode-btn.active {
+      background: var(--white);
+      color: var(--text-primary);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+
+    /* Dil seçici */
+    .code-lang-select {
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 2px 6px 2px 7px;
+      font-size: 11px;
+      font-family: var(--font);
+      background: var(--white);
+      color: var(--text-secondary);
+      outline: none;
+      cursor: pointer;
+      height: 22px;
+      transition: border-color 0.12s;
+    }
+    .code-lang-select:focus { border-color: #aaa; }
+
+    /* Gönder butonu — toolbarın sağına hizalı */
+    .compose-spacer { flex: 1; }
+    .chat-compose-send {
+      width: 30px; height: 30px;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: opacity 0.15s, transform 0.12s;
+    }
+    .chat-compose-send:hover { opacity: 0.82; }
+    .chat-compose-send:active { transform: scale(0.9); }
+    .chat-compose-send svg { width: 13px; height: 13px; stroke-width: 2.3; margin-left: 1px; }
+    .chat-compose-send:disabled { opacity: 0.25; cursor: not-allowed; }
+
+    /* ── Mesaj aksiyonları (hover) ─────────────────────────────── */
+    .dm-msg-meta-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 3px;
+      gap: 6px;
+    }
+    .dm-msg--mine .dm-msg-meta-row { flex-direction: row-reverse; }
+
+    .dm-msg-actions {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      opacity: 0;
+      transition: opacity 0.15s;
+    }
+    .dm-msg:hover .dm-msg-actions { opacity: 1; }
+
+    .dm-action-btn {
+      width: 26px; height: 26px;
+      border-radius: 6px;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--text-muted);
+      transition: background 0.12s, color 0.12s;
+    }
+    .dm-action-btn:hover { background: var(--bg); color: var(--text-primary); }
+    .dm-action-btn svg { width: 13px; height: 13px; }
+    .dm-delete-btn:hover { color: #ef4444; background: #fef2f2; }
+
+    /* Düzenleme inline formu */
+    .dm-edit-form {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-top: 4px;
+    }
+    .dm-edit-textarea {
+      width: 100%;
+      min-height: 52px;
+      max-height: 120px;
+      padding: 8px 12px;
+      border: 1px solid #d1d5db;
+      border-radius: var(--radius-sm);
+      font-family: var(--font);
+      font-size: 13.5px;
+      resize: none;
+      outline: none;
+      background: white;
+      color: var(--text-primary);
+      transition: border-color 0.15s;
+    }
+    .dm-edit-textarea:focus { border-color: var(--accent); }
+    .dm-edit-actions {
+      display: flex;
+      gap: 6px;
+      justify-content: flex-end;
+    }
+    .dm-edit-save, .dm-edit-cancel {
+      padding: 4px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      border: 1px solid var(--border);
+      transition: background 0.12s;
+    }
+    .dm-edit-save { background: var(--accent); color: white; border-color: var(--accent); }
+    .dm-edit-save:hover { opacity: 0.85; }
+    .dm-edit-cancel { background: var(--bg); color: var(--text-secondary); }
+    .dm-edit-cancel:hover { background: var(--border-soft); }
+
+    .dm-edited-badge {
+      font-size: 10px;
+      color: var(--text-muted);
+      margin-left: 6px;
+    }
+
+    /* Silinmiş mesaj */
+    .dm-bubble--deleted {
+      background: transparent !important;
+      border: 1px dashed var(--border);
+    }
+    .dm-deleted-text {
+      font-size: 12.5px;
+      color: var(--text-muted);
+      font-style: italic;
+    }
+
+    /* ── Tepki sistemi ─────────────────────────────────────────── */
+    .dm-reactions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      margin-top: 4px;
+    }
+    .dm-reaction-pill {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      padding: 2px 7px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.12s;
+      line-height: 1.4;
+    }
+    .dm-reaction-pill:hover { border-color: #aaa; background: var(--border-soft); }
+    .dm-reaction-pill--active {
+      border-color: var(--accent);
+      background: var(--accent-bg);
+    }
+    .dm-reaction-count { font-size: 11px; color: var(--text-secondary); }
+
+    /* Tepki picker */
+    .dm-react-picker {
+      position: absolute;
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 8px 10px;
+      display: flex;
+      gap: 4px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+      z-index: 100;
+      animation: pickerIn 0.15s ease-out;
+    }
+    @keyframes pickerIn {
+      from { opacity: 0; transform: scale(0.9) translateY(4px); }
+      to   { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    .dm-react-picker button {
+      width: 32px; height: 32px;
+      border: none; background: none;
+      font-size: 18px;
+      cursor: pointer;
+      border-radius: 8px;
+      transition: background 0.1s, transform 0.1s;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .dm-react-picker button:hover {
+      background: var(--bg);
+      transform: scale(1.2);
+    }
+
+    /* ── Kod kartı ─────────────────────────────────────────────── */
+    .dm-code-card {
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border);
+      overflow: hidden;
+      background: #0d1117;
+      max-width: 420px;
+    }
+    .dm-code-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      background: #161b22;
+      border-bottom: 1px solid #30363d;
+    }
+    .dm-code-lang-dots { display: flex; gap: 5px; }
+    .dm-code-dot {
+      width: 11px; height: 11px;
+      border-radius: 50%;
+    }
+    .dm-code-dot--red    { background: #ff5f57; }
+    .dm-code-dot--yellow { background: #febc2e; }
+    .dm-code-dot--green  { background: #28c840; }
+    .dm-code-lang-label {
+      font-size: 11px;
+      color: #8b949e;
+      font-family: 'Menlo', monospace;
+      flex: 1;
+    }
+    .dm-code-copy-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #8b949e;
+      display: flex; align-items: center;
+      padding: 2px;
+      border-radius: 4px;
+      transition: color 0.12s;
+    }
+    .dm-code-copy-btn:hover { color: #e6edf3; }
+    .dm-code-copy-btn svg { width: 13px; height: 13px; stroke-width: 1.8; }
+    .dm-code-pre {
+      margin: 0;
+      padding: 14px 16px;
+      overflow-x: auto;
+      max-height: 280px;
+      overflow-y: auto;
+    }
+    .dm-code-pre::-webkit-scrollbar { width: 4px; height: 4px; }
+    .dm-code-pre::-webkit-scrollbar-thumb { background: #30363d; border-radius: 4px; }
+    .dm-code-pre code {
+      font-family: 'JetBrains Mono', 'Fira Code', 'Menlo', monospace;
+      font-size: 12.5px;
+      color: #e6edf3;
+      line-height: 1.6;
+      white-space: pre;
+    }
+
+    /* ── Conv panel arama butonu ───────────────────────────────── */
+    .conv-header { position: relative; }
+    .conv-search-btn {
+      position: absolute;
+      right: 16px; top: 50%; transform: translateY(-50%);
+      width: 30px; height: 30px;
+      border: none; background: none;
+      cursor: pointer;
+      color: var(--text-muted);
+      border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.12s, color 0.12s;
+    }
+    .conv-search-btn:hover { background: var(--bg); color: var(--text-primary); }
+    .conv-search-btn svg { width: 16px; height: 16px; stroke-width: 1.8; }
+
+    /* Chat panel — relative for search overlay */
+    .chat-panel { position: relative; }
+
+    /* ── Fotoğraf mesaj kartı ──────────────────────────────────── */
+    .dm-image-card {
+      position: relative;
+      max-width: 260px;
+      border-radius: 12px;
+      overflow: hidden;
+      cursor: zoom-in;
+      background: var(--border-soft);
+      border: 1px solid var(--border);
+    }
+    .dm-image-thumb {
+      display: block;
+      width: 100%;
+      max-height: 220px;
+      object-fit: cover;
+      transition: filter 0.18s;
+    }
+    .dm-image-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0.28);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.18s;
+    }
+    .dm-image-overlay svg { width: 20px; height: 20px; }
+    .dm-image-card:hover .dm-image-thumb { filter: brightness(0.85); }
+    .dm-image-card:hover .dm-image-overlay { opacity: 1; }
+
+    /* ── Dosya mesaj kartı ─────────────────────────────────────── */
+    .dm-file-card {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      padding: 10px 13px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      text-decoration: none;
+      color: var(--text-primary);
+      max-width: 290px;
+      transition: background 0.12s, border-color 0.12s;
+    }
+    .dm-file-card:hover { background: var(--border-soft); border-color: #d0d0d0; }
+    .dm-file-icon {
+      width: 36px; height: 36px;
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      background: var(--border-soft);
+      color: var(--text-secondary);
+    }
+    .dm-file-icon svg { width: 17px; height: 17px; }
+    .dm-file-icon--pdf    { background: #fef2f2; color: #ef4444; }
+    .dm-file-icon--xlsx, .dm-file-icon--xls, .dm-file-icon--csv { background: #f0fdf4; color: #22c55e; }
+    .dm-file-icon--zip, .dm-file-icon--rar  { background: #fefce8; color: #ca8a04; }
+    .dm-file-icon--mp4, .dm-file-icon--mov  { background: #eff6ff; color: #3b82f6; }
+    .dm-file-icon--mp3    { background: #fdf4ff; color: #a855f7; }
+    .dm-file-info {
+      flex: 1; min-width: 0;
+      display: flex; flex-direction: column; gap: 2px;
+    }
+    .dm-file-name {
+      font-size: 12.5px; font-weight: 500;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .dm-file-size { font-size: 11px; color: var(--text-muted); }
+    .dm-file-dl { flex-shrink: 0; color: var(--text-muted); transition: color 0.12s; }
+    .dm-file-dl svg { width: 14px; height: 14px; }
+    .dm-file-card:hover .dm-file-dl { color: var(--text-primary); }
+    .dm-file-caption {
+      font-size: 12px; color: var(--text-secondary);
+      margin-top: 5px; max-width: 290px; line-height: 1.4;
+    }
+
+    /* ── Lightbox ─────────────────────────────────────────────── */
+    .dm-lightbox {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.9); z-index: 9999;
+      align-items: center; justify-content: center;
+      flex-direction: column; gap: 14px; cursor: zoom-out;
+    }
+    .dm-lightbox.open { display: flex; }
+    .dm-lightbox-img {
+      max-width: 90vw; max-height: 82vh;
+      border-radius: 8px; object-fit: contain;
+      animation: lbIn 0.18s ease-out;
+    }
+    @keyframes lbIn {
+      from { opacity:0; transform: scale(0.93); }
+      to   { opacity:1; transform: scale(1); }
+    }
+    .dm-lightbox-name { font-size: 11.5px; color: rgba(255,255,255,0.4); }
+    .dm-lightbox-close {
+      position: absolute; top: 18px; right: 18px;
+      width: 34px; height: 34px; border-radius: 50%;
+      background: rgba(255,255,255,0.1); border: none;
+      color: white; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.12s;
+    }
+    .dm-lightbox-close:hover { background: rgba(255,255,255,0.2); }
+    .dm-lightbox-close svg { width: 15px; height: 15px; stroke-width: 2; }
+
+    /* ── Upload panel ─────────────────────────────────────────── */
+    .upload-panel { display: none; flex-direction: column; }
+    .upload-panel.open { display: flex; }
+
+    .upload-dropzone {
+      margin: 10px 12px 0;
+      border: 1.5px dashed var(--border);
+      border-radius: 10px;
+      padding: 20px 16px;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 7px; cursor: pointer; text-align: center;
+      transition: border-color 0.15s, background 0.15s;
+    }
+    .upload-dropzone:hover, .upload-dropzone.dragover {
+      border-color: #bbb; background: var(--bg);
+    }
+    .upload-dropzone-icon {
+      width: 34px; height: 34px; border-radius: 50%;
+      background: var(--border-soft);
+      display: flex; align-items: center; justify-content: center;
+      color: var(--text-muted);
+    }
+    .upload-dropzone-icon svg { width: 16px; height: 16px; stroke-width: 1.8; }
+    .upload-dropzone-title { font-size: 13px; font-weight: 500; color: var(--text-primary); }
+    .upload-dropzone-sub   { font-size: 11px; color: var(--text-muted); }
+    .upload-browse-btn {
+      display: inline-flex; align-items: center; gap: 4px;
+      margin-top: 4px; padding: 5px 12px;
+      border-radius: 7px; border: 1px solid var(--border);
+      background: var(--white); font-size: 12px; font-weight: 500;
+      color: var(--text-secondary); cursor: pointer;
+      transition: background 0.12s, border-color 0.12s;
+    }
+    .upload-browse-btn:hover { background: var(--bg); border-color: #ccc; }
+    .upload-browse-btn svg { width: 12px; height: 12px; stroke-width: 2; }
+
+    /* Seçilen dosyalar önizlemesi */
+    .upload-preview-grid {
+      display: flex; flex-wrap: wrap; gap: 7px;
+      padding: 10px 12px 0;
+    }
+    .upload-preview-item {
+      position: relative; border-radius: 8px; overflow: hidden;
+      border: 1px solid var(--border); background: var(--bg);
+    }
+    .upload-preview-item--image { width: 68px; height: 68px; }
+    .upload-preview-item--image img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .upload-preview-item--file {
+      display: flex; align-items: center; gap: 7px;
+      padding: 7px 10px; min-width: 150px; max-width: 210px;
+    }
+    .upload-preview-file-icon {
+      width: 26px; height: 26px; border-radius: 5px;
+      background: var(--border-soft); flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--text-muted);
+    }
+    .upload-preview-file-icon svg { width: 12px; height: 12px; }
+    .upload-preview-file-info { min-width: 0; }
+    .upload-preview-file-name {
+      font-size: 11.5px; font-weight: 500;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      max-width: 110px; display: block;
+    }
+    .upload-preview-file-size { font-size: 10.5px; color: var(--text-muted); }
+    .upload-preview-remove {
+      position: absolute; top: 3px; right: 3px;
+      width: 17px; height: 17px; border-radius: 50%;
+      background: rgba(0,0,0,0.5); border: none;
+      color: white; display: flex; align-items: center; justify-content: center;
+      cursor: pointer; font-size: 10px; line-height: 1;
+      transition: background 0.1s;
+    }
+    .upload-preview-remove:hover { background: rgba(239,68,68,0.85); }
+
+    /* Caption */
+    .upload-caption-row {
+      display: flex; align-items: center; gap: 8px;
+      padding: 8px 12px 0;
+      border-top: 1px solid var(--border-soft);
+      margin-top: 8px;
+    }
+    .upload-caption-input {
+      flex: 1; border: none; background: transparent;
+      font-family: var(--font); font-size: 13px;
+      color: var(--text-primary); outline: none; resize: none;
+      min-height: 20px; max-height: 60px; line-height: 1.4;
+    }
+    .upload-caption-input::placeholder { color: var(--text-muted); }
+
+    /* Progress bar */
+    .upload-progress-wrap {
+      height: 3px; background: var(--border-soft);
+      border-radius: 0 0 14px 14px; overflow: hidden;
+      display: none;
+    }
+    .upload-progress-wrap.visible { display: block; }
+    .upload-progress-bar {
+      height: 100%; background: var(--accent);
+      width: 0%; transition: width 0.2s ease; border-radius: 2px;
+    }
+
+    /* Ayırıcı çizgi toolbar'da */
+    .compose-attach-sep {
+      width: 1px; height: 13px;
+      background: var(--border); margin: 0 3px; flex-shrink: 0;
+    }
+
+    /* Responsive */
+    @media (max-width: 700px) {
+      .site-nav { display: none; }
+      .conv-panel { width: 100%; }
+      .chat-panel { display: none; }
+      .conv-panel.hidden { display: none; }
+      .chat-panel.mobile-open { display: flex; position: fixed; inset: 0; z-index: 100; }
+    }
+  </style>
+</head>
+<body>
+<div class="dm-root">
+
+  <!-- ── Sol mini gezinti ─────────────────────────────────────── -->
+  <nav class="site-nav">
+    <span class="nav-logo">Alvera</span>
+
+    <a href="/dashboard" class="nav-icon-btn" title="Dashboard">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+    </a>
+
+    <a href="/feed/" class="nav-icon-btn" title="Alvera Social">
+      <!-- Activity / Feed ikonu: farklı uzunlukta yatay çizgiler -->
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round">
+        <line x1="4" y1="6" x2="20" y2="6" stroke-width="1.7"/>
+        <line x1="4" y1="12" x2="15" y2="12" stroke-width="1.7"/>
+        <line x1="4" y1="18" x2="18" y2="18" stroke-width="1.7"/>
+      </svg>
+    </a>
+
+    <a href="/dm/" class="nav-icon-btn active" title="Mesajlar" id="navDmBtn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,12 2,6"/></svg>
+      {% if total_unread > 0 %}
+      <span class="nav-badge">{{ total_unread if total_unread < 10 else '9+' }}</span>
+      {% endif %}
+    </a>
+
+    <a href="/{{ current_user.site.slug if current_user.site else '' }}" class="nav-icon-btn" title="Profilim">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    </a>
+  </nav>
+
+  <!-- ── Konuşma listesi paneli ───────────────────────────────── -->
+  <aside class="conv-panel" id="convPanel">
+    <div class="conv-header">
+      <h1>Mesajlar</h1>
+      {% if total_unread > 0 %}
+      <div class="conv-header-sub">{{ total_unread }} okunmamış mesaj</div>
+      {% else %}
+      <div class="conv-header-sub">Özel konuşmalar</div>
+      {% endif %}
+    </div>
+
+    {% if conversations %}
+    <div class="conv-list">
+      {% for conv in conversations %}
+        {% set other = conv.other_user(current_user.id) %}
+        {% set last_msg = conv.last_message() %}
+        {% set unread = conv.unread_count(current_user.id) %}
+        {% set other_site = other.site %}
+        {% set other_avatar_char = (other.full_name or other.email or '?')[0].upper() %}
+        <a href="/dm/{{ other.id }}"
+           class="conv-item {% if active_conv and active_conv.id == conv.id %}active{% endif %}">
+
+          <div class="conv-avatar">
+            {% if other_site and other_site.avatar_file %}
+              <img src="/{{ other_site.avatar_file }}" alt="">
+            {% else %}
+              {{ other_avatar_char }}
+            {% endif %}
+          </div>
+
+          <div class="conv-info">
+            <div class="conv-name">{{ other.full_name or other.email.split('@')[0] }}</div>
+            {% if last_msg %}
+            <div class="conv-preview {% if unread > 0 %}unread{% endif %}">
+              {% if last_msg.sender_id == current_user.id %}Sen: {% endif %}
+              {{ last_msg.content[:55] }}{% if last_msg.content|length > 55 %}…{% endif %}
+            </div>
+            {% else %}
+            <div class="conv-preview">Konuşma başlat</div>
+            {% endif %}
+          </div>
+
+          <div class="conv-meta">
+            {% if last_msg %}
+            <span class="conv-time">
+              {{ last_msg.created_at.strftime('%H:%M') }}
+            </span>
+            {% endif %}
+            {% if unread > 0 %}
+            <span class="conv-unread-badge">{{ unread }}</span>
+            {% endif %}
+          </div>
+        </a>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="conv-empty">
+      <div class="conv-empty-icon">✉️</div>
+      <div class="conv-empty-text">Henüz mesajın yok.<br>Birinin profiline giderek mesaj başlatabilirsin.</div>
+    </div>
+    {% endif %}
+  </aside>
+
+  <!-- ── Chat paneli ─────────────────────────────────────────── -->
+  <main class="chat-panel" id="chatPanel">
+
+    {% if other_user %}
+    <!-- ── Aktif konuşma ──────────────────────────────────────── -->
+    {% set od = other_user.onboarding %}
+    {% set site = other_user.site %}
+    {% set avatar_char = (other_user.full_name or other_user.email or '?')[0].upper() %}
+
+    <div class="chat-header">
+      <div class="chat-header-avatar">
+        {% if site and site.avatar_file %}
+          <img src="/{{ site.avatar_file }}" alt="">
+        {% else %}
+          {{ avatar_char }}
+        {% endif %}
+      </div>
+      <div class="chat-header-info">
+        <div class="chat-header-name">{{ other_user.full_name or other_user.email.split('@')[0] }}</div>
+        <div class="chat-header-sub">
+          {% if od and od.job_title %}{{ od.job_title }}{% if od.company %} · {{ od.company }}{% endif %}{% endif %}
+        </div>
+      </div>
+      <div class="chat-header-actions">
+        <button onclick="openSearchPanel()" class="chat-header-link" title="Mesajlarda ara">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <circle cx="11" cy="11" r="8"/>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+          Ara
+        </button>
+        <a href="/feed/u/{{ other_user.id }}" class="chat-header-link">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+            <circle cx="12" cy="7" r="4"/>
+          </svg>
+          Profil
+        </a>
+        {% if site and site.is_published %}
+        <a href="/{{ site.slug }}" class="chat-header-link" target="_blank">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+            <polyline points="15 3 21 3 21 9"/>
+            <line x1="10" y1="14" x2="21" y2="3"/>
+          </svg>
+          Site
+        </a>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- ── Arama overlay paneli ──────────────────────────────── -->
+    <div class="search-panel" id="searchPanel">
+      <div class="search-panel-header">
+        <input type="text" id="searchInput" class="search-panel-input"
+               placeholder="Mesajlarda ara…" autocomplete="off"
+               oninput="onSearchInput(this.value)">
+        <button class="search-close-btn" onclick="closeSearchPanel()">Kapat</button>
+      </div>
+      <div class="search-results" id="searchResults">
+        <div class="search-empty-state">Aramak istediğin kelimeyi yaz.</div>
+      </div>
+    </div>
+
+    <div class="chat-messages" id="chatMessages">
+      {% if messages %}
+        {% for msg in messages %}
+          {% include '_dm_message.html' %}
+        {% endfor %}
+      {% else %}
+      <div class="chat-empty">
+        <div class="chat-empty-icon">👋</div>
+        <div class="chat-empty-title">Konuşma başlat</div>
+        <div class="chat-empty-sub">
+          {{ other_user.full_name or other_user.email.split('@')[0] }} ile ilk mesajını gönder.
+        </div>
+      </div>
+      {% endif %}
+    </div>
+
+    <div class="chat-compose">
+      <div class="chat-compose-box" id="composeBox">
+        <textarea
+          id="composeInput"
+          class="chat-compose-textarea"
+          placeholder="Mesaj yaz…"
+          rows="1"
+          maxlength="4000"
+          autofocus></textarea>
+
+        <!-- Toolbar: mod toggle + dil seçici + gönder -->
+        <div class="compose-toolbar">
+
+          <!-- Segmented mode toggle -->
+          <div class="compose-mode-toggle">
+            <button class="compose-mode-btn active" id="modeTextBtn"
+                    onclick="setComposeMode('text')" title="Metin modu">
+              <!-- T ikonu -->
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path d="M4 6h16M12 6v12M8 18h8" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+            <button class="compose-mode-btn" id="modeCodeBtn"
+                    onclick="setComposeMode('code')" title="Kod modu">
+              <!-- </> ikonu -->
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <polyline points="9 18 3 12 9 6" stroke-linecap="round" stroke-linejoin="round"/>
+                <polyline points="15 6 21 12 15 18" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+          </div>
+
+          <!-- Dil seçici (sadece kod modunda) -->
+          <select id="codeLangSelect" class="code-lang-select" style="display:none;">
+            <option value="">dil</option>
+            <option value="python">Python</option>
+            <option value="javascript">JavaScript</option>
+            <option value="typescript">TypeScript</option>
+            <option value="html">HTML</option>
+            <option value="css">CSS</option>
+            <option value="sql">SQL</option>
+            <option value="bash">Bash</option>
+            <option value="json">JSON</option>
+            <option value="go">Go</option>
+            <option value="rust">Rust</option>
+            <option value="java">Java</option>
+            <option value="cpp">C++</option>
+            <option value="c">C</option>
+          </select>
+
+          <!-- Ayırıcı + Dosya modu butonu -->
+          <div class="compose-attach-sep"></div>
+          <button class="compose-mode-btn" id="modeFileBtn"
+                  onclick="setComposeMode('file')" title="Dosya / Fotoğraf ekle">
+            <!-- Ataşman ikonu -->
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"
+                    stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+
+          <!-- Hidden file input -->
+          <input type="file" id="dmFileInput" multiple accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.md,.csv,.zip,.rar,.mp4,.mp3" style="display:none" onchange="onDmFilesSelected(this.files)">
+
+          <div class="compose-spacer"></div>
+
+          <button class="chat-compose-send" id="sendBtn" title="Gönder (Enter)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <line x1="22" y1="2" x2="11" y2="13"/>
+              <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Upload panel (dosya modu aktifken görünür) -->
+      <div class="upload-panel" id="uploadPanel">
+        <!-- Dosya drop zone -->
+        <div class="upload-dropzone" id="uploadDropzone"
+             ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" ondrop="onDrop(event)"
+             onclick="document.getElementById('dmFileInput').click()">
+          <div class="upload-dropzone-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+          </div>
+          <span class="upload-dropzone-title">Dosya veya fotoğraf sürükle</span>
+          <span class="upload-dropzone-sub">PNG, JPG, PDF, DOCX, ZIP… — max 30 MB</span>
+          <button class="upload-browse-btn" onclick="event.stopPropagation(); document.getElementById('dmFileInput').click()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+            Bilgisayardan Seç
+          </button>
+        </div>
+
+        <!-- Seçili dosyalar önizleme -->
+        <div class="upload-preview-grid" id="uploadPreviewGrid" style="display:none"></div>
+
+        <!-- Caption + gönder satırı (dosyalar seçilince belirir) -->
+        <div class="upload-caption-row" id="uploadCaptionRow" style="display:none">
+          <textarea class="upload-caption-input" id="uploadCaptionInput"
+                    placeholder="Açıklama ekle (opsiyonel)…" rows="1"
+                    oninput="autoResizeCaption(this)"></textarea>
+        </div>
+
+        <!-- Upload progress bar -->
+        <div class="upload-progress-wrap" id="uploadProgressWrap">
+          <div class="upload-progress-bar" id="uploadProgressBar"></div>
+        </div>
+      </div>
+    </div>
+
+    {% else %}
+    <!-- ── Konuşma seçilmemiş ─────────────────────────────────── -->
+    <div class="chat-new-hint">
+      <div class="chat-empty-icon">💬</div>
+      <div class="chat-empty-title">Bir konuşma seç</div>
+      <div class="chat-empty-sub">
+        Soldan bir konuşma seç ya da birinin Social profiline giderek mesaj gönder.
+      </div>
+    </div>
+    {% endif %}
+
+  </main>
+</div>
+
+<!-- ── Lightbox ─────────────────────────────────────────────── -->
+<div class="dm-lightbox" id="dmLightbox" onclick="dmCloseLightbox()">
+  <button class="dm-lightbox-close" onclick="event.stopPropagation(); dmCloseLightbox()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+  </button>
+  <img class="dm-lightbox-img" id="dmLightboxImg" src="" alt="">
+  <span class="dm-lightbox-name" id="dmLightboxName"></span>
+</div>
+
+{% if other_user %}
+<script>
+// ═══════════════════════════════════════════════════════════════
+//  Alvera Direct — JavaScript
+//  Mesaj gönder · Polling · Sil · Düzenle · Tepki · Arama · Kod
+// ═══════════════════════════════════════════════════════════════
+
+const chatMessages = document.getElementById('chatMessages');
+const composeInput = document.getElementById('composeInput');
+const sendBtn      = document.getElementById('sendBtn');
+const OTHER_USER_ID = {{ other_user.id }};
+
+// ── Scroll ─────────────────────────────────────────────────────
+function scrollBottom(smooth = false) {
+  chatMessages.scrollTo({ top: chatMessages.scrollHeight, behavior: smooth ? 'smooth' : 'instant' });
+}
+scrollBottom();
+
+// ── Compose: textarea auto-resize ──────────────────────────────
+composeInput.addEventListener('input', () => {
+  composeInput.style.height = 'auto';
+  composeInput.style.height = Math.min(composeInput.scrollHeight, 180) + 'px';
+});
+
+// ── Compose: mod yönetimi (text / code) ────────────────────────
+let currentMode = 'text';
+
+function setComposeMode(mode) {
+  currentMode = mode;
+  const modeTextBtn    = document.getElementById('modeTextBtn');
+  const modeCodeBtn    = document.getElementById('modeCodeBtn');
+  const modeFileBtn    = document.getElementById('modeFileBtn');
+  const codeLangSelect = document.getElementById('codeLangSelect');
+  const composeBox     = document.getElementById('composeBox');
+  const uploadPanel    = document.getElementById('uploadPanel');
+
+  modeTextBtn.classList.toggle('active', mode === 'text');
+  modeCodeBtn.classList.toggle('active', mode === 'code');
+  modeFileBtn.classList.toggle('active', mode === 'file');
+
+  codeLangSelect.style.display = mode === 'code'  ? 'block' : 'none';
+  composeBox.classList.toggle('code-mode', mode === 'code');
+
+  // Upload panel aç/kapat
+  if (mode === 'file') {
+    composeInput.style.display = 'none';
+    uploadPanel.classList.add('open');
+    composeInput.classList.remove('compose-code-input');
+  } else {
+    composeInput.style.display = 'block';
+    uploadPanel.classList.remove('open');
+    // Dosya seçimlerini temizle
+    selectedFiles = [];
+    renderUploadPreviews();
+  }
+
+  if (mode === 'code') {
+    composeInput.classList.add('compose-code-input');
+    composeInput.placeholder = 'Kodu yapıştır veya yaz…';
+    composeInput.style.height = 'auto';
+    composeInput.style.height = Math.max(80, composeInput.scrollHeight) + 'px';
+  } else if (mode === 'text') {
+    composeInput.classList.remove('compose-code-input');
+    composeInput.placeholder = 'Mesaj yaz…';
+    composeInput.style.height = 'auto';
+    composeInput.style.height = Math.min(composeInput.scrollHeight, 160) + 'px';
+    composeInput.focus();
+  }
+}
+
+// ── Enter / Shift+Enter ─────────────────────────────────────────
+composeInput.addEventListener('keydown', e => {
+  if (e.key === 'Enter') {
+    if (currentMode === 'code') {
+      // Kod modunda Enter her zaman satır atla
+      return;
+    }
+    if (!e.shiftKey) {
+      e.preventDefault();
+      doSend();
+    }
+  }
+});
+sendBtn.addEventListener('click', doSend);
+
+// ── Mesaj gönder ───────────────────────────────────────────────
+async function doSend() {
+  // Dosya modundaysa dosya gönder
+  if (currentMode === 'file') { doSendFiles(); return; }
+
+  const content = composeInput.value.trim();
+  if (!content) return;
+
+  const codeLangSelect = document.getElementById('codeLangSelect');
+  const payload = {
+    content,
+    msg_type:      currentMode,
+    code_language: currentMode === 'code' ? codeLangSelect.value : '',
+  };
+
+  sendBtn.disabled = true;
+  composeInput.value = '';
+  composeInput.style.height = 'auto';
+
+  try {
+    const res  = await fetch(`/dm/${OTHER_USER_ID}/send`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    const data = await res.json();
+
+    if (data.ok) {
+      const empty = chatMessages.querySelector('.chat-empty');
+      if (empty) empty.remove();
+      chatMessages.insertAdjacentHTML('beforeend', data.html);
+      scrollBottom(true);
+      lastMsgId = data.message_id;
+    } else {
+      alert(data.error || 'Mesaj gönderilemedi.');
+    }
+  } catch {
+    alert('Bağlantı hatası.');
+  } finally {
+    sendBtn.disabled = false;
+    composeInput.focus();
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  Dosya Yükleme Sistemi
+// ═══════════════════════════════════════════════════════════════
+let selectedFiles = [];   // { file, id, type: 'image'|'file' }
+
+function formatBytes(n) {
+  if (n < 1024)      return n + ' B';
+  if (n < 1048576)   return (n/1024).toFixed(1) + ' KB';
+  return (n/1048576).toFixed(1) + ' MB';
+}
+
+function isImageFile(f) {
+  return /\.(png|jpg|jpeg|gif|webp)$/i.test(f.name);
+}
+
+// Dosya seçimi (input ya da drop)
+function onDmFilesSelected(files) {
+  const MAX = 30 * 1024 * 1024;
+  Array.from(files).forEach(f => {
+    if (f.size > MAX) { alert(`"${f.name}" 30 MB sınırını aşıyor.`); return; }
+    selectedFiles.push({ file: f, id: Date.now() + Math.random(), type: isImageFile(f) ? 'image' : 'file' });
+  });
+  // Input'u sıfırla (aynı dosyayı tekrar seçebilmek için)
+  document.getElementById('dmFileInput').value = '';
+  renderUploadPreviews();
+}
+
+// Önizleme grid'ini çiz
+function renderUploadPreviews() {
+  const grid       = document.getElementById('uploadPreviewGrid');
+  const captionRow = document.getElementById('uploadCaptionRow');
+  const dropzone   = document.getElementById('uploadDropzone');
+
+  if (selectedFiles.length === 0) {
+    grid.style.display       = 'none';
+    captionRow.style.display = 'none';
+    dropzone.style.display   = 'flex';
+    grid.innerHTML = '';
+    return;
+  }
+
+  dropzone.style.display   = 'none';
+  grid.style.display       = 'flex';
+  captionRow.style.display = 'flex';
+  grid.innerHTML = '';
+
+  selectedFiles.forEach(item => {
+    const el = document.createElement('div');
+    el.className = `upload-preview-item upload-preview-item--${item.type}`;
+    el.dataset.fileId = item.id;
+
+    if (item.type === 'image') {
+      const reader = new FileReader();
+      reader.onload = e => {
+        el.innerHTML = `<img src="${e.target.result}" alt="">
+          <button class="upload-preview-remove" onclick="removeUploadFile('${item.id}')">✕</button>`;
+      };
+      reader.readAsDataURL(item.file);
+    } else {
+      el.innerHTML = `
+        <div class="upload-preview-file-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        </div>
+        <div class="upload-preview-file-info">
+          <span class="upload-preview-file-name">${_esc(item.file.name)}</span>
+          <span class="upload-preview-file-size">${formatBytes(item.file.size)}</span>
+        </div>
+        <button class="upload-preview-remove" onclick="removeUploadFile('${item.id}')" style="position:static;width:auto;height:auto;background:none;color:var(--text-muted);font-size:12px;border-radius:4px;padding:2px 5px;">✕</button>`;
+    }
+    grid.appendChild(el);
+  });
+}
+
+function removeUploadFile(id) {
+  selectedFiles = selectedFiles.filter(f => String(f.id) !== String(id));
+  renderUploadPreviews();
+}
+
+// Drag & drop
+function onDragOver(e) {
+  e.preventDefault();
+  document.getElementById('uploadDropzone').classList.add('dragover');
+}
+function onDragLeave(e) {
+  document.getElementById('uploadDropzone').classList.remove('dragover');
+}
+function onDrop(e) {
+  e.preventDefault();
+  document.getElementById('uploadDropzone').classList.remove('dragover');
+  if (e.dataTransfer.files.length) onDmFilesSelected(e.dataTransfer.files);
+}
+
+// Caption textarea auto-resize
+function autoResizeCaption(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 60) + 'px';
+}
+
+// Dosya gönder (send butonuna basılınca, file modundaysa)
+async function doSendFiles() {
+  if (selectedFiles.length === 0) return;
+  const caption = (document.getElementById('uploadCaptionInput').value || '').trim();
+
+  const progressWrap = document.getElementById('uploadProgressWrap');
+  const progressBar  = document.getElementById('uploadProgressBar');
+
+  progressWrap.classList.add('visible');
+  sendBtn.disabled = true;
+
+  let successCount = 0;
+
+  for (let i = 0; i < selectedFiles.length; i++) {
+    const item = selectedFiles[i];
+    const fd   = new FormData();
+    fd.append('file', item.file);
+    if (caption && i === selectedFiles.length - 1) fd.append('caption', caption);
+
+    try {
+      // XHR ile progress takibi
+      const html = await uploadWithProgress(fd, (pct) => {
+        const overall = ((i + pct / 100) / selectedFiles.length) * 100;
+        progressBar.style.width = overall + '%';
+      });
+
+      const empty = chatMessages.querySelector('.chat-empty');
+      if (empty) empty.remove();
+      chatMessages.insertAdjacentHTML('beforeend', html);
+      scrollBottom(true);
+      successCount++;
+    } catch (err) {
+      alert(`"${item.file.name}" yüklenemedi: ${err}`);
+    }
+  }
+
+  // Temizle
+  progressBar.style.width = '100%';
+  setTimeout(() => {
+    progressWrap.classList.remove('visible');
+    progressBar.style.width = '0%';
+  }, 600);
+
+  if (successCount > 0) {
+    selectedFiles = [];
+    renderUploadPreviews();
+    document.getElementById('uploadCaptionInput').value = '';
+    // Polling'in lastMsgId'yi güncellemesi için kısa bekle
+    setTimeout(pollNewMessages, 300);
+    // Metin moduna dön
+    setComposeMode('text');
+  }
+
+  sendBtn.disabled = false;
+}
+
+function uploadWithProgress(fd, onProgress) {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', `/dm/${OTHER_USER_ID}/send-file`);
+
+    xhr.upload.onprogress = e => {
+      if (e.lengthComputable) onProgress((e.loaded / e.total) * 100);
+    };
+
+    xhr.onload = () => {
+      try {
+        const data = JSON.parse(xhr.responseText);
+        if (data.ok) {
+          lastMsgId = data.message_id;
+          resolve(data.html);
+        } else {
+          reject(data.error || 'Yükleme başarısız.');
+        }
+      } catch { reject('Sunucu hatası.'); }
+    };
+
+    xhr.onerror = () => reject('Bağlantı hatası.');
+    xhr.send(fd);
+  });
+}
+
+// ── Lightbox ────────────────────────────────────────────────────
+function dmOpenImage(url, name) {
+  const lb = document.getElementById('dmLightbox');
+  document.getElementById('dmLightboxImg').src  = url;
+  document.getElementById('dmLightboxName').textContent = name || '';
+  lb.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function dmCloseLightbox() {
+  document.getElementById('dmLightbox').classList.remove('open');
+  document.body.style.overflow = '';
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape') dmCloseLightbox(); });
+
+// ── Mesaj SİL ──────────────────────────────────────────────────
+async function dmDeleteMsg(msgId, btn) {
+  if (!confirm('Bu mesajı silmek istiyor musun?')) return;
+
+  btn.disabled = true;
+  try {
+    const res  = await fetch(`/dm/msg/${msgId}`, { method: 'DELETE' });
+    const data = await res.json();
+    if (data.ok) {
+      const msgEl = chatMessages.querySelector(`[data-msg-id="${msgId}"]`);
+      if (msgEl) {
+        msgEl.querySelector('.dm-bubble').innerHTML =
+          '<span class="dm-deleted-text">Bu mesaj silindi.</span>';
+        msgEl.querySelector('.dm-bubble').classList.add('dm-bubble--deleted');
+        const actionsEl = msgEl.querySelector('.dm-msg-actions');
+        if (actionsEl) actionsEl.remove();
+        const reactEl = msgEl.querySelector('.dm-reactions');
+        if (reactEl) reactEl.remove();
+      }
+    } else {
+      alert(data.error || 'Silinemedi.');
+      btn.disabled = false;
+    }
+  } catch {
+    alert('Bağlantı hatası.');
+    btn.disabled = false;
+  }
+}
+
+// ── Mesaj DÜZENLE ──────────────────────────────────────────────
+function dmStartEdit(msgId, btn) {
+  const msgEl  = chatMessages.querySelector(`[data-msg-id="${msgId}"]`);
+  const bubble = msgEl.querySelector('.dm-bubble');
+  const textEl = bubble.querySelector('.dm-bubble-text');
+  if (!textEl) return;
+
+  const original = textEl.textContent.trim();
+
+  // Inline form oluştur
+  bubble.innerHTML = `
+    <div class="dm-edit-form">
+      <textarea class="dm-edit-textarea" id="editArea_${msgId}">${original}</textarea>
+      <div class="dm-edit-actions">
+        <button class="dm-edit-cancel" onclick="dmCancelEdit(${msgId}, '${original.replace(/'/g,"\\'")}')">İptal</button>
+        <button class="dm-edit-save"   onclick="dmSaveEdit(${msgId})">Kaydet</button>
+      </div>
+    </div>`;
+
+  const ta = document.getElementById(`editArea_${msgId}`);
+  ta.style.height = ta.scrollHeight + 'px';
+  ta.focus();
+  ta.setSelectionRange(ta.value.length, ta.value.length);
+}
+
+function dmCancelEdit(msgId, original) {
+  const msgEl  = chatMessages.querySelector(`[data-msg-id="${msgId}"]`);
+  const bubble = msgEl.querySelector('.dm-bubble');
+  bubble.innerHTML = `<span class="dm-bubble-text">${_esc(original)}</span>`;
+}
+
+async function dmSaveEdit(msgId) {
+  const ta      = document.getElementById(`editArea_${msgId}`);
+  const content = ta.value.trim();
+  if (!content) return;
+
+  ta.disabled = true;
+  try {
+    const res  = await fetch(`/dm/msg/${msgId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ content }),
+    });
+    const data = await res.json();
+
+    const msgEl  = chatMessages.querySelector(`[data-msg-id="${msgId}"]`);
+    const bubble = msgEl.querySelector('.dm-bubble');
+
+    if (data.ok) {
+      bubble.innerHTML =
+        `<span class="dm-bubble-text">${_esc(data.content)}</span><span class="dm-edited-badge">düzenlendi</span>`;
+    } else {
+      alert(data.error || 'Düzenlenemedi.');
+      ta.disabled = false;
+    }
+  } catch {
+    alert('Bağlantı hatası.');
+    ta.disabled = false;
+  }
+}
+
+// ── Tepki picker ────────────────────────────────────────────────
+const REACTIONS = ['❤️','👍','😂','🔥','✦','👀'];
+let openPickerMsgId = null;
+
+function dmShowReactPicker(msgId, triggerBtn) {
+  // Varsa kapat
+  document.querySelectorAll('.dm-react-picker').forEach(p => p.remove());
+  if (openPickerMsgId === msgId) { openPickerMsgId = null; return; }
+
+  openPickerMsgId = msgId;
+  const picker = document.createElement('div');
+  picker.className = 'dm-react-picker';
+  picker.innerHTML = REACTIONS.map(e =>
+    `<button onclick="dmToggleReact(${msgId},'${e}',this);closePicker()">${e}</button>`
+  ).join('');
+
+  // Picker'ı trigger butonunun yanına yerleştir
+  const rect = triggerBtn.getBoundingClientRect();
+  picker.style.position = 'fixed';
+  picker.style.bottom   = (window.innerHeight - rect.top + 6) + 'px';
+  picker.style.left     = Math.max(8, rect.left - 20) + 'px';
+  document.body.appendChild(picker);
+
+  // Dışına tıklayınca kapat
+  setTimeout(() => {
+    document.addEventListener('click', closePicker, { once: true });
+  }, 10);
+}
+
+function closePicker() {
+  document.querySelectorAll('.dm-react-picker').forEach(p => p.remove());
+  openPickerMsgId = null;
+}
+
+async function dmToggleReact(msgId, emoji, btn) {
+  try {
+    const res  = await fetch(`/dm/msg/${msgId}/react`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ emoji }),
+    });
+    const data = await res.json();
+    if (!data.ok) return;
+
+    // Tepki listesini yeniden çiz
+    const msgEl = chatMessages.querySelector(`[data-msg-id="${msgId}"]`);
+    if (!msgEl) return;
+
+    let reactEl = msgEl.querySelector('.dm-reactions');
+    if (!reactEl) {
+      // Meta satırının üstüne ekle
+      const metaRow = msgEl.querySelector('.dm-msg-meta-row');
+      if (metaRow) {
+        reactEl = document.createElement('div');
+        reactEl.className = 'dm-reactions';
+        reactEl.dataset.msgId = msgId;
+        metaRow.before(reactEl);
+      }
+    }
+
+    if (reactEl) {
+      reactEl.innerHTML = data.reactions.map(r =>
+        `<button class="dm-reaction-pill ${r.reacted_by_me ? 'dm-reaction-pill--active' : ''}"
+                 onclick="dmToggleReact(${msgId},'${r.emoji}',this)">
+           ${r.emoji} <span class="dm-reaction-count">${r.count}</span>
+         </button>`
+      ).join('');
+
+      if (data.reactions.length === 0) reactEl.remove();
+    }
+  } catch { /* sessiz */ }
+}
+
+// ── Arama paneli ────────────────────────────────────────────────
+let searchDebounce = null;
+
+function openSearchPanel() {
+  const panel = document.getElementById('searchPanel');
+  panel.classList.add('open');
+  document.getElementById('searchInput').focus();
+}
+
+function closeSearchPanel() {
+  const panel = document.getElementById('searchPanel');
+  panel.classList.remove('open');
+  document.getElementById('searchResults').innerHTML =
+    '<div class="search-empty-state">Aramak istediğin kelimeyi yaz.</div>';
+  document.getElementById('searchInput').value = '';
+}
+
+function onSearchInput(q) {
+  clearTimeout(searchDebounce);
+  if (q.trim().length < 2) {
+    document.getElementById('searchResults').innerHTML =
+      '<div class="search-empty-state">En az 2 karakter gir.</div>';
+    return;
+  }
+  searchDebounce = setTimeout(() => doSearch(q.trim()), 350);
+}
+
+async function doSearch(q) {
+  try {
+    const res  = await fetch(`/dm/${OTHER_USER_ID}/search?q=${encodeURIComponent(q)}`);
+    const data = await res.json();
+    const container = document.getElementById('searchResults');
+
+    if (!data.ok || data.results.length === 0) {
+      container.innerHTML = `<div class="search-empty-state">Sonuç bulunamadı.</div>`;
+      return;
+    }
+
+    const highlight = (text) => text.replace(
+      new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'), 'gi'),
+      m => `<mark>${m}</mark>`
+    );
+
+    container.innerHTML = data.results.map(r => `
+      <div class="search-result-item" onclick="jumpToMsg(${r.id})">
+        <div class="search-result-meta">${r.is_mine ? 'Siz' : 'Karşı taraf'} · ${r.created_at}</div>
+        <div class="search-result-content">${highlight(_esc(r.content))}</div>
+      </div>
+    `).join('');
+  } catch {
+    document.getElementById('searchResults').innerHTML =
+      '<div class="search-empty-state">Arama sırasında hata oluştu.</div>';
+  }
+}
+
+function jumpToMsg(msgId) {
+  closeSearchPanel();
+  const el = chatMessages.querySelector(`[data-msg-id="${msgId}"]`);
+  if (!el) return;
+  el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  el.style.transition = 'background 0.3s';
+  el.style.background = '#fef9c3';
+  setTimeout(() => { el.style.background = ''; }, 1800);
+}
+
+// ── Kod kopyala ─────────────────────────────────────────────────
+function dmCopyCode(btn) {
+  const pre  = btn.closest('.dm-code-card').querySelector('code');
+  if (!pre) return;
+  navigator.clipboard.writeText(pre.textContent).then(() => {
+    btn.title = 'Kopyalandı!';
+    setTimeout(() => { btn.title = 'Kopyala'; }, 1500);
+  });
+}
+
+// ── HTML escape yardımcısı ──────────────────────────────────────
+function _esc(str) {
+  return String(str)
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;')
+    .replace(/'/g,'&#39;');
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  Adaptif Polling
+// ═══════════════════════════════════════════════════════════════
+let lastMsgId  = {{ messages[-1].id if messages else 0 }};
+let pollTimer  = null;
+let isPollBusy = false;
+
+const INTERVAL_FOCUSED = 1500;
+const INTERVAL_VISIBLE = 5000;
+const INTERVAL_HIDDEN  = 30000;
+
+function getInterval() {
+  if (document.hidden)      return INTERVAL_HIDDEN;
+  if (!document.hasFocus()) return INTERVAL_VISIBLE;
+  return INTERVAL_FOCUSED;
+}
+
+async function pollNewMessages() {
+  if (isPollBusy) return;
+  isPollBusy = true;
+  try {
+    const res  = await fetch(`/dm/${OTHER_USER_ID}/poll?since=${lastMsgId}`);
+    if (!res.ok) return;
+    const data = await res.json();
+
+    if (data.messages_html) {
+      const empty = chatMessages.querySelector('.chat-empty');
+      if (empty) empty.remove();
+      chatMessages.insertAdjacentHTML('beforeend', data.messages_html);
+
+      const nearBottom = chatMessages.scrollHeight - chatMessages.scrollTop
+                         - chatMessages.clientHeight < 120;
+      if (nearBottom) scrollBottom(true);
+      lastMsgId = data.last_id;
+    }
+
+    if (data.read_ids && data.read_ids.length) {
+      data.read_ids.forEach(id => {
+        const el = chatMessages.querySelector(`[data-msg-id="${id}"] .dm-read-tick`);
+        if (el) el.classList.add('dm-read-tick--read');
+      });
+    }
+
+    updateNavBadge(data.unread_total);
+  } catch (_) { /* sessiz */ } finally {
+    isPollBusy = false;
+  }
+}
+
+function updateNavBadge(count) {
+  const btn   = document.getElementById('navDmBtn');
+  if (!btn) return;
+  let badge   = btn.querySelector('.nav-badge');
+  if (count > 0) {
+    if (!badge) {
+      badge = document.createElement('span');
+      badge.className = 'nav-badge';
+      btn.appendChild(badge);
+    }
+    badge.textContent = count < 10 ? count : '9+';
+  } else if (badge) {
+    badge.remove();
+  }
+}
+
+function restartPoll() {
+  clearInterval(pollTimer);
+  pollTimer = setInterval(pollNewMessages, getInterval());
+}
+
+document.addEventListener('visibilitychange', () => { pollNewMessages(); restartPoll(); });
+window.addEventListener('focus', () => { pollNewMessages(); restartPoll(); });
+window.addEventListener('blur', restartPoll);
+
+pollNewMessages();
+restartPoll();
+</script>
+{% endif %}
+</body>
+</html>

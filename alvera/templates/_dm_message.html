@@ -1,0 +1,216 @@
+{#
+  _dm_message.html — Alvera Direct mesaj balonu
+  Değişkenler: msg (DMMessage), current_user
+  Tipler: text | code | image | file | aura
+#}
+{% set is_mine = (msg.sender_id == current_user.id) %}
+{% set can_edit = is_mine and not msg.is_deleted and msg.msg_type == 'text' %}
+
+{# ── Ortak tepki + aksiyon makrosu ── #}
+{% macro reactions_block() %}
+{% set reactions = msg.reaction_summary(current_user.id) %}
+{% if reactions %}
+<div class="dm-reactions" data-msg-id="{{ msg.id }}">
+  {% for r in reactions %}
+  <button class="dm-reaction-pill {% if r.reacted_by_me %}dm-reaction-pill--active{% endif %}"
+          onclick="dmToggleReact({{ msg.id }}, '{{ r.emoji }}', this)">
+    {{ r.emoji }} <span class="dm-reaction-count">{{ r.count }}</span>
+  </button>
+  {% endfor %}
+</div>
+{% endif %}
+{% endmacro %}
+
+{% macro actions_block() %}
+<div class="dm-msg-actions" data-msg-id="{{ msg.id }}">
+  <button class="dm-action-btn dm-react-trigger" onclick="dmShowReactPicker({{ msg.id }}, this)" title="Tepki ekle">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><path d="M8 13s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+  </button>
+  {% if can_edit %}
+  <button class="dm-action-btn dm-edit-btn" onclick="dmStartEdit({{ msg.id }}, this)" title="Düzenle (5 dk)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+  </button>
+  {% endif %}
+  {% if is_mine %}
+  <button class="dm-action-btn dm-delete-btn" onclick="dmDeleteMsg({{ msg.id }}, this)" title="Sil">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+  </button>
+  {% endif %}
+</div>
+{% endmacro %}
+
+{% macro time_block() %}
+<span class="dm-time">
+  {{ msg.created_at.strftime('%H:%M') }}
+  {% if is_mine %}
+    <span class="dm-read-tick {% if msg.is_read %}dm-read-tick--read{% endif %}">✓✓</span>
+  {% endif %}
+</span>
+{% endmacro %}
+
+
+{# ══════════════════════════════════════════════════════════════ #}
+{% if msg.is_deleted %}
+{# ── Silinmiş mesaj ── #}
+<div class="dm-msg {% if is_mine %}dm-msg--mine{% else %}dm-msg--theirs{% endif %} dm-msg--deleted"
+     data-msg-id="{{ msg.id }}">
+  <div class="dm-bubble dm-bubble--deleted">
+    <span class="dm-deleted-text">Bu mesaj silindi.</span>
+  </div>
+</div>
+
+{# ══════════════════════════════════════════════════════════════ #}
+{% elif msg.msg_type == 'image' %}
+{# ── Fotoğraf mesajı ── #}
+{% set meta = msg.meta or {} %}
+<div class="dm-msg {% if is_mine %}dm-msg--mine{% else %}dm-msg--theirs{% endif %} dm-msg--image"
+     data-msg-id="{{ msg.id }}">
+
+  <div class="dm-image-card" onclick="dmOpenImage('{{ meta.get('url','') }}', '{{ meta.get('original_name','') }}')">
+    <img src="{{ meta.get('url','') }}" alt="{{ meta.get('original_name','Fotoğraf') }}"
+         class="dm-image-thumb" loading="lazy">
+    <div class="dm-image-overlay">
+      <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>
+    </div>
+  </div>
+
+  {% if msg.content and msg.content != meta.get('original_name','') %}
+  <div class="dm-file-caption">{{ msg.content }}</div>
+  {% endif %}
+
+  {{ reactions_block() }}
+  <div class="dm-msg-meta-row">
+    {{ actions_block() }}
+    {{ time_block() }}
+  </div>
+</div>
+
+{# ══════════════════════════════════════════════════════════════ #}
+{% elif msg.msg_type == 'file' %}
+{# ── Dosya mesajı ── #}
+{% set meta = msg.meta or {} %}
+{% set ext = meta.get('ext', '') %}
+<div class="dm-msg {% if is_mine %}dm-msg--mine{% else %}dm-msg--theirs{% endif %} dm-msg--file"
+     data-msg-id="{{ msg.id }}">
+
+  <a class="dm-file-card" href="{{ meta.get('url','#') }}" download="{{ meta.get('original_name','') }}" target="_blank">
+    <div class="dm-file-icon dm-file-icon--{{ ext }}">
+      {% if ext == 'pdf' %}
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="12" y2="17"/></svg>
+      {% elif ext in ('xls', 'xlsx', 'csv') %}
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M8 13h2l2 4 2-4h2"/></svg>
+      {% elif ext in ('zip', 'rar') %}
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+      {% elif ext in ('mp4', 'mov', 'avi') %}
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="20" height="20" rx="2.18"/><path d="M7 2v20M17 2v20M2 12h20M2 7h5M2 17h5M17 17h5M17 7h5"/></svg>
+      {% elif ext == 'mp3' %}
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+      {% else %}
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      {% endif %}
+    </div>
+    <div class="dm-file-info">
+      <span class="dm-file-name">{{ meta.get('original_name', 'Dosya') }}</span>
+      <span class="dm-file-size">{{ meta.get('size_str', '') }}</span>
+    </div>
+    <div class="dm-file-dl">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+    </div>
+  </a>
+
+  {% if msg.content and msg.content != meta.get('original_name','') %}
+  <div class="dm-file-caption">{{ msg.content }}</div>
+  {% endif %}
+
+  {{ reactions_block() }}
+  <div class="dm-msg-meta-row">
+    {{ actions_block() }}
+    {{ time_block() }}
+  </div>
+</div>
+
+{# ══════════════════════════════════════════════════════════════ #}
+{% elif msg.msg_type == 'aura' %}
+{# ── Aura kartı ── #}
+{% set meta = msg.meta or {} %}
+<div class="dm-msg {% if is_mine %}dm-msg--mine{% else %}dm-msg--theirs{% endif %} dm-msg--aura"
+     data-msg-id="{{ msg.id }}">
+  <div class="dm-aura-msg-card">
+    <div class="dm-aura-msg-header">
+      <span class="dm-aura-msg-icon">✦</span>
+      <div class="dm-aura-msg-info">
+        <p class="dm-aura-msg-title">
+          {% if is_mine %}
+            {{ meta.get('from_user_name', 'Siz') }} → {{ meta.get('target_mindmap_url', '#')|replace('/mindmap/', '') }} kullanıcısına gönderildi
+          {% else %}
+            {{ meta.get('from_user_name', '—') }} sizinle Aura analizi yaptı!
+          {% endif %}
+        </p>
+        <p class="dm-aura-msg-score">
+          Aura Skoru: <strong>{{ meta.get('aura_score', '—') }}</strong> — {{ meta.get('aura_label', '') }}
+        </p>
+      </div>
+    </div>
+    <p class="dm-aura-msg-cta">Detayları görmek için butona tıklayın.</p>
+    {% if not is_mine %}
+    <a class="dm-aura-msg-btn" href="{{ meta.get('target_mindmap_url', '#') }}?aura=1">
+      Raporu İncele →
+    </a>
+    {% endif %}
+  </div>
+  <span class="dm-time">
+    {{ msg.created_at.strftime('%H:%M') }}
+    {% if is_mine %}
+      <span class="dm-read-tick {% if msg.is_read %}dm-read-tick--read{% endif %}">✓✓</span>
+    {% endif %}
+  </span>
+</div>
+
+{# ══════════════════════════════════════════════════════════════ #}
+{% elif msg.msg_type == 'code' %}
+{# ── Kod kartı ── #}
+<div class="dm-msg {% if is_mine %}dm-msg--mine{% else %}dm-msg--theirs{% endif %} dm-msg--code"
+     data-msg-id="{{ msg.id }}">
+  <div class="dm-code-card">
+    <div class="dm-code-header">
+      <div class="dm-code-lang-dots">
+        <span class="dm-code-dot dm-code-dot--red"></span>
+        <span class="dm-code-dot dm-code-dot--yellow"></span>
+        <span class="dm-code-dot dm-code-dot--green"></span>
+      </div>
+      {% if msg.code_language %}
+      <span class="dm-code-lang-label">{{ msg.code_language }}</span>
+      {% endif %}
+      <button class="dm-code-copy-btn" onclick="dmCopyCode(this)" title="Kopyala">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+      </button>
+    </div>
+    <pre class="dm-code-pre"><code>{{ msg.content }}</code></pre>
+  </div>
+
+  {{ reactions_block() }}
+  <div class="dm-msg-meta-row">
+    {{ actions_block() }}
+    {{ time_block() }}
+  </div>
+</div>
+
+{# ══════════════════════════════════════════════════════════════ #}
+{% else %}
+{# ── Normal metin balonu ── #}
+<div class="dm-msg {% if is_mine %}dm-msg--mine{% else %}dm-msg--theirs{% endif %}"
+     data-msg-id="{{ msg.id }}">
+  <div class="dm-bubble" data-msg-id="{{ msg.id }}">
+    <span class="dm-bubble-text">{{ msg.content }}</span>
+    {% if msg.edited_at %}
+    <span class="dm-edited-badge">düzenlendi</span>
+    {% endif %}
+  </div>
+
+  {{ reactions_block() }}
+  <div class="dm-msg-meta-row">
+    {{ actions_block() }}
+    {{ time_block() }}
+  </div>
+</div>
+{% endif %}

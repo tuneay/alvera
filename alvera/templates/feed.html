@@ -1,0 +1,3052 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alvera Social</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <!-- Syntax highlighting — GitHub Dark teması -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg:         #09090b;
+            --bg-subtle:  rgba(255, 255, 255, 0.025);
+            --border:     rgba(255, 255, 255, 0.08);
+            --text-h:     #f4f4f5;
+            --text-body:  #d4d4d8;
+            --text-muted: #a1a1aa;
+            --accent:     #ffffff;
+            --accent-fg:  #09090b;
+            --green:      #4ade80;
+            --ease:       cubic-bezier(0.4, 0, 0.2, 1);
+            --r:          14px;
+        }
+
+        html, body { min-height: 100%; background: var(--bg); }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            color: var(--text-body);
+            -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Grain texture */
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+            opacity: 0.025;
+            z-index: -2;
+            pointer-events: none;
+        }
+
+        .bg-gradient-orb {
+            position: fixed;
+            top: -25%; left: 50%;
+            transform: translateX(-50%);
+            width: 80vw; height: 80vh;
+            background: radial-gradient(circle, rgba(124, 58, 237, 0.07) 0%, rgba(9, 9, 11, 0) 70%);
+            z-index: -1;
+            filter: blur(100px);
+            pointer-events: none;
+        }
+
+        .bg-moving-orb {
+            position: fixed;
+            width: 40vw; height: 40vh;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.018) 0%, rgba(9, 9, 11, 0) 70%);
+            z-index: -1;
+            filter: blur(120px);
+            animation: moveOrb 25s infinite alternate ease-in-out;
+            pointer-events: none;
+        }
+
+        @keyframes moveOrb {
+            0% { top: 20%; left: 10%; }
+            100% { top: 70%; left: 80%; }
+        }
+
+        /* ════ NAV ════ */
+        @keyframes navReveal {
+            0%   { opacity: 0; transform: translateY(-10px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes navBorderIn {
+            0%   { opacity: 0; }
+            60%  { opacity: 0; }
+            100% { opacity: 1; }
+        }
+
+        .topnav {
+            position: sticky; top: 0; z-index: 200;
+            height: 64px;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 28px;
+            background: rgba(9, 9, 11, 0.60);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            animation: navReveal 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+
+        /* Navbar içindeki sol/sağ grupları geciktirerek getir — display/gap altta tanımlı */
+
+        /* ════ SAYFA YÜKLENİŞ ANİMASYONLARI ════ */
+        @keyframes feedFadeUp {
+            from { opacity: 0; transform: translateY(18px) scale(0.99); }
+            to   { opacity: 1; transform: translateY(0)    scale(1);    }
+        }
+
+        .nav-left  { display: flex; align-items: center; gap: 24px; animation: navReveal 0.52s cubic-bezier(0.16,1,0.3,1) 0.06s both; }
+
+        /* ── Brand (dokunulmadı) ── */
+        .nav-brand { display: flex; align-items: center; gap: 6px; text-decoration: none; }
+
+        .nav-brand-word {
+            font-size: 14px; font-weight: 650; letter-spacing: -0.3px; color: var(--text-h);
+        }
+
+        .nav-brand-social {
+            font-size: 10.5px; font-weight: 600; letter-spacing: 1px;
+            text-transform: uppercase; color: var(--text-muted);
+            padding: 2px 7px; border-radius: 100px; border: 1px solid rgba(255, 255, 255, 0.12);
+        }
+
+        /* ── Nav Links — pill tarzı (arob.html gibi) ── */
+        .nav-links { display: flex; align-items: center; gap: 2px; }
+
+        .nav-link {
+            padding: 6px 14px; border-radius: 100px;
+            font-size: 13px; font-weight: 500; color: var(--text-muted);
+            text-decoration: none;
+            transition: color 0.2s ease, background 0.2s ease, transform 0.18s cubic-bezier(0.16,1,0.3,1);
+            display: flex; align-items: center; gap: 5px;
+        }
+
+        .nav-link:hover {
+            color: var(--text-h);
+            background: rgba(255, 255, 255, 0.07);
+            transform: scale(1.02);
+        }
+
+        .nav-link.active {
+            color: var(--text-h);
+            background: rgba(255, 255, 255, 0.10);
+        }
+
+        /* DM badge */
+        .nav-dm-badge {
+            background: #ef4444; color: #fff;
+            font-size: 10px; font-weight: 700;
+            border-radius: 8px; padding: 1px 5px;
+            line-height: 14px; min-width: 16px; text-align: center;
+            transition: transform 0.2s cubic-bezier(0.16,1,0.3,1);
+        }
+
+        .nav-link:hover .nav-dm-badge { transform: scale(1.1); }
+
+        /* ── Sağ grup ── */
+        .nav-right { display: flex; align-items: center; gap: 6px; animation: navReveal 0.52s cubic-bezier(0.16,1,0.3,1) 0.14s both; }
+
+        /* ── Bildirim zili ── */
+        .notif-bell-btn {
+            width: 36px; height: 36px; border-radius: 50%;
+            border: none; background: transparent; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            color: var(--text-muted); position: relative;
+            transition: background 0.2s ease, color 0.2s ease, transform 0.3s cubic-bezier(0.16,1,0.3,1);
+        }
+
+        .notif-bell-btn:hover {
+            background: rgba(255,255,255,0.08);
+            color: var(--text-h);
+            transform: scale(1.08);
+        }
+
+        .notif-bell-btn:active { transform: scale(0.94); }
+
+        @keyframes bellSwing {
+            0%,100% { transform: rotate(0deg) scale(1); }
+            15%      { transform: rotate(14deg) scale(1.05); }
+            30%      { transform: rotate(-10deg) scale(1.05); }
+            45%      { transform: rotate(7deg); }
+            60%      { transform: rotate(-4deg); }
+            75%      { transform: rotate(2deg); }
+        }
+
+        .notif-bell-btn.ring svg { animation: bellSwing 0.65s cubic-bezier(0.16,1,0.3,1) both; }
+
+        .notif-bell-count {
+            position: absolute; top: 3px; right: 3px;
+            min-width: 16px; height: 16px;
+            background: #ef4444; color: white;
+            font-size: 9px; font-weight: 700;
+            border-radius: 8px; padding: 0 3px;
+            display: none; align-items: center; justify-content: center;
+            line-height: 1;
+            animation: badgePop 0.4s cubic-bezier(0.16,1,0.3,1) both;
+        }
+
+        @keyframes badgePop {
+            from { transform: scale(0); opacity: 0; }
+            to   { transform: scale(1); opacity: 1; }
+        }
+
+        /* ── Avatar ── */
+        .nav-avatar {
+            width: 32px; height: 32px; border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1); color: var(--text-h);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 0 0 2px rgba(0,0,0,0.4);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 11px; font-weight: 700; text-decoration: none;
+            flex-shrink: 0; overflow: hidden;
+            transition: opacity 0.15s, border-color 0.2s, box-shadow 0.2s, transform 0.2s cubic-bezier(0.16,1,0.3,1);
+        }
+
+        .nav-avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+        .nav-avatar:hover {
+            opacity: 0.9;
+            border-color: rgba(255,255,255,0.3);
+            box-shadow: 0 0 0 2px rgba(0,0,0,0.4), 0 0 12px rgba(255,255,255,0.1);
+            transform: scale(1.05);
+        }
+
+        /* ════ BİLDİRİM DROPDOWN ════ */
+        .notif-bell-wrap { position: relative; }
+        .notif-dropdown-panel {
+            position: absolute; top: calc(100% + 10px); right: -8px;
+            width: 320px;
+            background: #141416;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 14px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            z-index: 500;
+            overflow: hidden;
+            display: none;
+            backdrop-filter: blur(20px);
+        }
+        .notif-dropdown-panel.open { display: block; }
+        .notif-drop-header {
+            padding: 13px 16px 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .notif-drop-title { font-size: 13px; font-weight: 600; color: var(--text-h); }
+        .notif-drop-all { font-size: 12px; color: var(--text-muted); text-decoration: none; }
+        .notif-drop-all:hover { color: var(--text-h); }
+        .notif-drop-body { max-height: 360px; overflow-y: auto; }
+        .notif-drop-body::-webkit-scrollbar { width: 3px; }
+        .notif-drop-body::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 3px; }
+
+        /* Dropdown içi item stilleri */
+        .notif-item {
+            display: flex; align-items: flex-start; gap: 10px;
+            padding: 11px 16px; text-decoration: none; color: var(--text-body);
+            transition: background 0.12s; border-bottom: 1px solid rgba(255,255,255,0.04);
+        }
+        .notif-item:last-child { border-bottom: none; }
+        .notif-item:hover { background: rgba(255,255,255,0.04); }
+        .notif-avatar {
+            width: 36px; height: 36px; border-radius: 50%;
+            background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 13px; font-weight: 600; flex-shrink: 0;
+            overflow: hidden; position: relative; color: var(--text-h);
+        }
+        .notif-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .notif-type-dot {
+            position: absolute; bottom: -1px; right: -1px;
+            width: 16px; height: 16px; border-radius: 50%;
+            background: #141416; border: 1px solid rgba(255,255,255,0.1);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 8px; line-height: 1;
+        }
+        .notif-body { flex: 1; min-width: 0; }
+        .notif-actor { font-size: 13px; font-weight: 600; color: var(--text-h); }
+        .notif-text { font-size: 13px; color: var(--text-muted); }
+        .notif-time { font-size: 11px; color: var(--text-muted); opacity: 0.6; margin-top: 2px; }
+        .notif-see-all {
+            display: block; text-align: center; padding: 11px;
+            font-size: 12.5px; color: var(--text-muted); border-top: 1px solid rgba(255,255,255,0.06);
+            transition: background 0.12s; text-decoration: none;
+        }
+        .notif-see-all:hover { background: rgba(255,255,255,0.04); color: var(--text-h); }
+        .notif-empty {
+            display: flex; flex-direction: column; align-items: center;
+            gap: 8px; padding: 32px 16px; color: var(--text-muted); font-size: 13px;
+        }
+
+        /* ════ YENİ GÖNDERI BANNER ════ */
+        #newPostBanner {
+            position: fixed; top: 72px; left: 50%;
+            transform: translateX(-50%) translateY(-16px);
+            z-index: 300;
+            display: none; align-items: center; gap: 10px;
+            background: rgba(255,255,255,0.96); color: #09090b;
+            padding: 10px 22px; border-radius: 100px;
+            font-size: 13px; font-weight: 600;
+            box-shadow: 0 8px 40px rgba(0,0,0,0.45), 0 0 0 1px rgba(255,255,255,0.15);
+            cursor: pointer; white-space: nowrap;
+            opacity: 0;
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+                        box-shadow 0.3s ease, opacity 0.3s ease;
+        }
+
+        #newPostBanner.visible {
+            display: flex;
+            animation: bannerSlideIn 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes bannerSlideIn {
+            from { transform: translateX(-50%) translateY(-20px); opacity: 0; }
+            to   { transform: translateX(-50%) translateY(0px);  opacity: 1; }
+        }
+
+        #newPostBanner:hover { transform: translateX(-50%) translateY(-2px); box-shadow: 0 14px 44px rgba(0,0,0,0.55); opacity: 1; }
+
+        /* ════ ANA LAYOUT ════ */
+        .feed-layout {
+            max-width: 1360px; margin: 0 auto;
+            padding: 28px 24px 80px;
+            display: grid;
+            grid-template-columns: 280px 1fr 300px;
+            gap: 32px; align-items: start;
+        }
+
+        /* ════ PANEL KARTI / LINEAR CARD ════ */
+        .panel-card {
+            position: relative;
+            background: rgba(255, 255, 255, 0.015);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 12px;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+                        border-color 0.4s ease,
+                        box-shadow 0.4s ease;
+        }
+        .panel-card::before {
+            content: "";
+            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            border-radius: inherit;
+            background: radial-gradient(450px circle at var(--mouse-x, 0) var(--mouse-y, 0), rgba(255,255,255,0.06), transparent 45%);
+            z-index: 0; opacity: 0; transition: opacity 0.6s ease; pointer-events: none;
+        }
+        .panel-card:hover {
+            border-color: rgba(255, 255, 255, 0.11);
+            transform: translateY(-1px);
+            box-shadow: 0 8px 32px -8px rgba(0,0,0,0.5);
+        }
+        .panel-card:hover::before { opacity: 1; }
+        .panel-card > * { position: relative; z-index: 1; }
+
+        /* ════ SOL PANEL ════ */
+        .feed-left {
+            position: sticky; top: 80px;
+            display: flex; flex-direction: column; gap: 16px;
+            animation: feedFadeUp 0.65s cubic-bezier(0.16, 1, 0.3, 1) 0.08s both;
+        }
+
+        .pp-inner { padding: 20px; }
+        .pp-top {
+            display: flex; flex-direction: column; align-items: center;
+            text-align: center; gap: 0; margin-bottom: 20px;
+        }
+
+        .pp-avatar {
+            width: 64px; height: 64px; border-radius: 50%;
+            background: rgba(255,255,255,0.1); color: var(--text-h);
+            border: 1px solid rgba(255,255,255,0.15);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 20px; font-weight: 700; flex-shrink: 0;
+            margin-bottom: 14px; overflow: hidden;
+            box-shadow: 0 0 0 2px rgba(0,0,0,1), 0 0 20px rgba(0,0,0,0.5);
+        }
+
+        .pp-name  { font-size: 18px; font-weight: 700; color: var(--text-h); letter-spacing: -0.4px; }
+        .pp-role  { font-size: 12px; color: var(--text-muted); margin-top: 3px; font-family: 'JetBrains Mono', monospace; }
+        .pp-handle { font-size: 11px; color: var(--text-muted); opacity: 0.55; margin-top: 2px; font-family: 'JetBrains Mono', monospace; }
+
+        .pp-stats {
+            display: flex; justify-content: space-between; align-items: center;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 12px 0; margin: 0 0 16px;
+        }
+
+        .pp-stat { padding: 0; text-align: center; flex: 1; }
+        .pp-stat + .pp-stat { border-left: 1px solid rgba(255, 255, 255, 0.05); }
+
+        .pp-stat-num {
+            font-size: 16px; font-weight: 700; color: var(--text-h); letter-spacing: -0.4px;
+            display: block;
+        }
+
+        .pp-stat-label {
+            font-size: 10px; color: var(--text-muted); margin-top: 2px;
+            font-weight: 500; letter-spacing: 1px; text-transform: uppercase;
+            display: block;
+        }
+
+        .pp-actions { display: flex; flex-direction: column; gap: 8px; }
+
+        .pp-profile-link {
+            display: flex; align-items: center; justify-content: center;
+            padding: 8px 16px; gap: 8px;
+            font-size: 13px; font-weight: 500; color: var(--text-h);
+            text-decoration: none;
+            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 8px;
+            transition: background 0.2s, border-color 0.2s;
+        }
+
+        .pp-profile-link:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.15); }
+
+        .pp-saved-link {
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            padding: 8px 16px;
+            font-size: 13px; font-weight: 500; color: var(--text-muted);
+            text-decoration: none;
+            background: transparent; border: 1px solid transparent;
+            border-radius: 8px;
+            transition: color 0.2s, background 0.2s;
+        }
+        .pp-saved-link:hover { color: var(--text-h); background: rgba(255,255,255,0.05); }
+        .pp-saved-link.active { color: #60a5fa; }
+
+        /* Öneriler */
+        .sug-title {
+            padding: 12px 14px 8px;
+            font-size: 10px; font-weight: 650; letter-spacing: 1.4px;
+            text-transform: uppercase; color: var(--text-muted);
+        }
+
+        .sug-item {
+            display: flex; align-items: center; gap: 9px;
+            padding: 9px 14px; border-top: 1px solid rgba(255, 255, 255, 0.06);
+            transition: background 0.13s;
+        }
+
+        .sug-item:hover { background: rgba(255, 255, 255, 0.03); }
+
+        .sug-avatar {
+            width: 30px; height: 30px; border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1); color: var(--text-h);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 11px; font-weight: 700; flex-shrink: 0; text-decoration: none;
+            overflow: hidden;
+        }
+
+        .sug-info { flex: 1; min-width: 0; }
+
+        .sug-name {
+            font-size: 12px; font-weight: 650; color: var(--text-h);
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+            text-decoration: none; display: block;
+        }
+
+        .sug-name:hover { text-decoration: underline; }
+        .sug-role { font-size: 10.5px; color: var(--text-muted); }
+
+        .sug-follow-btn {
+            padding: 4px 11px; border-radius: 100px;
+            border: 1px solid rgba(255, 255, 255, 0.15); background: rgba(255, 255, 255, 0.05);
+            color: var(--text-h); font-size: 11px; font-weight: 650;
+            font-family: inherit; cursor: pointer;
+            transition: all 0.18s var(--ease); white-space: nowrap; flex-shrink: 0;
+        }
+
+        .sug-follow-btn:hover      { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); }
+        .sug-follow-btn.following  { color: var(--text-muted); background: rgba(255, 255, 255, 0.03); }
+
+        /* ════ MERKEZ AKIş ════ */
+        /* min-width:0 — grid item'ın 1fr'yi patlatmasını önler */
+        .feed-center {
+            display: flex; flex-direction: column; gap: 24px;
+            min-width: 0; overflow: hidden;
+            animation: feedFadeUp 0.65s cubic-bezier(0.16, 1, 0.3, 1) 0.16s both;
+        }
+
+        #feedList {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            min-width: 0;
+        }
+
+        /* Mod seçici — arob.html underline stili */
+        .feed-tabs {
+            display: flex; align-items: center; justify-content: center;
+            gap: 24px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            padding-bottom: 0;
+            background: none; border-radius: 0;
+            position: relative;
+        }
+
+        .feed-tab {
+            padding: 10px 4px 12px; background: none; border: none;
+            cursor: pointer; font-size: 13px; font-weight: 500; font-family: inherit;
+            color: var(--text-muted); transition: color 0.25s ease;
+            display: flex; align-items: center; gap: 7px;
+            border-bottom: 2px solid transparent; margin-bottom: -1px;
+            position: relative;
+        }
+
+        .feed-tab.active {
+            color: var(--text-h);
+            border-bottom-color: rgba(255,255,255,0.75);
+        }
+        .feed-tab.active::after {
+            content: '';
+            position: absolute; bottom: -2px; left: 0; right: 0; height: 2px;
+            background: rgba(255,255,255,0.85);
+            border-radius: 2px 2px 0 0;
+            box-shadow: 0 0 5px 1px rgba(255,255,255,0.10);
+        }
+        .feed-tab:hover:not(.active) { color: var(--text-body); }
+
+        .tab-dot {
+            width: 6px; height: 6px; border-radius: 50%; background: var(--green);
+            flex-shrink: 0; animation: tabPulse 2.4s ease-out infinite;
+        }
+
+        @keyframes tabPulse { 0%,100% { opacity:1; } 50% { opacity:0.35; } }
+
+        /* ════ OLUŞTURMA KUTUSU ════ */
+        .compose-box {
+            position: relative;
+            background: rgba(255, 255, 255, 0.015);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 14px;
+            overflow: hidden;
+            transition: border-color 0.35s ease, box-shadow 0.35s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .compose-box.compose-open {
+            border-color: rgba(255, 255, 255, 0.12);
+            box-shadow: 0 12px 48px -8px rgba(0,0,0,0.55);
+        }
+
+        /* ── Trigger (kapalı durum) ── */
+        .compose-trigger {
+            display: flex; align-items: center; gap: 12px;
+            padding: 12px 16px;
+            cursor: text;
+            will-change: opacity, transform;
+        }
+
+        .compose-trigger-avatar {
+            width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0;
+            background: rgba(255,255,255,0.08); color: var(--text-h);
+            border: 1px solid rgba(255,255,255,0.14);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 11px; font-weight: 700;
+            overflow: hidden;
+        }
+
+        .compose-trigger-avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+        .compose-trigger-pill {
+            flex: 1;
+            padding: 9px 16px;
+            border-radius: 100px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.07);
+            font-size: 13.5px; color: rgba(161,161,170,0.45);
+            font-weight: 300; font-family: inherit;
+            transition: background 0.2s ease, border-color 0.2s ease;
+            pointer-events: none;
+            user-select: none;
+        }
+
+        .compose-trigger:hover .compose-trigger-pill {
+            background: rgba(255,255,255,0.07);
+            border-color: rgba(255,255,255,0.12);
+        }
+
+        .compose-trigger-hints {
+            display: flex; align-items: center; gap: 8px;
+        }
+
+        .compose-trigger-hint {
+            width: 28px; height: 28px; border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.07);
+            background: rgba(255,255,255,0.03);
+            display: flex; align-items: center; justify-content: center;
+            transition: background 0.18s, border-color 0.18s;
+        }
+
+        .compose-trigger:hover .compose-trigger-hint {
+            background: rgba(255,255,255,0.07);
+            border-color: rgba(255,255,255,0.12);
+        }
+
+        /* ── Genişleyebilir kısım ── JS tam kontrol eder, height/opacity JS ile set edilir */
+        .compose-expandable {
+            height: 0;
+            overflow: hidden;
+            opacity: 0;
+            will-change: height, opacity;
+        }
+
+        /* Tip seçici sekmeleri */
+        .compose-types {
+            display: flex;
+            padding: 10px 16px;
+            gap: 4px;
+            background: rgba(255,255,255,0.02);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .compose-type-btn {
+            display: flex; align-items: center; gap: 6px;
+            padding: 6px 12px;
+            font-size: 12px; font-weight: 500; color: var(--text-muted);
+            background: none; border: none; cursor: pointer;
+            transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+            border-radius: 8px; font-family: inherit;
+        }
+
+        .compose-type-btn svg { width: 13px; height: 13px; flex-shrink: 0; transition: color 0.2s; }
+
+        /* ── Tip butonları renkleri (arob.html tarzı) ── */
+        .compose-type-btn[data-type="text"]    svg { color: #c084fc; }
+        .compose-type-btn[data-type="project"] svg { color: #60a5fa; }
+        .compose-type-btn[data-type="image"]   svg { color: #4ade80; }
+        .compose-type-btn[data-type="code"]    svg { color: #facc15; }
+        .compose-type-btn[data-type="video"]   svg { color: #f87171; }
+
+        .compose-type-btn[data-type="text"].active    { color: var(--text-h); background: rgba(192,132,252,0.12); }
+        .compose-type-btn[data-type="project"].active { color: var(--text-h); background: rgba(96,165,250,0.12);  }
+        .compose-type-btn[data-type="image"].active   { color: var(--text-h); background: rgba(74,222,128,0.12);  }
+        .compose-type-btn[data-type="code"].active    { color: var(--text-h); background: rgba(250,204,21,0.12);  }
+        .compose-type-btn[data-type="video"].active   { color: var(--text-h); background: rgba(248,113,113,0.12); }
+
+        .compose-type-btn:hover:not(.active) { color: var(--text-body); background: rgba(255,255,255,0.05); }
+
+        /* İçerik alanı */
+        .compose-body { padding: 16px; display: flex; flex-direction: column; gap: 12px; position: relative; z-index: 1; }
+
+        .compose-textarea {
+            width: 100%; min-height: 90px; max-height: 300px;
+            padding: 4px 2px;
+            border: none; border-radius: 0;
+            font-size: 16px; font-family: inherit; color: var(--text-h);
+            background: transparent; resize: none; line-height: 1.7;
+            font-weight: 300;
+        }
+
+        .compose-textarea:focus        { outline: none; }
+        .compose-textarea::placeholder { color: rgba(161,161,170,0.5); }
+
+        /* @mention içerik alanı wrapper */
+        .compose-textarea-wrap { position: relative; }
+
+        /* @mention dropdown */
+        .mention-dropdown {
+            position: absolute;
+            left: 0; bottom: calc(100% + 6px);
+            min-width: 220px; max-width: 320px;
+            background: #141416;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            box-shadow: 0 16px 48px rgba(0,0,0,0.5);
+            z-index: 500;
+            overflow: hidden;
+            display: none;
+            backdrop-filter: blur(20px);
+        }
+
+        .mention-dropdown.open { display: block; }
+
+        .mention-item {
+            display: flex; align-items: center; gap: 9px;
+            padding: 9px 13px; cursor: pointer;
+            transition: background 0.12s;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+        }
+
+        .mention-item:last-child { border-bottom: none; }
+        .mention-item:hover, .mention-item.active { background: rgba(255,255,255,0.05); }
+
+        .mention-avatar {
+            width: 26px; height: 26px; border-radius: 50%;
+            background: rgba(255,255,255,0.1); color: var(--text-h);
+            border: 1px solid rgba(255,255,255,0.12);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 10px; font-weight: 700; flex-shrink: 0; overflow: hidden;
+        }
+
+        .mention-name   { font-size: 12.5px; font-weight: 650; color: var(--text-h); }
+        .mention-role   { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
+
+        /* Rendered mention links inside post/comment text */
+        .mention-link {
+            color: #818cf8;
+            font-weight: 600;
+            text-decoration: none;
+            border-radius: 3px;
+            padding: 0 2px;
+            transition: background 0.12s, color 0.12s;
+        }
+
+        .mention-link:hover { background: rgba(129,140,248,0.15); color: #a5b4fc; }
+
+        .compose-link-fields         { display: none; flex-direction: column; gap: 8px; }
+        .compose-link-fields.visible { display: flex; }
+
+        .compose-input {
+            width: 100%; padding: 10px 14px;
+            border: 1px solid rgba(255,255,255,0.07); border-radius: 10px;
+            font-size: 13px; font-family: inherit; color: var(--text-h);
+            background: rgba(255,255,255,0.03); transition: border-color 0.18s;
+        }
+
+        .compose-input:focus        { outline: none; border-color: rgba(255,255,255,0.18); background: rgba(255,255,255,0.05); }
+        .compose-input::placeholder { color: rgba(161,161,170,0.5); }
+
+        .compose-footer {
+            display: flex; align-items: center;
+            justify-content: space-between;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            padding-top: 12px;
+            margin-top: 8px;
+        }
+
+        .compose-char-count      { font-size: 10.5px; color: var(--text-muted); opacity: 0.6; font-family: 'JetBrains Mono', monospace; }
+        .compose-char-count.warn { color: #f59e0b; opacity: 1; }
+        .compose-char-count.over { color: #f87171; font-weight: 600; opacity: 1; }
+
+        .compose-submit {
+            display: flex; align-items: center; gap: 6px;
+            padding: 8px 22px; border-radius: 100px;
+            background: rgba(255,255,255,0.95); color: #09090b;
+            border: none; font-size: 13px; font-weight: 600; font-family: inherit;
+            cursor: pointer; transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            letter-spacing: -0.1px;
+        }
+
+        .compose-submit:hover    { background: #fff; transform: scale(1.03); box-shadow: 0 8px 24px rgba(255,255,255,0.12); }
+        .compose-submit:active   { transform: scale(0.97); }
+        .compose-submit:disabled { opacity: 0.35; cursor: not-allowed; transform: none; box-shadow: none; }
+        .compose-submit svg      { width: 14px; height: 14px; }
+
+        .compose-cancel-btn {
+            display: flex; align-items: center; justify-content: center;
+            width: 32px; height: 32px; border-radius: 8px;
+            background: transparent; border: 1px solid rgba(255,255,255,0.08);
+            color: var(--text-muted); cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .compose-cancel-btn:hover { background: rgba(255,255,255,0.06); color: var(--text-h); border-color: rgba(255,255,255,0.15); }
+
+        /* ════ GÖNDERI KARTI ════ */
+        .post-card {
+            position: relative;
+            background: rgba(255, 255, 255, 0.015);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 12px;
+            overflow: hidden;
+            min-width: 0;
+            max-width: 100%;
+            backdrop-filter: blur(10px);
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+                        border-color 0.4s ease,
+                        box-shadow 0.4s ease,
+                        opacity 1.2s ease;
+        }
+
+        /* Mouse-tracking glow */
+        .post-card::before {
+            content: "";
+            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            border-radius: inherit;
+            background: radial-gradient(450px circle at var(--mouse-x, 0) var(--mouse-y, 0), rgba(255,255,255,0.07), transparent 45%);
+            z-index: 0; opacity: 0; transition: opacity 0.6s ease; pointer-events: none;
+        }
+        .post-card:hover::before { opacity: 1; }
+        .post-card > * { position: relative; z-index: 1; }
+
+        .post-card:hover {
+            border-color: rgba(255, 255, 255, 0.11);
+            box-shadow: 0 8px 32px -8px rgba(0,0,0,0.5);
+            transform: translateY(-1px);
+        }
+
+        /* ── Proje kartı: iridesent gradient border ── */
+        /* Video kart */
+        .post-card.post-video-card { border-color: rgba(248,113,113,0.15); }
+        .post-card.post-video-card:hover { border-color: rgba(248,113,113,0.28); }
+        .post-video-wrap { border-radius: 12px; overflow: hidden; margin-bottom: 2px; }
+        .post-video-player { width:100%; max-height:420px; display:block; border-radius:12px; background:#000; outline:none; }
+
+        .post-card.post-project {
+            border-color: transparent;
+            background-image:
+                linear-gradient(rgba(9,9,11,0.98), rgba(9,9,11,0.98)),
+                linear-gradient(
+                    135deg,
+                    rgba(200,182,255,0.75) 0%,
+                    rgba(147,210,230,0.75) 18%,
+                    rgba(167,234,195,0.75) 36%,
+                    rgba(255,214,165,0.75) 54%,
+                    rgba(255,183,183,0.75) 72%,
+                    rgba(200,182,255,0.75) 90%
+                );
+            background-origin: border-box;
+            background-clip: padding-box, border-box;
+            background-size: 100%, 300% 300%;
+            background-position: 0 0, 0% 50%;
+            animation: projIridescent 7s ease infinite;
+        }
+
+        .post-card.post-project:hover {
+            border-color: transparent;
+            box-shadow: 0 4px 24px rgba(160,140,220,0.12);
+        }
+
+        @keyframes projIridescent {
+            0%   { background-position: 0 0, 0% 50%; }
+            50%  { background-position: 0 0, 100% 50%; }
+            100% { background-position: 0 0, 0% 50%; }
+        }
+
+        /* Görülmüş soluklaşır (fresh modda) */
+        .post-card.seen-fading { opacity: 0.4; }
+
+        .post-card.fresh-in {
+            animation: freshIn 0.45s cubic-bezier(0.16,1,0.3,1) both;
+        }
+
+        @keyframes freshIn {
+            from { opacity: 0; transform: translateY(-12px) scale(0.99); }
+            to   { opacity: 1; transform: none; }
+        }
+
+        /* ── Header ── */
+        .post-header {
+            padding: 20px 20px 14px;
+            display: flex; align-items: flex-start;
+            justify-content: space-between; gap: 12px;
+        }
+
+        .post-author { display: flex; align-items: center; gap: 14px; flex: 1; min-width: 0; }
+
+        .post-avatar {
+            width: 40px; height: 40px; border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1); color: var(--text-h);
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 13px; font-weight: 700; flex-shrink: 0;
+            text-decoration: none; overflow: hidden;
+            transition: opacity 0.15s;
+        }
+
+        .post-avatar:hover { opacity: 0.85; }
+
+        .post-author-info { flex: 1; min-width: 0; }
+
+        .post-author-name {
+            font-size: 14px; font-weight: 600; color: var(--text-h);
+            text-decoration: none; display: inline;
+            transition: color 0.15s;
+        }
+
+        .post-author-name:hover { color: var(--text-body); }
+
+        /* Role badge — arob.html: bg-white/10 font-mono */
+        .post-role-badge {
+            display: inline-block;
+            font-size: 10px; font-weight: 400;
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+            background: rgba(255,255,255,0.08); color: var(--text-muted);
+            padding: 2px 7px; border-radius: 4px;
+            vertical-align: middle; margin-left: 6px;
+            line-height: 1.5;
+        }
+
+        .post-meta-row {
+            display: flex; align-items: center; gap: 6px;
+            margin-top: 3px; flex-wrap: wrap;
+        }
+
+        .post-role   { font-size: 11.5px; color: var(--text-muted); }
+        .meta-sep    { font-size: 10px; color: rgba(161,161,170,0.4); }
+
+        /* Post tipi — arob.html: SVG ikon + küçük metin, inline meta */
+        .post-type-badge {
+            display: inline-flex; align-items: center; gap: 4px;
+            font-size: 11px; font-weight: 400;
+            border: none; background: none; padding: 0;
+        }
+
+        .post-type-badge svg { width: 12px; height: 12px; flex-shrink: 0; }
+
+        .badge-text    { color: var(--text-muted); }
+        .badge-project { color: #60a5fa; }
+        .badge-image   { color: #c084fc; }
+        .badge-code    { color: #facc15; }
+        .badge-video   { color: #f87171; }
+        .badge-link    { color: #a78bfa; }
+        .badge-collab  { color: #6ee7b7; }
+
+        .post-header-right {
+            display: flex; align-items: center; gap: 8px;
+            flex-shrink: 0; padding-top: 2px;
+        }
+
+        .post-time { font-size: 11.5px; color: var(--text-muted); white-space: nowrap; }
+
+        /* ── Permalink butonu ── */
+        .post-permalink-btn {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 24px; height: 24px; border-radius: 6px;
+            color: var(--text-muted); text-decoration: none;
+            opacity: 0; pointer-events: none;
+            transition: color 0.15s, background 0.15s, opacity 0.15s;
+        }
+        .post-card:hover .post-permalink-btn { opacity: 1; pointer-events: auto; }
+        .post-permalink-btn:hover { color: var(--text-h); background: rgba(255,255,255,0.08); }
+
+        .post-delete-btn {
+            background: none; border: none; cursor: pointer;
+            color: var(--text-muted); font-size: 13px;
+            padding: 4px 6px; border-radius: 6px;
+            opacity: 0; transition: all 0.16s; line-height: 1;
+
+        }
+
+        .post-card:hover .post-delete-btn { opacity: 1; }
+        .post-delete-btn:hover { color: #f87171; background: rgba(248,113,113,0.1); }
+
+        /* ── İçerik ── */
+        .post-content { padding: 0 20px 20px; }
+
+        .post-text {
+            font-size: 15px; line-height: 1.7; color: #e4e4e7;
+            white-space: pre-wrap; word-break: break-word;
+            font-weight: 300;
+        }
+
+        .post-link-preview {
+            margin-top: 12px;
+            border: 1px solid rgba(255,255,255,0.08); border-radius: 12px;
+            overflow: hidden; display: flex; align-items: stretch;
+            text-decoration: none;
+            transition: border-color 0.18s, box-shadow 0.18s;
+        }
+
+        .post-link-preview:hover {
+            border-color: rgba(255,255,255,0.18);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+        }
+
+        @keyframes linkBarFlow {
+            0%   { background-position: 0% 0%;   }
+            50%  { background-position: 0% 100%; }
+            100% { background-position: 0% 0%;   }
+        }
+
+        .post-link-bar {
+            width: 4px; flex-shrink: 0;
+            background: linear-gradient(
+                180deg,
+                rgba(200,182,255,1)  0%,
+                rgba(147,210,230,1) 25%,
+                rgba(167,234,195,1) 50%,
+                rgba(255,214,165,1) 75%,
+                rgba(255,183,183,1) 100%
+            );
+            background-size: 100% 300%;
+            animation: linkBarFlow 5s ease infinite;
+        }
+        .post-link-body { padding: 10px 14px; flex: 1; min-width: 0; }
+
+        .post-link-title {
+            font-size: 13px; font-weight: 600; color: var(--text-h);
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+
+        .post-link-url {
+            font-size: 11.5px; color: var(--text-muted); margin-top: 2px;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+
+        /* ── Resim Grid ── */
+        .post-image-grid {
+            margin-top: 12px; display: grid; gap: 3px; border-radius: 12px;
+            overflow: hidden;
+        }
+        .post-image-grid--1 { grid-template-columns: 1fr; }
+        .post-image-grid--2 { grid-template-columns: 1fr 1fr; }
+        .post-image-grid--3 { grid-template-columns: 2fr 1fr; grid-template-rows: 1fr 1fr; }
+        .post-image-grid--4 { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; }
+
+        .post-image-grid--3 .post-image-item:first-child { grid-row: 1 / 3; }
+
+        .post-image-item {
+            display: block; overflow: hidden; aspect-ratio: 1;
+            background: rgba(255,255,255,0.06);
+        }
+        .post-image-grid--1 .post-image-item { aspect-ratio: 16/9; }
+
+        .post-image-item img {
+            width: 100%; height: 100%; object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+        .post-image-item:hover img { transform: scale(1.03); }
+
+        /* ── Kod Bloğu ── */
+        .post-code-block {
+            margin-top: 0; border: 1px solid rgba(255,255,255,0.08); border-radius: 10px;
+            overflow: hidden; background: #0d1117;
+            min-width: 0; max-width: 100%; /* taşmayı kes */
+        }
+        /* Kod kartında içerik padding'i kaldır, kod bloğu tam kenara oturur */
+        .post-code-card .post-content {
+            padding-bottom: 0;
+        }
+        .post-code-card .post-code-block {
+            border-radius: 0 0 15px 15px;
+            border-left: none; border-right: none; border-bottom: none;
+            border-top: 1px solid rgba(255,255,255,0.06);
+            margin: 0;
+        }
+        .post-code-header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 7px 14px; background: rgba(255,255,255,0.04);
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
+        .post-code-lang {
+            font-size: 11px; font-weight: 600; letter-spacing: .06em;
+            text-transform: uppercase; color: var(--text-muted);
+        }
+        .post-code-copy {
+            font-size: 11px; color: var(--text-muted); background: none; border: none;
+            cursor: pointer; padding: 2px 6px; border-radius: 5px;
+            transition: all 0.15s;
+        }
+        .post-code-copy:hover { background: rgba(255,255,255,0.08); color: var(--text-h); }
+        .post-code-pre {
+            margin: 0; padding: 14px 16px;
+            overflow-x: auto; overflow-y: auto;
+            max-height: 320px;
+            max-width: 100%;   /* pre'nin intrinsic genişliği parent'ı patlatmasın */
+            box-sizing: border-box;
+            font-size: 12.5px; line-height: 1.7;
+            font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Consolas', monospace;
+            tab-size: 2;
+            /* Scrollbar ince ve zarif görünsün */
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255,255,255,0.12) transparent;
+        }
+        .post-code-pre::-webkit-scrollbar { width: 5px; height: 5px; }
+        .post-code-pre::-webkit-scrollbar-track { background: transparent; }
+        .post-code-pre::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 99px; }
+        .post-code-pre::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.22); }
+        .post-code-pre code { background: none; padding: 0; font-size: inherit; }
+
+        /* Compose: Image & Code alanları */
+        .compose-image-area        { display: none; flex-direction: column; gap: 10px; }
+        .compose-image-area.visible { display: flex; }
+        .compose-video-area        { display: none; flex-direction: column; gap: 10px; }
+        .compose-video-area.visible { display: flex; }
+        .compose-code-area         { display: none; flex-direction: column; gap: 8px; }
+        .compose-code-area.visible  { display: flex; }
+
+        .compose-video-drop {
+            border: 2px dashed rgba(248,113,113,0.25); border-radius: 10px;
+            padding: 24px 16px; text-align: center; cursor: pointer;
+            transition: border-color 0.18s, background 0.18s;
+            background: rgba(248,113,113,0.03);
+        }
+        .compose-video-drop:hover, .compose-video-drop.drag-over {
+            border-color: rgba(248,113,113,0.5); background: rgba(248,113,113,0.06);
+        }
+        .compose-video-drop-icon  { opacity: 0.5; margin-bottom: 6px; color: #f87171; }
+        .compose-video-drop-text  { font-size: 13px; color: var(--text-muted); }
+        .compose-video-drop-sub   { font-size: 11px; color: var(--text-muted); opacity: 0.6; margin-top: 2px; }
+        .compose-video-thumb      { border-radius: 10px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1); }
+        .compose-video-thumb-info {
+            display: flex; align-items: center; gap: 8px; padding: 8px 10px;
+            font-size: 12px; color: var(--text-muted); background: rgba(255,255,255,0.03);
+        }
+        .compose-video-thumb-info span:first-child { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .compose-video-caption {
+            width: 100%; padding: 10px 12px; border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 8px; background: rgba(255,255,255,0.03); color: var(--text-h);
+            font-size: 13px; font-family: inherit; resize: none; outline: none;
+            line-height: 1.5; transition: border-color 0.18s; box-sizing: border-box;
+        }
+        .compose-video-caption:focus { border-color: rgba(248,113,113,0.35); }
+        .compose-video-caption::placeholder { color: var(--text-muted); opacity: 0.6; }
+
+        .compose-image-drop {
+            border: 2px dashed rgba(255,255,255,0.12); border-radius: 10px;
+            padding: 24px 16px; text-align: center; cursor: pointer;
+            transition: border-color 0.18s, background 0.18s;
+            background: rgba(255,255,255,0.02);
+        }
+        .compose-image-drop:hover, .compose-image-drop.drag-over {
+            border-color: rgba(255,255,255,0.25); background: rgba(255,255,255,0.04);
+        }
+        .compose-image-drop-icon  { font-size: 24px; opacity: 0.4; margin-bottom: 4px; }
+        .compose-image-drop-text  { font-size: 13px; color: var(--text-muted); }
+        .compose-image-drop-sub   { font-size: 11px; color: var(--text-muted); opacity: 0.6; margin-top: 2px; }
+        .compose-image-preview    {
+            display: flex; gap: 8px; flex-wrap: wrap;
+        }
+        .compose-image-thumb {
+            position: relative; width: 72px; height: 72px;
+            border-radius: 8px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1);
+        }
+        .compose-image-thumb img    { width: 100%; height: 100%; object-fit: cover; }
+        .compose-image-thumb-remove {
+            position: absolute; top: 3px; right: 3px;
+            background: rgba(0,0,0,.7); color: #fff;
+            border: none; border-radius: 50%; width: 18px; height: 18px;
+            font-size: 10px; cursor: pointer; line-height: 1;
+            display: flex; align-items: center; justify-content: center;
+        }
+
+        .compose-code-lang-select {
+            padding: 7px 10px; border: 1px solid rgba(255,255,255,0.08); border-radius: 8px;
+            font-size: 13px; color: var(--text-h); background: rgba(255,255,255,0.04);
+            font-family: inherit; outline: none; width: 180px;
+        }
+        .compose-code-lang-select:focus { border-color: rgba(255,255,255,0.18); }
+        .compose-code-lang-select option { background: #1a1a1f; }
+        .compose-code-textarea {
+            font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Consolas', monospace;
+            font-size: 12.5px; line-height: 1.7; tab-size: 2;
+            padding: 12px 14px; min-height: 160px; resize: vertical;
+            border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; background: rgba(255,255,255,0.03);
+            color: var(--text-h); outline: none;
+            width: 100%; box-sizing: border-box;
+        }
+        .compose-code-textarea:focus { border-color: rgba(255,255,255,0.18); background: rgba(255,255,255,0.05); }
+        .compose-code-caption {
+            font-size: 13.5px; color: var(--text-body); font-family: inherit;
+            border: none; outline: none; background: transparent;
+            padding: 0 2px; width: 100%; resize: none;
+            line-height: 1.5; min-height: 22px; max-height: 80px;
+            overflow: hidden;
+        }
+        .compose-code-caption::placeholder { color: rgba(161,161,170,0.5); }
+        .compose-code-caption-wrap {
+            padding: 10px 4px 4px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        /* ── Aksiyonlar ── */
+        .post-actions {
+            padding: 12px 20px 14px;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            display: flex; align-items: center; justify-content: space-between;
+        }
+
+        .post-actions-left  { display: flex; align-items: center; gap: 20px; }
+        .post-actions-right { display: flex; align-items: center; gap: 16px; }
+
+        .post-action-btn {
+            display: flex; align-items: center; gap: 6px;
+            background: none; border: none; cursor: pointer;
+            font-size: 12px; font-weight: 500; color: var(--text-muted);
+            font-family: inherit; padding: 4px 0; border-radius: 0;
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .post-action-btn svg { width: 16px; height: 16px; flex-shrink: 0; }
+        .post-action-btn:hover { color: var(--text-h); transform: scale(1.05); }
+
+        /* Onay */
+        .post-action-btn.liked       { color: #4ade80; }
+        .post-action-btn.liked:hover { color: #86efac; }
+        .onay-btn .action-label      { font-size: 11.5px; }
+
+        /* Yankı */
+        .yanka-btn { position: relative; }
+        .yanka-btn:hover:not(:disabled) { color: #fb923c; }
+        .yanka-btn.yankaed { color: #fb923c; cursor: not-allowed; opacity: 0.8; }
+        .yanka-btn .action-label { font-size: 11.5px; }
+        .action-icon { display: flex; align-items: center; }
+
+        /* ════ GÜNLÜK YANKI KOTASI — Sol Panel Kartı ════ */
+        .yq-card { padding: 20px; }
+
+        .yq-header {
+            display: flex; align-items: center; gap: 7px; margin-bottom: 10px;
+        }
+        .yq-icon  { font-size: 14px; line-height: 1; color: #fb923c; }
+        .yq-title {
+            font-size: 10px; font-weight: 600; letter-spacing: 1.4px;
+            text-transform: uppercase; color: var(--text-muted); flex: 1;
+        }
+        .yq-remaining {
+            font-size: 12px; font-weight: 700; color: #fb923c;
+        }
+        .yq-card.exhausted .yq-remaining { color: var(--text-muted); }
+
+        /* Progress bar stili (arob.html: bg-brandOrange) */
+        .yanka-quota-bar-wrap {
+            width: 100%; background: rgba(255,255,255,0.06);
+            border-radius: 100px; height: 5px; margin-bottom: 8px; overflow: hidden;
+        }
+        .yanka-quota-bar {
+            height: 5px; border-radius: 100px;
+            background: #fb923c;
+            transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .yq-card.exhausted .yanka-quota-bar { background: rgba(255,255,255,0.15); }
+
+        .yq-sub {
+            font-size: 11px; color: var(--text-muted); line-height: 1.4;
+        }
+        .yq-card.exhausted .yq-sub { color: #9ca3af; }
+
+        /* ── Yankı Hype — Amber Pulse (tema uyumlu, sade) ── */
+        @keyframes yankaAmberPulse {
+            0%   {
+                box-shadow: 0 0 0 0   rgba(251,146,60,0),
+                            0 4px 12px rgba(0,0,0,0.08);
+                border-color: var(--border);
+            }
+            18%  {
+                box-shadow: 0 0 0 3px rgba(251,146,60,0.45),
+                            0 0 28px   rgba(251,146,60,0.18),
+                            0 4px 16px rgba(0,0,0,0.12);
+                border-color: rgba(251,146,60,0.5);
+            }
+            50%  {
+                box-shadow: 0 0 0 2px rgba(251,146,60,0.2),
+                            0 0 16px   rgba(251,146,60,0.10),
+                            0 4px 12px rgba(0,0,0,0.08);
+                border-color: rgba(251,146,60,0.2);
+            }
+            100% {
+                box-shadow: 0 0 0 0   rgba(251,146,60,0),
+                            0 4px 12px rgba(0,0,0,0.06);
+                border-color: var(--border);
+            }
+        }
+
+        .post-card.yanka-hype {
+            animation: yankaAmberPulse 1.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        /* Yankı buton burst — scale spring + icon renk parlaması */
+        @keyframes yankaBurst {
+            0%   { transform: scale(1);    color: inherit; }
+            25%  { transform: scale(1.22); color: #fb923c; }
+            55%  { transform: scale(0.92); color: #fb923c; }
+            78%  { transform: scale(1.05); color: #fb923c; }
+            100% { transform: scale(1);    color: #fb923c; }
+        }
+        .yanka-btn.yanka-burst {
+            animation: yankaBurst 0.44s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        }
+
+        .action-icon { font-size: 15px; line-height: 1; }
+
+        .post-follow-btn {
+            padding: 4px 12px; border-radius: 6px;
+            border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.05);
+            color: var(--text-muted); font-size: 11px; font-weight: 500;
+            font-family: inherit; cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .post-follow-btn:hover     { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); }
+        .post-follow-btn.following { color: var(--text-muted); background: rgba(255,255,255,0.05); }
+
+        /* ── Bookmark ── */
+        .save-btn {
+            background: none; border: none; cursor: pointer;
+            color: var(--text-muted); font-size: 14px; line-height: 1;
+            padding: 7px 8px; border-radius: 8px;
+            transition: color 0.15s, background 0.15s;
+            display: flex; align-items: center;
+        }
+        .save-btn:hover          { color: var(--text-h); background: rgba(255,255,255,0.05); }
+        .save-btn.saved          { color: #60a5fa; }
+        .save-btn.saved:hover    { color: #93c5fd; background: rgba(96,165,250,0.1); }
+
+        /* ── Görüntülenme sayacı ── */
+        .post-view-count {
+            display: flex; align-items: center; gap: 4px;
+            font-size: 11px; color: rgba(161,161,170,0.5);
+            margin-left: auto; padding: 0 4px;
+            pointer-events: none; user-select: none;
+        }
+        /* Bookmark varsa view count'u sağa it */
+        .post-actions:has(.save-btn) .post-view-count { margin-left: 0; }
+
+        /* ── Yorumlar ── */
+        .post-comments {
+            border-top: 1px solid rgba(255,255,255,0.05);
+            background: rgba(255,255,255,0.015);
+            display: none;
+        }
+
+        .post-comments.open { display: block; }
+
+        .comment-list { padding: 10px 18px 4px; }
+
+        .comment-item {
+            display: flex; gap: 10px;
+            padding: 9px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .comment-item:last-child { border-bottom: none; }
+
+        .comment-avatar {
+            width: 26px; height: 26px; border-radius: 50%;
+            background: rgba(255,255,255,0.1); color: var(--text-h);
+            border: 1px solid rgba(255,255,255,0.12);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 9.5px; font-weight: 700;
+            flex-shrink: 0; margin-top: 1px;
+            text-decoration: none; overflow: hidden;
+        }
+
+        .comment-body { flex: 1; min-width: 0; }
+        .comment-author {
+            font-size: 12px; font-weight: 650; color: var(--text-h);
+        }
+
+        .comment-text {
+            font-size: 13px; color: var(--text-body); line-height: 1.5;
+            margin-top: 1px; word-break: break-word;
+        }
+
+        .comment-time { font-size: 10px; color: var(--text-muted); margin-top: 3px; }
+
+        .comment-form {
+            display: flex; gap: 8px; padding: 9px 14px;
+            border-top: 1px solid rgba(255,255,255,0.05); align-items: center;
+        }
+
+        .comment-avatar-sm {
+            width: 24px; height: 24px; border-radius: 50%;
+            background: rgba(255,255,255,0.1); color: var(--text-h);
+            border: 1px solid rgba(255,255,255,0.12);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 9px; font-weight: 700; flex-shrink: 0;
+        }
+
+        .comment-input {
+            flex: 1; padding: 7px 12px;
+            border: 1px solid rgba(255,255,255,0.08); border-radius: 100px;
+            font-size: 12.5px; font-family: inherit; color: var(--text-h);
+            background: rgba(255,255,255,0.04); transition: border-color 0.16s;
+        }
+
+        .comment-input:focus        { outline: none; border-color: rgba(255,255,255,0.18); background: rgba(255,255,255,0.06); }
+        .comment-input::placeholder { color: var(--text-muted); opacity: 0.7; }
+
+        .comment-send {
+            padding: 6px 13px; border-radius: 100px;
+            background: rgba(255,255,255,0.9); color: #09090b;
+            border: none; font-size: 11.5px; font-weight: 650; font-family: inherit;
+            cursor: pointer; transition: opacity 0.16s;
+        }
+
+        .comment-send:hover { opacity: 0.8; }
+
+        /* ════ SAĞ PANEL ════ */
+        .feed-right {
+            position: sticky; top: 80px;
+            display: flex; flex-direction: column; gap: 16px;
+            animation: feedFadeUp 0.65s cubic-bezier(0.16, 1, 0.3, 1) 0.26s both;
+        }
+
+        .right-title {
+            padding: 16px 16px 10px;
+            font-size: 10px; font-weight: 600; letter-spacing: 1.6px;
+            text-transform: uppercase; color: var(--text-muted);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            margin-bottom: 4px;
+        }
+
+        /* ── Trend Gönderiler Widget ── */
+        .trend-list { padding: 4px 8px 10px; }
+
+        .trend-row {
+            padding: 8px 10px;
+            display: flex; align-items: center; gap: 12px;
+            cursor: pointer; transition: background 0.2s;
+            border-top: none;
+            border-radius: 8px;
+        }
+        .trend-row:hover { background: rgba(255,255,255,0.05); }
+
+        /* Sıralama numarası */
+        .trend-rank {
+            flex-shrink: 0; width: 14px; text-align: center;
+            font-size: 11px; font-weight: 700;
+            font-variant-numeric: tabular-nums;
+            font-family: 'JetBrains Mono', monospace;
+            color: rgba(161,161,170,0.45);
+        }
+        .trend-row:first-child .trend-rank { color: rgba(161,161,170,0.75); }
+
+        /* Avatar */
+        .trend-avatar {
+            width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0;
+            background: rgba(255,255,255,0.1); color: var(--text-h);
+            border: 1px solid rgba(255,255,255,0.12);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 12px; font-weight: 700; overflow: hidden;
+        }
+        .trend-avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+        /* Metin alanı */
+        .trend-body { flex: 1; min-width: 0; }
+
+        .trend-author {
+            font-size: 13px; font-weight: 600; color: var(--text-h);
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+
+        .trend-snippet {
+            display: flex; align-items: center; gap: 5px;
+            margin-top: 2px;
+        }
+        /* Post tipi renk noktası */
+        .trend-dot {
+            width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0;
+        }
+        .trend-dot-text    { background: #6b7280; }
+        .trend-dot-project { background: #60a5fa; }
+        .trend-dot-image   { background: #c084fc; }
+        .trend-dot-code    { background: #34d399; }
+
+        .trend-snippet-text {
+            font-size: 11.5px; color: var(--text-muted);
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+            line-height: 1.4; flex: 1; min-width: 0;
+        }
+
+        /* Hover ok */
+        .trend-chevron {
+            flex-shrink: 0; font-size: 13px; color: rgba(161,161,170,0.5);
+            opacity: 0; transition: opacity 0.14s; line-height: 1;
+        }
+        .trend-row:hover .trend-chevron { opacity: 1; }
+
+        .trend-empty {
+            padding: 16px 14px; border-top: 1px solid rgba(255,255,255,0.05);
+            font-size: 12px; color: var(--text-muted); text-align: center;
+        }
+
+        /* Boş durum */
+        .feed-empty {
+            text-align: center; padding: 52px 20px;
+            background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.07);
+            border-radius: var(--r);
+        }
+
+        .feed-empty-icon  { font-size: 32px; margin-bottom: 10px; }
+        .feed-empty-title { font-size: 15px; font-weight: 650; color: var(--text-h); margin-bottom: 5px; }
+        .feed-empty-text  { font-size: 13.5px; color: var(--text-muted); line-height: 1.5; }
+
+        /* Daha fazla */
+        .load-more-btn {
+            width: 100%; padding: 12px;
+            background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.07);
+            border-radius: 12px; font-size: 13px; font-weight: 650;
+            color: var(--text-muted); font-family: inherit; cursor: pointer;
+            transition: all 0.16s var(--ease); backdrop-filter: blur(10px);
+        }
+
+        .load-more-btn:hover { color: var(--text-h); border-color: rgba(255,255,255,0.15); background: rgba(255,255,255,0.04); }
+
+        /* ════ GLOBAL SCROLLBAR ════ */
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+
+        /* ════ RESPONSIVE ════ */
+        @media (max-width: 1100px) {
+            .feed-layout { grid-template-columns: 260px 1fr; gap: 24px; }
+            .feed-right { display: none; }
+        }
+
+        @media (max-width: 780px) {
+            .feed-layout { grid-template-columns: 1fr; }
+            .feed-left { position: static; }
+        }
+
+        @media (max-width: 640px) {
+            .feed-layout { padding: 12px 12px 60px; }
+            .topnav { padding: 0 16px; }
+            .compose-types { overflow-x: auto; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="bg-gradient-orb"></div>
+<div class="bg-moving-orb"></div>
+
+<!-- ── Nav ── -->
+<nav class="topnav">
+    <div class="nav-left">
+        <!-- Brand — dokunulmadı -->
+        <a href="{{ url_for('main.index') }}" class="nav-brand">
+            <span class="nav-brand-word">alvera</span>
+            <span class="nav-brand-social">Social</span>
+        </a>
+        <div class="nav-links">
+            <a href="{{ url_for('feed.index') }}" class="nav-link active">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                Akış
+            </a>
+            <a href="{{ url_for('flow.index') }}" class="nav-link" style="color:#a78bfa;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                Flow
+            </a>
+            <a href="{{ url_for('flow.lens') }}" class="nav-link" style="color:#f87171;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+                Lens
+            </a>
+            <a href="{{ url_for('site.dashboard') }}" class="nav-link">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                Sitem
+            </a>
+            <a href="{{ url_for('main.discover') }}" class="nav-link">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                Keşfet
+            </a>
+            <a href="{{ url_for('dm.inbox') }}" class="nav-link" id="feedNavDm">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                Mesajlar
+                <span class="nav-dm-badge" id="feedDmBadge" style="display:none;">0</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Sağ grup: Bildirim zili + Avatar -->
+    <div class="nav-right">
+        <div class="notif-bell-wrap" id="notifBellWrap">
+            <button class="notif-bell-btn" id="notifBellBtn" onclick="toggleNotifDropdown()" title="Bildirimler">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                    <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                </svg>
+                <span class="notif-bell-count" id="notifBellCount"></span>
+            </button>
+            <div class="notif-dropdown-panel" id="notifDropPanel">
+                <div class="notif-drop-header">
+                    <span class="notif-drop-title">Bildirimler</span>
+                    <a href="/notifications/" class="notif-drop-all">Tümünü gör</a>
+                </div>
+                <div class="notif-drop-body" id="notifDropBody">
+                    <div class="notif-empty">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.3;margin:0 auto 6px;display:block"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                        <span>Yükleniyor…</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <a href="{{ url_for('feed.social_profile', user_id=current_user.id) }}" class="nav-avatar">
+            {% if current_user.site and current_user.site.profile_photo %}
+                <img src="{{ url_for('static', filename='uploads/' + current_user.site.profile_photo) }}"
+                     alt="{{ current_user.full_name }}">
+            {% else %}
+                {{ (current_user.full_name or current_user.email)[0] | upper }}
+            {% endif %}
+        </a>
+    </div>
+</nav>
+
+<!-- ── Yeni Gönderi Banner ── -->
+<div id="newPostBanner" onclick="loadNewPosts()">
+    <span id="newPostCount"></span>
+    <span style="opacity:0.7">↑ Göster</span>
+</div>
+
+<!-- ── Layout ── -->
+<div class="feed-layout">
+
+    <!-- Sol Panel -->
+    <aside class="feed-left">
+
+        <div class="panel-card">
+            <div class="pp-inner">
+                <div class="pp-top">
+                    {% set own_s = current_user.site %}
+                    <a href="{{ url_for('feed.social_profile', user_id=current_user.id) }}"
+                       class="pp-avatar" style="text-decoration:none;">
+                        {% if own_s and own_s.avatar_file %}
+                        <img src="{{ own_s.avatar_file }}" alt="" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">
+                        {% else %}
+                        {{ (current_user.full_name or current_user.email)[0] | upper }}
+                        {% endif %}
+                    </a>
+                    <a href="{{ url_for('feed.social_profile', user_id=current_user.id) }}"
+                       class="pp-name" style="text-decoration:none; color:inherit; display:block;">
+                        {{ current_user.full_name or current_user.email.split('@')[0] }}
+                    </a>
+                    {% set own_od = current_user.onboarding %}
+                    {% if own_od and own_od.job_title %}
+                    <div class="pp-role">{{ own_od.job_title }}</div>
+                    {% endif %}
+                    <div class="pp-handle">@{{ (current_user.full_name or current_user.email.split('@')[0]).lower().replace(' ', '') }}</div>
+                </div>
+
+                <div class="pp-stats">
+                    <div class="pp-stat">
+                        <span class="pp-stat-num" id="leftFollowCount">{{ follow_count }}</span>
+                        <span class="pp-stat-label">Takip</span>
+                    </div>
+                    <div class="pp-stat">
+                        <span class="pp-stat-num" id="leftFollowerCount">{{ follower_count }}</span>
+                        <span class="pp-stat-label">Takipçi</span>
+                    </div>
+                </div>
+
+                <div class="pp-actions">
+                    {% set own_site = current_user.site %}
+                    {% if own_site and own_site.is_published %}
+                    <a href="/{{ own_site.slug }}" target="_blank" class="pp-profile-link">
+                        <span>Profilimi Gör</span>
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                    </a>
+                    {% endif %}
+                    <a href="{{ url_for('feed.saved_posts') }}"
+                       class="pp-saved-link {% if mode == 'saved' %}active{% endif %}">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="{% if mode == 'saved' %}currentColor{% else %}none{% endif %}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+                        <span>Kaydedilenler</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        {% if suggestions %}
+        <div class="panel-card">
+            <div class="sug-title">Tanıyor Olabileceğin Kişiler</div>
+            {% for sug_user in suggestions %}
+            {% set sug_od   = sug_user.onboarding %}
+            {% set sug_site = sug_user.site %}
+            <div class="sug-item">
+                <a href="{{ url_for('feed.social_profile', user_id=sug_user.id) }}"
+                   class="sug-avatar">
+                    {% if sug_site and sug_site.avatar_file %}
+                    <img src="{{ sug_site.avatar_file }}" alt="" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">
+                    {% else %}
+                    {{ (sug_user.full_name or sug_user.email)[0] | upper }}
+                    {% endif %}
+                </a>
+                <div class="sug-info">
+                    <a href="{{ url_for('feed.social_profile', user_id=sug_user.id) }}"
+                       class="sug-name">
+                        {{ sug_user.full_name or sug_user.email.split('@')[0] }}
+                    </a>
+                    {% if sug_od and sug_od.job_title %}
+                    <div class="sug-role">{{ sug_od.job_title }}</div>
+                    {% endif %}
+                </div>
+                <button class="sug-follow-btn"
+                        data-follow-uid="{{ sug_user.id }}"
+                        onclick="toggleFollow(this, {{ sug_user.id }})">
+                    Takip Et
+                </button>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Günlük Yankı Kotası -->
+        <div class="panel-card yq-card {% if yanka_remaining == 0 %}exhausted{% endif %}" id="yankaQuotaBar">
+            <div class="yq-header">
+                <svg class="yq-icon" width="15" height="15" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd"></path></svg>
+                <span class="yq-title">Günlük Yankı</span>
+                <span class="yq-remaining" id="yankaQuotaText">{{ yanka_remaining }}/5</span>
+            </div>
+            <div class="yanka-quota-bar-wrap">
+                <div class="yanka-quota-bar" id="yankaQuotaBarFill" style="width: {{ (yanka_remaining / 5 * 100)|int }}%"></div>
+            </div>
+            <div class="yq-sub" id="yankaQuotaSub">
+                {% if yanka_remaining > 0 %}
+                    Bugün {{ yanka_remaining }} yankı hakkın var
+                {% else %}
+                    Yarın gece yarısı (UTC) sıfırlanır
+                {% endif %}
+            </div>
+        </div>
+
+    </aside>
+
+    <!-- Merkez Feed -->
+    <main class="feed-center">
+
+        <!-- Mod Seçici: Taze / Tümü -->
+        <div class="feed-tabs">
+            <button class="feed-tab {% if mode == 'fresh' %}active{% endif %}"
+                    onclick="switchMode('fresh')">
+                <span class="tab-dot" style="width:7px;height:7px;background:#4ade80;border-radius:50%;display:inline-block;flex-shrink:0;{% if mode != 'fresh' %}opacity:0.35{% endif %}"></span>
+                Taze Akış
+            </button>
+            <button class="feed-tab {% if mode == 'all' %}active{% endif %}"
+                    onclick="switchMode('all')">
+                Tümünü Gör
+            </button>
+        </div>
+
+        <!-- Gönderi Oluşturma -->
+        <div class="compose-box" id="composeBox">
+
+            <!-- Kapalı durum — tıklayınca açılır -->
+            <div class="compose-trigger" onclick="openCompose()" id="composeTrigger">
+                <div class="compose-trigger-avatar">
+                    {% if current_user.site and current_user.site.profile_photo %}
+                        <img src="{{ url_for('static', filename='uploads/' + current_user.site.profile_photo) }}"
+                             alt="{{ current_user.full_name }}">
+                    {% else %}
+                        {{ (current_user.full_name or current_user.email)[0] | upper }}
+                    {% endif %}
+                </div>
+                <div class="compose-trigger-pill">Düşünceni paylaş…</div>
+                <div class="compose-trigger-hints">
+                    <!-- Fotoğraf hint -->
+                    <div class="compose-trigger-hint" title="Fotoğraf">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                    </div>
+                    <!-- Kod hint -->
+                    <div class="compose-trigger-hint" title="Kod">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#facc15" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Genişleyebilir alan -->
+            <div class="compose-expandable" id="composeExpandable">
+                <div class="compose-types">
+                    <button class="compose-type-btn active" data-type="text"
+                            onclick="setComposeType(this,'text')">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                        Not
+                    </button>
+                    <button class="compose-type-btn" data-type="project"
+                            onclick="setComposeType(this,'project')">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                        Proje
+                    </button>
+                    <button class="compose-type-btn" data-type="image"
+                            onclick="setComposeType(this,'image')">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                        Fotoğraf
+                    </button>
+                    <button class="compose-type-btn" data-type="code"
+                            onclick="setComposeType(this,'code')">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+                        Kod
+                    </button>
+                    <button class="compose-type-btn compose-type-video" data-type="video"
+                            onclick="setComposeType(this,'video')">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+                        Video
+                    </button>
+                </div>
+            <div class="compose-body">
+
+                <!-- Metin alanı (text / project / image açıklama) -->
+                <div class="compose-textarea-wrap" id="composeTextWrap">
+                    <textarea id="composeText" class="compose-textarea"
+                              placeholder="Ne paylaşmak istiyorsun?"
+                              maxlength="1500"
+                              oninput="updateCharCount(this)"></textarea>
+                    <div class="mention-dropdown" id="composeMentionDrop"></div>
+                </div>
+
+                <!-- Resim yükleme alanı -->
+                <div class="compose-image-area" id="composeImageArea">
+                    <div class="compose-image-drop" id="composeImageDrop"
+                         onclick="document.getElementById('composeImageInput').click()"
+                         ondragover="event.preventDefault();this.classList.add('drag-over')"
+                         ondragleave="this.classList.remove('drag-over')"
+                         ondrop="handleImageDrop(event)">
+                        <div class="compose-image-drop-icon">
+                            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                        </div>
+                        <div class="compose-image-drop-text">Resim seç veya buraya sürükle</div>
+                        <div class="compose-image-drop-sub">PNG, JPG, GIF, WEBP · Maks 4 resim · 10 MB/adet</div>
+                    </div>
+                    <div class="compose-image-preview" id="composeImagePreview"></div>
+                    <input type="file" id="composeImageInput" accept="image/*" multiple
+                           style="display:none" onchange="handleImageSelect(this.files)">
+                </div>
+
+                <!-- Video yükleme alanı -->
+                <div class="compose-video-area" id="composeVideoArea">
+                    <div class="compose-video-drop" id="composeVideoDrop"
+                         onclick="document.getElementById('composeVideoInput').click()"
+                         ondragover="event.preventDefault();this.classList.add('drag-over')"
+                         ondragleave="this.classList.remove('drag-over')"
+                         ondrop="handleVideoDrop(event)">
+                        <div class="compose-video-drop-icon">
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+                        </div>
+                        <div class="compose-video-drop-text">Video seç veya buraya sürükle</div>
+                        <div class="compose-video-drop-sub">MP4, WebM, MOV · Maks 150 MB · 90 sn</div>
+                    </div>
+                    <div class="compose-video-preview" id="composeVideoPreview"></div>
+                    <input type="file" id="composeVideoInput" accept="video/mp4,video/webm,video/quicktime"
+                           style="display:none" onchange="handleVideoSelect(this.files[0])">
+                    <textarea id="composeVideoCaption"
+                              class="compose-video-caption"
+                              placeholder="Video için açıklama ekle (opsiyonel)…"
+                              maxlength="300"
+                              rows="1"
+                              oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'"></textarea>
+                </div>
+
+                <!-- Kod editörü -->
+                <div class="compose-code-area" id="composeCodeArea">
+                    <div class="compose-code-caption-wrap">
+                        <textarea id="composeCodeCaption"
+                                  class="compose-code-caption"
+                                  placeholder="Bu koda dair bir şey yaz… (opsiyonel)"
+                                  maxlength="300"
+                                  rows="1"
+                                  oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'"></textarea>
+                    </div>
+                    <select class="compose-code-lang-select" id="composeCodeLang">
+                        <option value="javascript">JavaScript</option>
+                        <option value="typescript">TypeScript</option>
+                        <option value="python">Python</option>
+                        <option value="html">HTML</option>
+                        <option value="css">CSS</option>
+                        <option value="sql">SQL</option>
+                        <option value="bash">Shell / Bash</option>
+                        <option value="json">JSON</option>
+                        <option value="rust">Rust</option>
+                        <option value="go">Go</option>
+                        <option value="java">Java</option>
+                        <option value="cpp">C++</option>
+                        <option value="swift">Swift</option>
+                        <option value="kotlin">Kotlin</option>
+                        <option value="plaintext">Düz Metin</option>
+                    </select>
+                    <textarea id="composeCodeText" class="compose-code-textarea"
+                              placeholder="// Kodunu buraya yapıştır…"
+                              spellcheck="false"></textarea>
+                </div>
+
+                <div class="compose-footer">
+                    <span class="compose-char-count" id="charCount">0 / 1500</span>
+                    <div style="display:flex;align-items:center;gap:8px;">
+                        <button class="compose-cancel-btn" onclick="closeCompose()" title="Vazgeç">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                        </button>
+                        <button class="compose-submit" onclick="submitPost()">
+                            Paylaş
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            </div><!-- /compose-expandable -->
+        </div><!-- /compose-box -->
+
+        <!-- Feed Listesi -->
+        <div id="feedList">
+            {% if posts.items %}
+                {% for post in posts.items %}
+                    {% include '_feed_post.html' %}
+                {% endfor %}
+            {% else %}
+            <div class="feed-empty">
+                <div class="feed-empty-icon">✦</div>
+                <div class="feed-empty-title">
+                    {% if mode == 'fresh' %}Tüm gönderileri gördün!{% else %}Akış henüz boş{% endif %}
+                </div>
+                <div class="feed-empty-text">
+                    {% if mode == 'fresh' %}
+                        Harika, her şeyi okudun.
+                        <a href="?mode=all" style="color:var(--text-h);font-weight:600;">Tümünü gör →</a>
+                    {% else %}
+                        Kişileri takip et, gönderi paylaş — akışın burada canlanacak.
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        {% if has_next %}
+        <button class="load-more-btn" id="loadMoreBtn"
+                onclick="loadMore({{ page + 1 }})">
+            Daha Fazla Göster
+        </button>
+        {% endif %}
+
+    </main>
+
+    <!-- Sağ Panel -->
+    <aside class="feed-right">
+        <div class="panel-card">
+            <div class="right-title">Bu Hafta Öne Çıkanlar</div>
+
+            {% if trending_posts %}
+            <div class="trend-list">
+                {% for item in trending_posts %}
+                {% set p      = item.post %}
+                {% set author = p.author %}
+                {% set asite  = author.site %}
+
+                {# Snippet & tip dot sınıfı #}
+                {% if p.post_type == 'code' %}
+                    {% set snippet  = (p.code_language or 'kod') | capitalize ~ ' parçası' %}
+                    {% set dot_cls  = 'trend-dot-code' %}
+                {% elif p.post_type == 'project' %}
+                    {% set snippet  = (p.content or '') | truncate(48, true, '…') %}
+                    {% set dot_cls  = 'trend-dot-project' %}
+                {% elif p.post_type == 'image' %}
+                    {% set snippet  = 'Fotoğraf gönderisi' %}
+                    {% set dot_cls  = 'trend-dot-image' %}
+                {% else %}
+                    {% set snippet  = (p.content or '') | truncate(48, true, '…') %}
+                    {% set dot_cls  = 'trend-dot-text' %}
+                {% endif %}
+
+                <div class="trend-row" onclick="scrollToPost('{{ p.slug }}')">
+                    <span class="trend-rank">{{ loop.index }}</span>
+
+                    <div class="trend-avatar">
+                        {% if asite and asite.avatar_file %}
+                        <img src="{{ asite.avatar_file }}" alt="">
+                        {% else %}
+                        {{ (author.full_name or author.email)[0] | upper }}
+                        {% endif %}
+                    </div>
+
+                    <div class="trend-body">
+                        <div class="trend-author">
+                            {{ author.full_name or author.email.split('@')[0] }}
+                        </div>
+                        <div class="trend-snippet">
+                            <span class="trend-dot {{ dot_cls }}"></span>
+                            <span class="trend-snippet-text">{{ snippet }}</span>
+                        </div>
+                    </div>
+
+                    <span class="trend-chevron">›</span>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+                <div class="trend-empty">Bu hafta henüz gönderi yok.</div>
+            {% endif %}
+        </div>
+    </aside>
+
+</div>
+
+<script>
+// ── Sabitler ──────────────────────────────────────────────────────────────
+let latestPostId = {{ latest_id }};
+let currentMode  = '{{ mode }}';
+
+// ── Mod Geçişi ────────────────────────────────────────────────────────────
+function switchMode(mode) {
+    window.location.href = `/feed/?mode=${mode}`;
+}
+
+// ── Compose Aç / Kapat — JS Height Animasyonu ─────────────────────────────
+let composeIsOpen    = false;
+let composeAnimating = false;   // çakışan açma/kapama engelleyici
+
+const OPEN_EASE  = 'cubic-bezier(0.16, 1, 0.3, 1)';
+const CLOSE_EASE = 'cubic-bezier(0.4, 0, 0.2, 1)';
+
+function _rAF2(fn) {
+    // İki requestAnimationFrame: layout hesaplanıp transition başlatmayı garantiler
+    requestAnimationFrame(() => requestAnimationFrame(fn));
+}
+
+function openCompose(focusType) {
+    if (composeIsOpen || composeAnimating) return;
+    const box        = document.getElementById('composeBox');
+    const expandable = document.getElementById('composeExpandable');
+    const trigger    = document.getElementById('composeTrigger');
+    if (!box) return;
+
+    composeAnimating = true;
+
+    // ── 1. Trigger: fade-out + yukarı kayarak sil ──
+    trigger.style.transition = `opacity 0.18s ease, transform 0.22s ${OPEN_EASE}`;
+    trigger.style.opacity    = '0';
+    trigger.style.transform  = 'translateY(-6px) scale(0.98)';
+    trigger.style.pointerEvents = 'none';
+
+    setTimeout(() => {
+        trigger.style.display = 'none';
+        box.classList.add('compose-open');
+
+        // ── 2. Gerçek içerik yüksekliğini ölç ──
+        expandable.style.transition = 'none';
+        expandable.style.height     = 'auto';
+        expandable.style.opacity    = '1';
+        expandable.style.overflow   = 'visible';
+        const targetH = expandable.scrollHeight;
+
+        // ── 3. Sıfırdan animasyonu başlat ──
+        expandable.style.height   = '0';
+        expandable.style.opacity  = '0';
+        expandable.style.overflow = 'hidden';
+
+        _rAF2(() => {
+            expandable.style.transition =
+                `height 0.40s ${OPEN_EASE}, opacity 0.28s ease`;
+            expandable.style.height  = targetH + 'px';
+            expandable.style.opacity = '1';
+        });
+
+        // ── 4. Animasyon bittikten sonra height: auto ──
+        setTimeout(() => {
+            expandable.style.transition = 'none';
+            expandable.style.height     = 'auto';
+            expandable.style.overflow   = 'visible';
+            composeIsOpen    = true;
+            composeAnimating = false;
+
+            // Textarea'ya odaklan
+            if (focusType) {
+                const btn = document.querySelector(`.compose-type-btn[data-type="${focusType}"]`);
+                if (btn) setComposeType(btn, focusType);
+            }
+            const ta = document.getElementById('composeText');
+            if (ta && document.getElementById('composeTextWrap').style.display !== 'none') {
+                ta.focus();
+            }
+        }, 420);
+
+    }, 175);  // trigger fade-out süresiyle eşleşir
+}
+
+function closeCompose() {
+    if (!composeIsOpen || composeAnimating) return;
+    const box        = document.getElementById('composeBox');
+    const expandable = document.getElementById('composeExpandable');
+    const trigger    = document.getElementById('composeTrigger');
+    if (!box) return;
+
+    composeAnimating = true;
+    composeIsOpen    = false;
+
+    // ── 1. Mevcut yüksekliği kilitle ──
+    expandable.style.transition = 'none';
+    expandable.style.height     = expandable.scrollHeight + 'px';
+    expandable.style.overflow   = 'hidden';
+
+    // ── 2. Animasyonla çök ──
+    _rAF2(() => {
+        expandable.style.transition =
+            `height 0.30s ${CLOSE_EASE}, opacity 0.20s ease`;
+        expandable.style.height  = '0';
+        expandable.style.opacity = '0';
+    });
+
+    // ── 3. Çöküş bitti: trigger'ı geri getir ──
+    setTimeout(() => {
+        box.classList.remove('compose-open');
+
+        // Formu temizle
+        document.getElementById('composeText').value = '';
+        document.getElementById('composeCodeText').value = '';
+        const captionEl = document.getElementById('composeCodeCaption');
+        if (captionEl) { captionEl.value = ''; captionEl.style.height = 'auto'; }
+        selectedFiles = [];
+        renderImagePreviews();
+        resetVideoCompose();
+        const vcEl = document.getElementById('composeVideoCaption');
+        if (vcEl) { vcEl.value = ''; vcEl.style.height = 'auto'; }
+        updateCharCount(document.getElementById('composeText'));
+
+        // Trigger: görünür + aşağıdan yükselerek geri gel
+        trigger.style.display    = '';
+        trigger.style.transition = 'none';
+        trigger.style.opacity    = '0';
+        trigger.style.transform  = 'translateY(8px) scale(0.99)';
+
+        _rAF2(() => {
+            trigger.style.transition = `opacity 0.30s ease, transform 0.38s ${OPEN_EASE}`;
+            trigger.style.opacity    = '1';
+            trigger.style.transform  = 'translateY(0) scale(1)';
+            trigger.style.pointerEvents = '';
+            composeAnimating = false;
+        });
+
+    }, 295);  // close animasyon süresiyle eşleşir
+}
+
+// Click-outside ile kapanma
+document.addEventListener('click', function(e) {
+    if (!composeIsOpen || composeAnimating) return;
+    const box = document.getElementById('composeBox');
+    if (box && !box.contains(e.target)) {
+        const ta   = document.getElementById('composeText');
+        const code = document.getElementById('composeCodeText');
+        if ((ta && ta.value.trim()) || (code && code.value.trim())) return;
+        closeCompose();
+    }
+}, true);
+
+// ── Trigger hint butonları: direkt tipe göre aç ───────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.compose-trigger-hint').forEach(hint => {
+        hint.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const title   = this.getAttribute('title');
+            const typeMap = { 'Fotoğraf': 'image', 'Kod': 'code', 'Proje': 'project' };
+            openCompose(typeMap[title] || null);
+        });
+    });
+});
+
+// ── Gönderi Tipi ──────────────────────────────────────────────────────────
+let currentType   = 'text';
+let selectedFiles = [];   // Resim tipi için seçilen dosyalar
+
+function setComposeType(btn, type) {
+    document.querySelectorAll('.compose-type-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentType = type;
+
+    const ph = {
+        text:    'Ne paylaşmak istiyorsun?',
+        project: 'Yeni projenden bahset — ne inşa ediyorsun?',
+        image:   'Resim için açıklama ekle (opsiyonel)…',
+        code:    '',
+        video:   '',
+    };
+
+    const textWrap  = document.getElementById('composeTextWrap');
+    const imageArea = document.getElementById('composeImageArea');
+    const videoArea = document.getElementById('composeVideoArea');
+    const codeArea  = document.getElementById('composeCodeArea');
+    const charRow   = document.getElementById('charCount');
+
+    // Hepsini gizle, ilgiliyi göster
+    const noText = (type === 'code' || type === 'video');
+    textWrap.style.display  = noText ? 'none' : 'block';
+    imageArea.classList.toggle('visible', type === 'image');
+    videoArea.classList.toggle('visible', type === 'video');
+    codeArea.classList.toggle('visible',  type === 'code');
+    charRow.style.display   = (type === 'code' || type === 'image' || type === 'video') ? 'none' : 'inline';
+
+    if (!noText) {
+        document.getElementById('composeText').placeholder = ph[type] || '';
+    }
+}
+
+// ── Karakter Sayacı ───────────────────────────────────────────────────────
+function updateCharCount(el) {
+    const n = el.value.length;
+    const c = document.getElementById('charCount');
+    c.textContent = `${n} / 1500`;
+    c.classList.toggle('warn', n > 1200 && n <= 1500);
+    c.classList.toggle('over', n > 1500);
+}
+
+// ── Resim Seçimi & Önizleme ───────────────────────────────────────────────
+function handleImageSelect(files) {
+    for (const f of files) {
+        if (selectedFiles.length >= 4) break;
+        selectedFiles.push(f);
+    }
+    renderImagePreviews();
+}
+
+function handleImageDrop(e) {
+    e.preventDefault();
+    document.getElementById('composeImageDrop').classList.remove('drag-over');
+    handleImageSelect(Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/')));
+}
+
+function removeImage(idx) {
+    selectedFiles.splice(idx, 1);
+    renderImagePreviews();
+}
+
+function renderImagePreviews() {
+    const wrap = document.getElementById('composeImagePreview');
+    wrap.innerHTML = '';
+    selectedFiles.forEach((f, i) => {
+        const url  = URL.createObjectURL(f);
+        const div  = document.createElement('div');
+        div.className = 'compose-image-thumb';
+        div.innerHTML = `<img src="${url}"><button class="compose-image-thumb-remove" onclick="removeImage(${i})">✕</button>`;
+        wrap.appendChild(div);
+    });
+}
+
+// ── Video Seçimi & Önizleme ────────────────────────────────────────────────
+let selectedVideoFile = null;
+
+function handleVideoSelect(file) {
+    if (!file) return;
+    selectedVideoFile = file;
+    renderVideoPreview();
+}
+
+function handleVideoDrop(e) {
+    e.preventDefault();
+    document.getElementById('composeVideoDrop').classList.remove('drag-over');
+    const file = Array.from(e.dataTransfer.files).find(f => f.type.startsWith('video/'));
+    if (file) handleVideoSelect(file);
+}
+
+function renderVideoPreview() {
+    const wrap = document.getElementById('composeVideoPreview');
+    wrap.innerHTML = '';
+    if (!selectedVideoFile) return;
+    const url  = URL.createObjectURL(selectedVideoFile);
+    const secs = Math.round(selectedVideoFile.size / 1024 / 1024 * 10) / 10;
+    wrap.innerHTML = `
+        <div class="compose-video-thumb">
+            <video src="${url}" controls muted preload="metadata" style="max-height:200px;border-radius:10px;width:100%;"></video>
+            <div class="compose-video-thumb-info">
+                <span>${selectedVideoFile.name}</span>
+                <span>${secs} MB</span>
+                <button onclick="resetVideoCompose()" class="compose-image-thumb-remove" title="Kaldır">✕</button>
+            </div>
+        </div>`;
+    document.getElementById('composeVideoDrop').style.display = 'none';
+}
+
+function resetVideoCompose() {
+    selectedVideoFile = null;
+    document.getElementById('composeVideoPreview').innerHTML = '';
+    document.getElementById('composeVideoDrop').style.display = '';
+    document.getElementById('composeVideoInput').value = '';
+}
+
+// ── Trend Gönderiye Scroll ────────────────────────────────────────────────
+function scrollToPost(postId) {
+    const card = document.getElementById('post-' + postId);
+    if (!card) return;
+    card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    card.style.transition = 'box-shadow 0.3s ease, border-color 0.3s ease';
+    card.style.boxShadow  = '0 0 0 2px rgba(255,255,255,0.3)';
+    card.style.borderColor = 'rgba(255,255,255,0.3)';
+    setTimeout(() => {
+        card.style.boxShadow  = '';
+        card.style.borderColor = '';
+    }, 1400);
+}
+
+// ── Kod Kopyala ───────────────────────────────────────────────────────────
+function copyCode(btn) {
+    const pre  = btn.closest('.post-code-block').querySelector('pre');
+    navigator.clipboard.writeText(pre.textContent).then(() => {
+        btn.textContent = '✓ Kopyalandı';
+        setTimeout(() => btn.textContent = '⎘ Kopyala', 2000);
+    });
+}
+
+// ── Gönderi Paylaş ────────────────────────────────────────────────────────
+async function submitPost() {
+    const btn = document.querySelector('.compose-submit');
+    btn.disabled = true; btn.textContent = '…';
+
+    try {
+        let res;
+
+        if (currentType === 'image') {
+            // Resim gönderisi — multipart/form-data
+            if (selectedFiles.length === 0) {
+                document.getElementById('composeImageDrop').style.borderColor = '#f87171';
+                setTimeout(() => document.getElementById('composeImageDrop').style.borderColor = '', 1500);
+                return;
+            }
+            const fd = new FormData();
+            fd.append('post_type', 'image');
+            fd.append('content', document.getElementById('composeText').value.trim());
+            selectedFiles.forEach(f => fd.append('images', f));
+            res = await fetch('/feed/post', { method: 'POST', body: fd });
+
+        } else if (currentType === 'code') {
+            // Kod bloğu — JSON
+            const code    = document.getElementById('composeCodeText').value.trim();
+            if (!code) { document.getElementById('composeCodeText').focus(); return; }
+            const lang    = document.getElementById('composeCodeLang').value;
+            const caption = document.getElementById('composeCodeCaption').value.trim();
+            res = await fetch('/feed/post', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ post_type: 'code', content: code, code_language: lang, caption }),
+            });
+
+        } else if (currentType === 'video') {
+            // Video gönderisi — multipart/form-data
+            if (!selectedVideoFile) {
+                document.getElementById('composeVideoDrop').style.borderColor = '#f87171';
+                setTimeout(() => document.getElementById('composeVideoDrop').style.borderColor = '', 1500);
+                return;
+            }
+            const fd = new FormData();
+            fd.append('post_type', 'video');
+            const caption = document.getElementById('composeVideoCaption').value.trim();
+            if (caption) fd.append('content', caption);
+            fd.append('video', selectedVideoFile);
+            res = await fetch('/feed/post', { method: 'POST', body: fd });
+
+        } else {
+            // Metin / Proje — JSON
+            const content = document.getElementById('composeText').value.trim();
+            if (!content) { document.getElementById('composeText').focus(); return; }
+            res = await fetch('/feed/post', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ post_type: currentType, content }),
+            });
+        }
+
+        const data = await res.json();
+
+        if (data.ok) {
+            const list = document.getElementById('feedList');
+            const tmp  = document.createElement('div');
+            tmp.innerHTML = data.html;
+            const card = tmp.firstElementChild;
+            card.classList.add('fresh-in');
+            list.prepend(card);
+            card.dataset.own = '1';
+
+            // highlight.js ile yeni kod bloğunu renklendir
+            card.querySelectorAll('pre code').forEach(el => {
+                if (window.hljs) hljs.highlightElement(el);
+            });
+
+            // Compose'u kapat (form temizliği closeCompose içinde)
+            closeCompose();
+
+            if (data.post_id > latestPostId) latestPostId = data.post_id;
+        } else {
+            alert(data.error || 'Gönderi oluşturulamadı.');
+        }
+    } finally {
+        btn.disabled = false; btn.textContent = 'Paylaş ↑';
+    }
+}
+
+// ── Onay (eski Beğeni) ────────────────────────────────────────────────────
+async function toggleLike(btn, postId) {
+    const res  = await fetch(`/feed/post/${postId}/like`, { method: 'POST' });
+    const data = await res.json();
+    if (!data.ok) return;
+    btn.classList.toggle('liked', data.liked);
+    const label = btn.querySelector('.action-label');
+    const cnt   = btn.querySelector('.onay-count');
+    if (label) label.textContent = data.liked ? 'Onaylandı' : 'Onayla';
+    if (cnt)   cnt.textContent   = data.like_count;
+}
+
+// ── Bookmark ──────────────────────────────────────────────────────────────
+async function toggleSave(btn, postId) {
+    const res  = await fetch(`/feed/post/${postId}/save`, { method: 'POST' });
+    const data = await res.json();
+    if (!data.ok) return;
+
+    btn.classList.toggle('saved', data.saved);
+    btn.title = data.saved ? 'Kaydı kaldır' : 'Kaydet';
+
+    // SVG fill değiştir
+    const path = btn.querySelector('svg path');
+    if (path) path.setAttribute('fill', data.saved ? 'currentColor' : 'none');
+}
+
+// ── Yankı ─────────────────────────────────────────────────────────────────
+
+// LocalStorage ile günlük kota state'i koru (refresh'te sıfırlanmasın)
+const _yankaTodayKey = 'yankaQuota_' + new Date().toISOString().split('T')[0];
+
+function _loadYankaFromStorage() {
+    try {
+        const stored = localStorage.getItem(_yankaTodayKey);
+        if (stored !== null) return parseInt(stored, 10);
+    } catch(_) {}
+    return null;
+}
+
+function _saveYankaToStorage(remaining) {
+    try { localStorage.setItem(_yankaTodayKey, remaining); } catch(_) {}
+}
+
+// Sunucudan gelen değer ile localStorage'ı karşılaştır, en kısıtlayıcıyı al
+const _serverRemaining = {{ yanka_remaining }};
+const _storedRemaining = _loadYankaFromStorage();
+let yankaRemaining = (_storedRemaining !== null && _storedRemaining < _serverRemaining)
+    ? _storedRemaining
+    : _serverRemaining;
+
+// Sayfa yükünde localStorage'ı güncelle
+_saveYankaToStorage(yankaRemaining);
+
+function updateYankaQuotaUI(remaining) {
+    yankaRemaining = remaining;
+    _saveYankaToStorage(remaining);
+
+    const bar      = document.getElementById('yankaQuotaBar');
+    const barFill  = document.getElementById('yankaQuotaBarFill');
+    const text     = document.getElementById('yankaQuotaText');
+    const sub      = document.getElementById('yankaQuotaSub');
+
+    if (text)    text.textContent = `${remaining}/5`;
+    if (sub)     sub.textContent  = remaining > 0
+        ? `Bugün ${remaining} yankı hakkın var`
+        : 'Yarın gece yarısı (UTC) sıfırlanır';
+    if (bar)     bar.classList.toggle('exhausted', remaining === 0);
+    if (barFill) barFill.style.width = `${Math.round(remaining / 5 * 100)}%`;
+}
+
+// Sayfa açılışında UI'yi localStorage değeriyle senkronize et
+if (yankaRemaining !== _serverRemaining) {
+    updateYankaQuotaUI(yankaRemaining);
+}
+
+async function giveYanka(btn, postId) {
+    if (btn.disabled) return;
+    if (yankaRemaining <= 0) {
+        // Kota doldu — karta sarsma efekti
+        const card = btn.closest('.post-card');
+        if (card) {
+            card.animate([
+                { transform: 'translateX(0)' },
+                { transform: 'translateX(-5px)' },
+                { transform: 'translateX(5px)' },
+                { transform: 'translateX(-4px)' },
+                { transform: 'translateX(4px)' },
+                { transform: 'translateX(0)' },
+            ], { duration: 380, easing: 'ease-out' });
+        }
+        showNotif('⚡ Bugünkü Yankı kotanı doldurdun. Yarın devam!');
+        return;
+    }
+
+    btn.disabled = true;
+
+    try {
+        const res  = await fetch(`/feed/post/${postId}/yanka`, { method: 'POST' });
+        const data = await res.json();
+
+        if (data.ok) {
+            btn.classList.add('yankaed');
+            const label = btn.querySelector('.action-label');
+            const cnt   = btn.querySelector('.yanka-count');
+            if (label) label.textContent = 'Yankılandı';
+            if (cnt)   cnt.textContent   = data.yanka_count;
+
+            // Kota güncelle (DB'den gelen değer kesin)
+            updateYankaQuotaUI(data.remaining);
+
+            // ── Buton burst animasyonu ──
+            btn.classList.add('yanka-burst');
+            btn.addEventListener('animationend', (e) => {
+                if (e.target === btn) btn.classList.remove('yanka-burst');
+            }, { once: true });
+
+            // ── Kart amber pulse glow ──
+            const card = btn.closest('.post-card');
+            if (card) {
+                card.classList.remove('yanka-hype');  // reset varsa
+                void card.offsetWidth;               // reflow — animasyonu yeniden tetikle
+                card.classList.add('yanka-hype');
+                // animationName filtresi: sadece kart animasyonu bittinde kaldır
+                const onGlowEnd = (e) => {
+                    if (e.target === card && e.animationName === 'yankaAmberPulse') {
+                        card.classList.remove('yanka-hype');
+                        card.removeEventListener('animationend', onGlowEnd);
+                    }
+                };
+                card.addEventListener('animationend', onGlowEnd);
+            }
+        } else {
+            btn.disabled = false;
+            showNotif(data.error || '⚡ Yankı verilemedi.');
+        }
+    } catch (_) {
+        btn.disabled = false;
+    }
+}
+
+// ── Yorumlar ──────────────────────────────────────────────────────────────
+function toggleComments(postId) {
+    const s = document.getElementById(`comments-${postId}`);
+    if (!s) return;
+    s.classList.toggle('open');
+    if (s.classList.contains('open')) s.querySelector('.comment-input')?.focus();
+}
+
+async function sendComment(postId) {
+    const input   = document.getElementById(`comment-input-${postId}`);
+    const content = input.value.trim();
+    if (!content) return;
+
+    const res  = await fetch(`/feed/post/${postId}/comment`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content }),
+    });
+    const data = await res.json();
+
+    if (data.ok) {
+        const list = document.getElementById(`comment-list-${postId}`);
+        if (list) {
+            const tmp = document.createElement('div');
+            tmp.innerHTML = data.html;
+            list.appendChild(tmp.firstElementChild);
+            list.lastElementChild?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+        input.value = '';
+        const cnt = document.querySelector(`[data-comment-count="${postId}"]`);
+        if (cnt) cnt.textContent = data.comment_count;
+    }
+}
+
+// ── Takip ─────────────────────────────────────────────────────────────────
+async function toggleFollow(btn, userId) {
+    const res  = await fetch(`/feed/follow/${userId}`, { method: 'POST' });
+    const data = await res.json();
+    if (!data.ok) return;
+
+    const isFollowing = data.following;
+
+    // Tüm butonları güncelle
+    document.querySelectorAll(`[data-follow-uid="${userId}"]`).forEach(b => {
+        b.classList.toggle('following', isFollowing);
+        b.textContent = isFollowing ? 'Takipte' : 'Takip Et';
+    });
+
+    // Sol panel sayacı
+    const lc = document.getElementById('leftFollowCount');
+    if (lc) lc.textContent = Math.max(0, (parseInt(lc.textContent) || 0) + (isFollowing ? 1 : -1));
+
+    // Takip edildi → son gönderilerini akışa enjekte et
+    if (isFollowing && data.posts_html && data.post_count > 0) {
+        const list = document.getElementById('feedList');
+        const tmp  = document.createElement('div');
+        tmp.innerHTML = data.posts_html;
+        Array.from(tmp.children).forEach((card, i) => {
+            card.classList.add('fresh-in');
+            card.style.animationDelay = `${i * 70}ms`;
+            list.prepend(card);
+            observePost(card);
+        });
+        showNotif(`${data.post_count} gönderi akışına eklendi`);
+    }
+
+    // Takip bırakıldı → o kişinin gönderilerini listeden kaldır
+    if (!isFollowing) {
+        document.querySelectorAll(`.post-card[data-author-id="${userId}"]`).forEach(card => {
+            card.style.transition = 'opacity 0.4s, max-height 0.5s, margin 0.5s';
+            card.style.opacity    = '0';
+            card.style.maxHeight  = card.offsetHeight + 'px';
+            setTimeout(() => { card.style.maxHeight = '0'; card.style.margin = '0'; }, 80);
+            setTimeout(() => card.remove(), 580);
+        });
+    }
+}
+
+// ── Gönderi Sil ───────────────────────────────────────────────────────────
+async function deletePost(postId) {
+    if (!confirm('Bu gönderiyi silmek istiyor musun?')) return;
+    const res  = await fetch(`/feed/post/${postId}`, { method: 'DELETE' });
+    const data = await res.json();
+    if (data.ok) {
+        const card = document.getElementById(`post-${postId}`);
+        if (card) {
+            card.style.transition = 'opacity 0.3s, transform 0.3s';
+            card.style.opacity = '0'; card.style.transform = 'scale(0.97)';
+            setTimeout(() => card.remove(), 340);
+        }
+    }
+}
+
+// ── Video İzlenme Takibi (Feed) ────────────────────────────────────────────
+function initFeedVideoTracking() {
+    document.querySelectorAll('.post-video-player:not([data-tracked])').forEach(video => {
+        video.dataset.tracked = '1';
+        const postId = video.dataset.postId;
+        let reported = false;
+        let replayed = false;
+        let playCount = 0;
+        video.addEventListener('play', () => { playCount++; if (playCount > 1) replayed = true; });
+        video.addEventListener('timeupdate', () => {
+            if (!video.duration || reported) return;
+            if ((video.currentTime / video.duration) >= 0.8) {
+                reported = true;
+                fetch('/feed/video-view', {
+                    method:'POST', headers:{'Content-Type':'application/json'},
+                    body: JSON.stringify({
+                        post_id: postId,
+                        watch_seconds: Math.round(video.currentTime),
+                        total_seconds: Math.round(video.duration),
+                        replayed: replayed
+                    })
+                }).catch(()=>{});
+            }
+        });
+    });
+}
+document.addEventListener('DOMContentLoaded', initFeedVideoTracking);
+
+// ── Sonsuz Scroll ─────────────────────────────────────────────────────────
+async function loadMore(page) {
+    const btn = document.getElementById('loadMoreBtn');
+    if (btn) { btn.disabled = true; btn.textContent = 'Yükleniyor…'; }
+
+    const res  = await fetch(`/feed/?page=${page}&mode=${currentMode}`, {
+        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+    });
+    const data = await res.json();
+
+    if (data.html) {
+        const list = document.getElementById('feedList');
+        const tmp  = document.createElement('div');
+        tmp.innerHTML = data.html;
+        while (tmp.firstChild) {
+            const card = tmp.firstChild;
+            list.appendChild(card);
+            if (card.dataset) observePost(card);
+        }
+    }
+
+    if (data.has_next) {
+        if (btn) { btn.disabled = false; btn.textContent = 'Daha Fazla Göster'; btn.onclick = () => loadMore(page + 1); }
+    } else {
+        if (btn) btn.remove();
+    }
+}
+
+// ════════════════════════════════════════════════════════════════
+//  GÖRÜLDÜ TAKİBİ — Intersection Observer
+// ════════════════════════════════════════════════════════════════
+
+const seenObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        const card = entry.target;
+        if (card.dataset.seen || card.dataset.own) return;
+
+        if (entry.isIntersecting && entry.intersectionRatio >= 0.5) {
+            // 900ms ekranda kaldıysa görüldü
+            card._seenTimer = setTimeout(async () => {
+                const postId = card.dataset.postId;
+                if (!postId) return;
+                try { await fetch(`/feed/post/${postId}/seen`, { method: 'POST' }); } catch(_) {}
+                card.dataset.seen = '1';
+                if (currentMode === 'fresh') {
+                    card.classList.add('seen-fading');
+                }
+                seenObserver.unobserve(card);
+            }, 900);
+        } else {
+            if (card._seenTimer) { clearTimeout(card._seenTimer); delete card._seenTimer; }
+        }
+    });
+}, { threshold: 0.5 });
+
+function observePost(card) {
+    if (card && card.classList && card.classList.contains('post-card') && !card.dataset.own) {
+        seenObserver.observe(card);
+    }
+}
+
+// Sayfa yükünde mevcut kartları izle
+document.querySelectorAll('.post-card').forEach(observePost);
+
+// ════════════════════════════════════════════════════════════════
+//  YENİ GÖNDERI POLLING — 30sn
+// ════════════════════════════════════════════════════════════════
+
+async function pollNewPosts() {
+    try {
+        const res  = await fetch(`/feed/poll?since=${latestPostId}`);
+        const data = await res.json();
+        if (data.count > 0) {
+            const banner  = document.getElementById('newPostBanner');
+            const countEl = document.getElementById('newPostCount');
+            countEl.textContent  = `${data.count} yeni gönderi`;
+            banner.dataset.latest = data.latest_id;
+            banner.classList.add('visible');
+        }
+    } catch(_) {}
+}
+
+async function loadNewPosts() {
+    const banner = document.getElementById('newPostBanner');
+    banner.innerHTML = '<span>Yükleniyor…</span>';
+
+    try {
+        const res  = await fetch(`/feed/load-new?since=${latestPostId}`);
+        const data = await res.json();
+
+        if (data.count > 0) {
+            const list = document.getElementById('feedList');
+            const tmp  = document.createElement('div');
+            tmp.innerHTML = data.html;
+            Array.from(tmp.children).reverse().forEach((card, i) => {
+                card.classList.add('fresh-in');
+                card.style.animationDelay = `${i * 55}ms`;
+                list.prepend(card);
+                observePost(card);
+            });
+            latestPostId = data.latest_id;
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    } finally {
+        banner.classList.remove('visible');
+        banner.innerHTML = '<span id="newPostCount"></span><span style="opacity:0.7">↑ Göster</span>';
+    }
+}
+
+// Fresh modda polling başlat
+if (currentMode === 'fresh') {
+    setInterval(pollNewPosts, 30_000);
+}
+
+// ── Bildirim ──────────────────────────────────────────────────────────────
+function showNotif(msg) {
+    const el = document.createElement('div');
+    el.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:rgba(255,255,255,0.95);color:#09090b;padding:9px 20px;border-radius:100px;font-size:12.5px;font-weight:600;z-index:9999;pointer-events:none;white-space:nowrap;box-shadow:0 8px 32px rgba(0,0,0,0.5);';
+    el.textContent = msg;
+    document.body.appendChild(el);
+    requestAnimationFrame(() => { el.style.transition = 'opacity 0.3s'; });
+    setTimeout(() => { el.style.opacity = '0'; setTimeout(() => el.remove(), 320); }, 2400);
+}
+
+// ── Enter → Yorum ─────────────────────────────────────────────────────────
+document.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !e.shiftKey && e.target.classList.contains('comment-input')) {
+        e.preventDefault();
+        const pid = e.target.dataset.postId;
+        if (pid) sendComment(parseInt(pid));
+    }
+});
+
+// ════════════════════════════════════════════════════════════════
+//  @MENTION SİSTEMİ
+// ════════════════════════════════════════════════════════════════
+
+// --- Mention metnini <a> linklerine dönüştür ---
+function renderMentions(el) {
+    // el.textContent → raw text (Jinja otomatik escape'ledi)
+    // data-raw özniteliği içeriği tutar
+    const raw = el.dataset.raw || el.textContent;
+    if (!raw) return;
+
+    // @[Ad Soyad|123] → mention linki
+    const escaped = raw
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+
+    const html = escaped.replace(
+        /@\[([^\|\]]+)\|(\d+)\]/g,
+        (_, name, id) =>
+            `<a href="/feed/u/${id}" class="mention-link">@${name}</a>`
+    );
+    el.innerHTML = html;
+}
+
+// Sayfa yükünde mevcut post/yorum içeriklerini işle
+function renderAllMentions() {
+    document.querySelectorAll('.mention-body').forEach(renderMentions);
+}
+renderAllMentions();
+
+// --- @Mention Autocomplete ---
+let _mentionState = null; // { inputEl, dropEl, start, end, query, items, activeIdx }
+
+async function _fetchMentions(q) {
+    try {
+        const res  = await fetch(`/feed/mention-search?q=${encodeURIComponent(q)}`);
+        const data = await res.json();
+        return data.users || [];
+    } catch(_) { return []; }
+}
+
+function _buildDropItem(user, idx) {
+    const div = document.createElement('div');
+    div.className = 'mention-item';
+    div.dataset.idx = idx;
+    const avatarHtml = user.avatar_url
+        ? `<img src="${user.avatar_url}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;" alt="">`
+        : user.avatar;
+    div.innerHTML = `
+        <div class="mention-avatar">${avatarHtml}</div>
+        <div>
+            <div class="mention-name">${_esc(user.full_name)}</div>
+            ${user.job_title ? `<div class="mention-role">${_esc(user.job_title)}</div>` : ''}
+        </div>`;
+    div.addEventListener('mousedown', e => {
+        e.preventDefault();
+        _insertMention(user);
+    });
+    return div;
+}
+
+function _esc(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function _showDrop(users, dropEl) {
+    dropEl.innerHTML = '';
+    if (!users.length) { dropEl.classList.remove('open'); return; }
+    users.forEach((u, i) => dropEl.appendChild(_buildDropItem(u, i)));
+    if (_mentionState) { _mentionState.items = users; _mentionState.activeIdx = -1; }
+    dropEl.classList.add('open');
+}
+
+function _hideDrop() {
+    if (!_mentionState) return;
+    _mentionState.dropEl.classList.remove('open');
+    _mentionState = null;
+}
+
+function _setActive(idx) {
+    if (!_mentionState) return;
+    const items = _mentionState.dropEl.querySelectorAll('.mention-item');
+    items.forEach((el, i) => el.classList.toggle('active', i === idx));
+    _mentionState.activeIdx = idx;
+}
+
+function _insertMention(user) {
+    if (!_mentionState) return;
+    const { inputEl, start, query } = _mentionState;
+    const val   = inputEl.value;
+    const pre   = val.slice(0, start);                   // text before @
+    const post  = val.slice(start + 1 + (query||'').length); // text after @word
+    const token = `@[${user.full_name}|${user.id}]`;
+    inputEl.value = pre + token + ' ' + post;
+    const cur = (pre + token + ' ').length;
+    inputEl.setSelectionRange(cur, cur);
+    inputEl.focus();
+    _hideDrop();
+    updateCharCount(inputEl);
+}
+
+function _onMentionInput(inputEl, dropEl) {
+    const val    = inputEl.value;
+    const cursor = inputEl.selectionStart;
+    // Find the start of the current @-word
+    let start = cursor - 1;
+    while (start >= 0 && !/\s/.test(val[start])) start--;
+    start++;
+    const word = val.slice(start, cursor);
+
+    if (word.startsWith('@')) {
+        const q = word.slice(1);
+        if (!_mentionState) {
+            _mentionState = { inputEl, dropEl, start, items: [], activeIdx: -1 };
+        } else {
+            _mentionState.start = start;
+        }
+        _mentionState.query = q;
+        if (q.length === 0) {
+            // Show recent/all users when @ is typed alone
+            _fetchMentions('').then(users => _showDrop(users, dropEl));
+        } else if (q.length >= 1) {
+            _fetchMentions(q).then(users => _showDrop(users, dropEl));
+        }
+    } else {
+        _hideDrop();
+    }
+}
+
+function _onMentionKeydown(e) {
+    if (!_mentionState || !_mentionState.dropEl.classList.contains('open')) return;
+    const items = _mentionState.items;
+    if (!items.length) return;
+
+    if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        _setActive(Math.min((_mentionState.activeIdx + 1), items.length - 1));
+    } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        _setActive(Math.max((_mentionState.activeIdx - 1), 0));
+    } else if (e.key === 'Enter' || e.key === 'Tab') {
+        const idx = _mentionState.activeIdx;
+        if (idx >= 0 && idx < items.length) {
+            e.preventDefault();
+            _insertMention(items[idx]);
+        }
+    } else if (e.key === 'Escape') {
+        _hideDrop();
+    }
+}
+
+// Compose textarea
+const composeTa = document.getElementById('composeText');
+const composeDr = document.getElementById('composeMentionDrop');
+if (composeTa && composeDr) {
+    composeTa.addEventListener('input',   () => _onMentionInput(composeTa, composeDr));
+    composeTa.addEventListener('keydown', _onMentionKeydown);
+    composeTa.addEventListener('blur',    () => setTimeout(_hideDrop, 150));
+}
+
+// Comment input'larına mention bağla (DOM delegasyonu)
+document.addEventListener('input', e => {
+    if (!e.target.classList.contains('comment-input')) return;
+    const inp = e.target;
+    let dr = inp._mentionDrop;
+    if (!dr) {
+        dr = document.createElement('div');
+        dr.className = 'mention-dropdown';
+        dr.style.bottom = 'auto';
+        dr.style.top    = 'calc(100% + 4px)';
+        inp.parentElement.style.position = 'relative';
+        inp.parentElement.appendChild(dr);
+        inp._mentionDrop = dr;
+    }
+    _onMentionInput(inp, dr);
+});
+
+// Blur → close comment mention drops
+document.addEventListener('blur', e => {
+    if (e.target.classList.contains('comment-input') && e.target._mentionDrop) {
+        setTimeout(() => {
+            if (e.target._mentionDrop) e.target._mentionDrop.classList.remove('open');
+            if (_mentionState && _mentionState.inputEl === e.target) _mentionState = null;
+        }, 150);
+    }
+}, true);
+
+document.addEventListener('keydown', e => {
+    if (e.target.classList.contains('comment-input')) _onMentionKeydown(e);
+});
+
+// Yeni kart eklendikten sonra mention'ları render et
+const _origFeedInsert = list => {
+    if (!list) return;
+    list.querySelectorAll('.mention-body').forEach(renderMentions);
+};
+
+// Feed listesi MutationObserver — yeni kartlar eklenince mention'ları render et
+const _feedObs = new MutationObserver(mutations => {
+    mutations.forEach(m => {
+        m.addedNodes.forEach(node => {
+            if (node.nodeType !== 1) return;
+            node.querySelectorAll('.mention-body').forEach(renderMentions);
+            if (node.classList && node.classList.contains('mention-body')) renderMentions(node);
+        });
+    });
+});
+
+const _feedList = document.getElementById('feedList');
+if (_feedList) _feedObs.observe(_feedList, { childList: true, subtree: true });
+
+/* ── DM Badge ── */
+(function dmBadgeFeed() {
+  const badge = document.getElementById('feedDmBadge');
+  if (!badge) return;
+  function f() {
+    fetch('/dm/unread-count').then(r => r.json()).then(d => {
+      badge.textContent = d.count < 10 ? d.count : '9+';
+      badge.style.display = d.count > 0 ? 'inline-block' : 'none';
+    }).catch(() => {});
+  }
+  f(); setInterval(f, 30000);
+})();
+
+/* ── Bildirim Badge + Dropdown ── */
+const notifBellCount = document.getElementById('notifBellCount');
+let notifDropOpen = false;
+
+let _prevNotifCount = 0;
+
+function updateNotifBadge(count) {
+  if (!notifBellCount) return;
+  if (count > 0) {
+    notifBellCount.textContent = count < 10 ? count : '9+';
+    notifBellCount.style.display = 'flex';
+    // Yeni bildirim geldiyse zili titret
+    if (count > _prevNotifCount) {
+        const btn = document.getElementById('notifBellBtn');
+        if (btn) {
+            btn.classList.remove('ring');
+            void btn.offsetWidth; // reflow
+            btn.classList.add('ring');
+            setTimeout(() => btn.classList.remove('ring'), 700);
+        }
+    }
+  } else {
+    notifBellCount.style.display = 'none';
+  }
+  _prevNotifCount = count;
+}
+
+async function fetchNotifCount() {
+  try {
+    const d = await fetch('/notifications/unread-count').then(r => r.json());
+    updateNotifBadge(d.count);
+  } catch(_) {}
+}
+
+async function toggleNotifDropdown() {
+  const panel = document.getElementById('notifDropPanel');
+  notifDropOpen = !notifDropOpen;
+  panel.classList.toggle('open', notifDropOpen);
+
+  if (notifDropOpen) {
+    // Dropdown açılınca içeriği yükle + badge sıfırla
+    try {
+      const d = await fetch('/notifications/dropdown').then(r => r.json());
+      document.getElementById('notifDropBody').innerHTML = d.html;
+      updateNotifBadge(0);
+    } catch(_) {}
+  }
+}
+
+// Dropdown dışına tıklayınca kapat
+document.addEventListener('click', e => {
+  if (notifDropOpen && !document.getElementById('notifBellWrap').contains(e.target)) {
+    document.getElementById('notifDropPanel').classList.remove('open');
+    notifDropOpen = false;
+  }
+});
+
+// Badge 20sn'de bir güncelle
+fetchNotifCount();
+setInterval(fetchNotifCount, 20000);
+
+// ── Highlight.js — sayfa yüklendiğinde tüm kod bloklarını renklendir ────
+document.addEventListener('DOMContentLoaded', () => {
+    if (window.hljs) {
+        document.querySelectorAll('pre code').forEach(el => hljs.highlightElement(el));
+    }
+});
+
+// ── Mouse Tracking Glow — kart üzerinde radial gradient takibi ─────────────
+window.addEventListener('mousemove', (e) => {
+    const cards = document.querySelectorAll('.post-card, .panel-card');
+    cards.forEach(card => {
+        const rect = card.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        card.style.setProperty('--mouse-x', `${x}px`);
+        card.style.setProperty('--mouse-y', `${y}px`);
+    });
+});
+
+// Yeni eklenen kartlar için (loadMore sonrası) glow'u canlı tut — event delegation yeterli.
+</script>
+</body>
+</html>

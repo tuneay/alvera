@@ -1,0 +1,238 @@
+{# ─── Alvera Social: Tek Gönderi Kartı ──────────────────────────────────────
+   Değişkenler: post (Post), viewer (current_user)
+   Tipler: text · project · image · code
+──────────────────────────────────────────────────────────────────────────── #}
+{% set author      = post.author %}
+{% set author_od   = author.onboarding %}
+{% set author_site = author.site %}
+
+{% set type_svgs = {
+    'text':    ('<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>', 'Not',     'badge-text'),
+    'project': ('<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>',           'Proje',    'badge-project'),
+    'image':   ('<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>', 'Fotoğraf', 'badge-image'),
+    'code':    ('<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>',   'Kod',      'badge-code'),
+    'video':   ('<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>', 'Video', 'badge-video'),
+} %}
+{% set type_info = type_svgs.get(post.post_type, type_svgs['text']) %}
+
+{% set is_own = (author.id == viewer.id) %}
+
+<div class="post-card
+    {% if post.post_type == 'project' %} post-project{% endif %}
+    {% if post.post_type == 'image'   %} post-image-card{% endif %}
+    {% if post.post_type == 'code'    %} post-code-card{% endif %}
+    {% if post.post_type == 'video'   %} post-video-card{% endif %}"
+     id="post-{{ post.slug }}"
+     data-post-id="{{ post.slug }}"
+     data-author-id="{{ author.id }}"
+     {% if is_own %}data-own="1"{% endif %}>
+
+    <!-- Header -->
+    <div class="post-header">
+        <div class="post-author">
+            <a href="{{ url_for('feed.social_profile', user_id=author.id) }}"
+               class="post-avatar">
+                {% if author_site and author_site.avatar_file %}
+                <img src="{{ author_site.avatar_file }}" alt="{{ author.full_name }}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">
+                {% else %}
+                {{ (author.full_name or author.email)[0] | upper }}
+                {% endif %}
+            </a>
+            <div class="post-author-info">
+                <a href="{{ url_for('feed.social_profile', user_id=author.id) }}"
+                   class="post-author-name">
+                    {{ author.full_name or author.email.split('@')[0] }}
+                </a>
+                <div class="post-meta-row">
+                    {% if author_od and author_od.job_title %}
+                    <span class="post-role-badge">{{ author_od.job_title }}</span>
+                    {% endif %}
+                    <span class="post-type-badge {{ type_info[2] }}">
+                        {{ type_info[0] | safe }} {{ type_info[1] }}
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <div class="post-header-right">
+            <span class="post-time">{{ post.created_at.strftime('%d %b') }}</span>
+            <a href="{{ url_for('feed.post_detail', user_id=post.user_id, slug=post.slug) }}"
+               class="post-permalink-btn"
+               title="Gönderiyi aç"
+               onclick="event.stopPropagation()">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+            </a>
+            {% if is_own %}
+            <button class="post-delete-btn"
+                    onclick="deletePost('{{ post.slug }}')"
+                    title="Sil">✕</button>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- İçerik -->
+    <div class="post-content">
+
+        {# ── Açıklama metni (kod tipi hariç tüm tipler için) ── #}
+        {% if post.content and post.post_type != 'code' %}
+        <p class="post-text mention-body" data-raw="{{ post.content }}"></p>
+        {% endif %}
+
+        {# ── Resim Grid ── #}
+        {% if post.post_type == 'image' and post.media_list %}
+        {% set imgs = post.media_list %}
+        <div class="post-image-grid post-image-grid--{{ imgs|length }}">
+            {% for img in imgs %}
+            <a href="/uploads/{{ author.id }}/{{ img.filename }}"
+               target="_blank"
+               class="post-image-item">
+                <img src="/uploads/{{ author.id }}/{{ img.filename }}"
+                     alt="Görsel {{ loop.index }}"
+                     loading="lazy">
+            </a>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {# ── Video Oynatıcı ── #}
+        {% if post.post_type == 'video' and post.media_list %}
+        {% set vid = post.media_list[0] %}
+        <div class="post-video-wrap">
+            {% if post.content %}
+            <p class="post-text mention-body" data-raw="{{ post.content }}" style="margin-bottom:10px;"></p>
+            {% endif %}
+            <video class="post-video-player"
+                   src="/uploads/{{ author.id }}/{{ vid.filename }}"
+                   controls
+                   preload="metadata"
+                   data-post-id="{{ post.id }}"
+                   playsinline
+                   style="width:100%;border-radius:12px;max-height:420px;background:#000;display:block;">
+                Tarayıcınız video oynatmayı desteklemiyor.
+            </video>
+        </div>
+        {% endif %}
+
+        {# ── Kod Bloğu ── #}
+        {% if post.post_type == 'code' %}
+        {% if post.link_title %}
+        <p class="post-text mention-body" data-raw="{{ post.link_title }}" style="margin-bottom:10px;"></p>
+        {% endif %}
+        <div class="post-code-block">
+            <div class="post-code-header">
+                <span class="post-code-lang">{{ post.code_language or 'code' }}</span>
+                <button class="post-code-copy"
+                        onclick="copyCode(this)"
+                        title="Kopyala">⎘ Kopyala</button>
+            </div>
+            <pre class="post-code-pre"><code class="language-{{ post.code_language or 'plaintext' }}">{{ post.content | e }}</code></pre>
+        </div>
+        {% endif %}
+
+        {# ── Geriye dönük uyumluluk: eski link/collab gönderileri ── #}
+        {% if post.post_type == 'link' and post.link_url %}
+        <a href="{{ post.link_url }}" target="_blank" rel="noopener" class="post-link-preview">
+            <div class="post-link-bar"></div>
+            <div class="post-link-body">
+                <div class="post-link-title">{{ post.link_title or post.link_url }}</div>
+                <div class="post-link-url">{{ post.link_url }}</div>
+            </div>
+        </a>
+        {% endif %}
+
+    </div>
+
+    <!-- Aksiyonlar -->
+    <div class="post-actions">
+
+        <div class="post-actions-left">
+
+            {# ── Onay ── #}
+            <button class="post-action-btn onay-btn {% if post.is_liked_by(viewer) %}liked{% endif %}"
+                    onclick="toggleLike(this, '{{ post.slug }}')">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                <span class="action-label">{% if post.is_liked_by(viewer) %}Onaylandı{% else %}Onayla{% endif %}</span>
+                <span class="onay-count">{{ post.like_count }}</span>
+            </button>
+
+            {# ── Yankı — geri alınamaz, günde 5 kota ── #}
+            {% if not is_own %}
+            {% set already_yankaed = post.is_yankaed_by(viewer) %}
+            <button class="post-action-btn yanka-btn {% if already_yankaed %}yankaed{% endif %}"
+                    onclick="giveYanka(this, '{{ post.slug }}')"
+                    {% if already_yankaed %}disabled title="Bu gönderiye zaten Yankı verdin"{% endif %}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                <span class="action-label">{% if already_yankaed %}Yankılandı{% else %}Yankı{% endif %}</span>
+                <span class="yanka-count" data-post-id="{{ post.slug }}">{{ post.yanka_count }}</span>
+            </button>
+            {% endif %}
+
+            {# ── Yorum ── #}
+            <button class="post-action-btn"
+                    onclick="toggleComments('{{ post.slug }}')">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                <span data-comment-count="{{ post.slug }}">{{ post.comment_count }}</span>
+            </button>
+
+        </div>
+
+        <div class="post-actions-right">
+
+            {# ── Takip Et ── #}
+            {% if not is_own %}
+            <button class="post-follow-btn {% if viewer.is_following(author) %}following{% endif %}"
+                    data-follow-uid="{{ author.id }}"
+                    onclick="toggleFollow(this, {{ author.id }})">
+                {% if viewer.is_following(author) %}Takipte{% else %}Takip Et{% endif %}
+            </button>
+            {% endif %}
+
+            {# ── Görüntülenme ── #}
+            {% set vc = post.view_count %}
+            {% if vc > 0 %}
+            <span class="post-view-count">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                {{ vc if vc < 1000 else (vc // 1000)|string ~ 'K' }}
+            </span>
+            {% endif %}
+
+            {# ── Bookmark ── #}
+            {% set is_saved = post.is_saved_by(viewer) %}
+            <button class="save-btn {% if is_saved %}saved{% endif %}"
+                    onclick="toggleSave(this, '{{ post.slug }}')"
+                    title="{% if is_saved %}Kaydı kaldır{% else %}Kaydet{% endif %}">
+                <svg width="14" height="14" viewBox="0 0 24 24"
+                     fill="{% if is_saved %}currentColor{% else %}none{% endif %}"
+                     stroke="currentColor" stroke-width="2.2"
+                     stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+                </svg>
+            </button>
+
+        </div>
+
+    </div>
+
+    <!-- Yorumlar -->
+    <div class="post-comments" id="comments-{{ post.slug }}">
+        <div class="comment-list" id="comment-list-{{ post.slug }}">
+            {% for comment in post.comments.limit(5).all() %}
+            {% include '_feed_comment.html' %}
+            {% endfor %}
+        </div>
+        <div class="comment-form">
+            <div class="comment-avatar-sm">
+                {{ (viewer.full_name or viewer.email)[0] | upper }}
+            </div>
+            <input type="text"
+                   class="comment-input"
+                   id="comment-input-{{ post.slug }}"
+                   data-post-id="{{ post.slug }}"
+                   placeholder="Yorum yaz…"
+                   maxlength="500">
+            <button class="comment-send"
+                    onclick="sendComment('{{ post.slug }}')">→</button>
+        </div>
+    </div>
+
+</div>
